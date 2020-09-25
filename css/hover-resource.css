@@ -1,0 +1,59 @@
+hover-resource {
+    background-color:
+    #fde66d;
+    border-radius: 2pt;
+}
+
+hover-resource:hover {
+  font-weight: bolder;
+}
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+
+  border-bottom: 15px solid black;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+
+  border-top: 20px solid #f00;
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 60px solid transparent;
+  border-bottom: 60px solid transparent;
+
+  border-left: 60px solid green;
+}
+
+.arrow-left {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+
+  border-right:10px solid blue;
+}
+
+/* .pop-out {
+  border: 1px solid;
+  border-radius: 5pt;
+  padding: 10px;
+  box-shadow: 5px 5px 8px black, 10px 10px 8px grey, 15px 15px 8px lightgrey;
+} */
+
+.pop-out {
+  border: 1px solid;
+  border-radius: 5pt;
+  padding: 10px;
+  box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;
+}

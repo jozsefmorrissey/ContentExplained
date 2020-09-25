@@ -1,0 +1,60 @@
+{
+
+  "manifest_version": 2,
+  "name": "ContrextExplained",
+  "version": "1.0",
+
+  "description": "Allows for the addition and modification of keywords. That are inserted into a webpage to further Explain the Content better.",
+
+  "icons": {
+    "48": "./icons/logo.png"
+  },
+
+  "options_ui": {
+    "page": "./html/text-to-html.html",
+    "open_in_tab": true
+  },
+
+  "browser_action": {
+    "browser_style": false,
+    "default_icon": "./icons/logo.png",
+    "default_title": "Content Explianed",
+    "default_popup": "./html/controls.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["./src/$t.js",
+            "./bin/$templates.js",
+            "./src/lookup.js",
+            "./src/explanations.js",
+            "./json/test-words.js",
+            "./src/hover-resource.js",
+            "./src/short-cut-container.js",
+            "./src/meriam-webster.js",
+            "./src/request.js",
+            "./src/contentExplained.js"],
+      "css": ["./css/hover-resource.css",
+              "./css/lookup.css"]
+    }
+  ],
+
+  "background": {
+    "scripts": ["./src/background.js"]
+  },
+
+  "permissions": [
+  "<all_urls>",
+  "tabs",
+  "cookies",
+  "notifications",
+  "storage",
+  "webNavigation",
+  "contextMenus",
+  "webRequest",
+  "webRequestBlocking",
+  "activeTab"
+  ]
+
+}

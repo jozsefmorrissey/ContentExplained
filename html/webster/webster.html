@@ -1,0 +1,16 @@
+<div class='ce-expl-card'>
+  <a href='https://www.merriam-webster.com/dictionary/hash'
+      target='merriam-webster'>
+    Merriam Webster '{{key}}'
+  </a>
+  <div:t repeat='item in data' class='expl'>
+    <div class='ce-expl-card'>
+      <h3>{{item.hwi.hw}}</h3>
+      <div:t repeat='def in item.shortdef' class='expl'>
+        <div class='expl'>
+          {{def}}
+        </div>
+      </div:t>
+    </div>
+  </div:t>
+</div>

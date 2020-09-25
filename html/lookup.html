@@ -1,0 +1,11 @@
+<div class='ce-tab-ctn'>
+  <ul class='ce-tab-list'>
+    <li:t repeat='elem in list'
+          class='ce-tab-list-item {{elem.active ? 'active' : ''}}'>
+      {{elem.title}}
+    </li:t>
+  </ul>
+  <div:t repeat='elem in list'>
+    {{elem.content}}
+  </div:t>
+</div>
