@@ -243,4 +243,8 @@ function onLoad() {
   }
 }
 
-window.addEventListener('load', onLoad);
+if (document.readyState === 'complete') {
+  setTimeout(onLoad, 1000);
+} else {
+  window.addEventListener('load', onLoad);
+}

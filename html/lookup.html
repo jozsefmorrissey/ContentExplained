@@ -1,11 +1,12 @@
-<div class='ce-tab-ctn'>
-  <ul class='ce-tab-list'>
-    <li:t repeat='elem in list'
-          class='ce-tab-list-item {{elem.active ? 'active' : ''}}'>
-      {{elem.title}}
-    </li:t>
-  </ul>
-  <div:t repeat='elem in list'>
-    {{elem.content}}
-  </div:t>
+<div>
+  <div id='{{MERRIAM_WEB_SUG_CNT_ID}}'></div>
+  <div class='ce-tab-ctn'>
+    <ul class='ce-tab-list'>
+      <li:t repeat='elem in list'
+            class='ce-tab-list-item {{elem.active ? 'active' : ''}}'>
+            <img class="lookup-img" src="{{elem.imageSrc}}">
+      </li:t>
+    </ul>
+    <div:t repeat='elem in list' class='ce-lookup-cnt' id='{{elem.cntId}}'></div:t>
+  </div>
 </div>

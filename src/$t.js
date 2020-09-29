@@ -9,12 +9,7 @@ function $t(scope, template, itExp, parentScope) {
 		for (let index = 0; currObj != undefined && index < split.length; index += 1) {
 			currObj = currObj[split[index]];
 		}
-		// console.log('parentScope:\n\t', parentScope('scope'));
-		// console.log('scope:\n\t', scope,);
-		// console.log('name:\n\t', name);
-		// console.log('template:\n\t', template);
-		// console.log('currObj:\n\t', split);
-		return currObj || parentScope(name);
+		return currObj || parentScope(name) || '';
 	}
 
 	function intToStr(integer) {
@@ -41,7 +36,7 @@ function $t(scope, template, itExp, parentScope) {
 	// eval('`<div>` + (get(\'htmlCreator\')()) + `</div>`');
 
 	function prefixEverything(string) {
-	  return string.replace(/([a-zA-Z][a-zA-Z0-9\.]*)(\s|:|\(|\)|,|\}|\{|$)/g, "get(`$1`)$2");
+	  return string.replace(/([a-zA-Z][a-zA-Z0-9\._]*)(\s|:|\(|\)|,|\}|\{|$)/g, "get(`$1`)$2");
 	}
 
 	const objLabelReg = /(\{[^\}]*)get\(`([a-zA-Z0-9]*\s*)`\):/;
@@ -173,7 +168,6 @@ const temp = /(<(\$t) ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\2[^>]*>|<
 	function rangeExp() {
 		const match = itExp.match($t.rangeItExpReg);
 		const elemName = match[1];
-		// console.log('matches', match[1],match[2], match[3])
 		let startIndex = (typeof match[2]) === 'number' ||
 					match[2].match(/^[0-9]*$/) ?
 					match[2] : eval(`scope['${match[2]}']`);
@@ -190,18 +184,13 @@ const temp = /(<(\$t) ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\2[^>]*>|<
 		try {
 			startIndex = Number.parseInt(startIndex);
 		} catch (e) {
-			console.log(e)
 			throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
 		}
 		try {
 			endIndex = Number.parseInt(endIndex);
 		} catch (e) {
-			console.log(e)
 			throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
 		}
-		// console.log(`${startIndex}..${endIndex}`);
-		// throw new Error('success');
-
 
 		let index = startIndex;
 		let built = '';
@@ -305,7 +294,8 @@ const temp = /(<(\$t) ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\2[^>]*>|<
 	let compiled = '';
 	parentScope = parentScope || function () {return undefined};
 	if ($t.functions[template]) {
-		return $t.functions[template](get);
+		compiled = $t.functions[template](get);
+		return compiled;
 	}
 
 	const hash = scope === undefined && itExp !== undefined
@@ -315,7 +305,6 @@ const temp = /(<(\$t) ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\2[^>]*>|<
 
 
 	template = formatRepeat(template);
-	console.log(template);
 	compile();
 
 	if (scope === undefined) {
@@ -351,7 +340,6 @@ $t.dumpTemplates = function () {
 			templateFunctions += `\n$t.functions['${tempName}'] = function (get) {\n\treturn ${$t(undefined, template).compile()}\n}`;
 		}
 	}
-	// console.log($t.templates);
 	return templateFunctions;
 }
 

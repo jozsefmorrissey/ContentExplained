@@ -1,15 +1,24 @@
-<div class='ce-expl-card'>
-  <button class='ce-btn ce-add-btn'>+</button>
+<div>
+  <span:t repeat='tag in allTags'>
+    <label>{{tag}}</label>
+    <input type='checkbox' value='{{tag}}'>
+  </span:t>
   <div class='key-auth'>
-    <span class='key'>Key</span>
-    <span class='auth'>(author)</span>
+    <span class='key'>{{words}}</span>
+    <button class='ce-btn ce-add-btn'>+</button>
   </div>
-  <div class='expl'>
-    explinations
-  </div>
-  <div class='tags'>
-    <span>tag1</span>
-    <span>tag2</span>
-    <span>tag3</span>
-  </div>
+  <div:t class='ce-expl-card' repeat='explanation in explanations'>
+    <span class='ce-expl-rating-column'>
+      <div class='like-ctn'>
+        <button class='ce-like-btn'>Like {{explanation.likes}}</button>
+      </div>
+      <div class='like-ctn'>
+        <button class='ce-like-btn'>Dislike {{explanation.dislikes}}</button>
+      </div>
+    </span>
+    <span class='ce-expl'>
+      {{explanation.explanation}}
+    </span>
+    <span class='ce-expl-author-cnt'>{{explanation.author}}</span>
+  </div:t>
 </div>

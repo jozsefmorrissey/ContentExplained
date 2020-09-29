@@ -1,3 +1,21 @@
+
+function buildLookupHtml() {
+  UI.innerHtml($t({
+    MERRIAM_WEB_SUG_CNT_ID,
+    list: [{
+      imageSrc: 'http://localhost:3000/images/icons/logo.png',
+      cntId: CONTEXT_EXPLANATION_CNT_ID,
+      active: true,
+    },{
+      imageSrc: 'http://localhost:3000/images/icons/Merriam-Webster.png',
+      cntId: MERRIAM_WEB_DEF_CNT_ID
+    },{
+      imageSrc: 'http://localhost:3000/images/icons/wikapedia.png',
+      cntId: WIKI_CNT_ID
+    }]
+  }, 'lookup'));
+}
+
 function disableAll(elem) {
     const childs = elem.closest('.ce-tab-ctn').children;
     const lis = childs[0].children;
@@ -8,6 +26,7 @@ function disableAll(elem) {
 }
 
 function updateDisplayFunc(div) {
+  console.log('lookup');
   return function (event) {
     const elem = event.target.closest('.ce-tab-list-item');
     disableAll(elem);
@@ -33,4 +52,10 @@ function initTabs() {
     }
 }
 
-window.addEventListener('load', initTabs);
+buildLookupHtml();
+if (document.readyState === 'complete') {
+  initTabs();
+} else {
+  window.addEventListener('load', initTabs);
+}
+console.log('lookup');

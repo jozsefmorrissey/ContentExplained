@@ -1,0 +1,10 @@
+.ce-popup {
+  border: 1px solid;
+  border-radius: 5pt;
+  padding: 10px;
+  box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;
+}
+
+.ce-popup-shadow {
+
+}

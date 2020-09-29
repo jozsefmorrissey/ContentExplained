@@ -1,12 +1,20 @@
 .ce-tab-ctn {
   text-align: center;
+  display: inline-flex;
+  width: 100%;
 }
+
+.ce-lookup-cnt {
+  width: 100%;
+}
+
 .ce-tab-list{
-  display: flex;
-    list-style-type: none;
-    width: max-content;
-    margin: auto;
-    padding: 0;
+  display: block;
+  list-style-type: none;
+  width: max-content;
+  margin: auto;
+  padding: 0;
+  margin: 0;
 }
 
 .ce-tab-list > li {
@@ -25,41 +33,38 @@
     box-shadow: 0 0 0 black;
   }
 
-  .ce-tab-ctn > div {
-    display: none;
-  }
+.ce-tab-ctn > div {
+  display: none;
+}
 
 .ce-expl-card {
+  width: 90%;
   position: relative;
-    border: solid;
-    border-width: 1px;
-    border-radius: 10px;
-    margin: 5px 20px;
-    border-color: grey;
-    padding: 5px;
-    box-shadow: 1px 1px 1px grey;
-  }
-
-.ce-expl-card > .key-auth {
-
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  margin: 5px 20px;
+  border-color: grey;
+  padding: 5px;
+  box-shadow: 1px 1px 1px grey;
 }
-.ce-expl-card > .key-auth > .key {
-    font-size: x-large;
-    font-weight: bolder;
-  }
-.ce-expl-card > .key-auth > .auth {
-    font-size: small;
-    color: grey;
-  }
 
-.ce-expl-card > .expl {
+.ce-expl-raiting-column {
+  background-color: blue;
+}
 
+.ce-expl-author-cnt {
+    background-color: grey;
+}
+
+.ce-expl {
+  background-color: red;
 }
 
 .ce-expl-card > .tags {
-    font-size: small;
-    color: grey;
-  }
+  font-size: small;
+  color: grey;
+}
 
   .ce-wiki-frame {
      width: -webkit-fill-available;
@@ -98,5 +103,19 @@
 }
 
 .lookup-img {
-  height: 40pt;
+  width: 40pt;
+}
+
+#merriam-webster-submission-cnt > span {
+    font-size: 12pt;
+    padding: 0pt 5pt;
+    border-style: ridge;
+    border-radius: 10pt;
+    margin: 2pt;
+    margin-top: 10pt;
+}
+
+#merriam-webster-submission-cnt {
+  margin: 2pt;
+  text-align: center;
 }

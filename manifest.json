@@ -27,14 +27,14 @@
       "matches": ["*://*/*"],
       "js": ["./src/$t.js",
             "./bin/$templates.js",
-            "./src/lookup.js",
             "./src/explanations.js",
             "./json/test-words.js",
             "./src/hover-resource.js",
             "./src/short-cut-container.js",
             "./src/meriam-webster.js",
             "./src/request.js",
-            "./src/contentExplained.js"],
+            "./src/contentExplained.js",
+            "./src/lookup.js"],
       "css": ["./css/hover-resource.css",
               "./css/lookup.css"]
     }

@@ -1,12 +1,11 @@
 const UI_ID = 'ce-ui';
-const MERRIAM_WEB_CNT_ID = 'merriam-webster-container-id';
+const MERRIAM_WEB_DEF_CNT_ID = 'merriam-webster-def-cnt';
+const MERRIAM_WEB_SUG_CNT_ID = 'merriam-webster-submission-cnt';
+const CONTEXT_EXPLANATION_CNT_ID = 'content-explanation-cnt';
+const WIKI_CNT_ID = 'wikapedia-cnt'
 let CONTEXT_EXPLAINED;
 
 let explanations = new Explanations();
-
-function greeting(msg) {
-  console.log(msg);
-}
 
 let definitions = {
   if: "conditional",
@@ -53,42 +52,6 @@ function findWord(word) {
       .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
 }
 
-function buildInnerHtml(word) {
-  function build(defList) {
-    if (UI) {
-      let defHtml = ''
-      for (let index = 0; index < defList.length; index += 1) {
-        defHtml += `<p><a href='#'>Add: </a>${defList[index].words}</p>`;
-      }
-      UI.innerHtml($t({
-        list: [{
-          title: '<img class="lookup-img" src="http://localhost:3000/images/icons/logo.png">',
-          content: '<h1>one</h1>',
-          active: true
-        },{
-          title: '<img class="lookup-img" src="http://localhost:3000/images/icons/Merriam-Webster.png">',
-          content: `<div id='${MERRIAM_WEB_CNT_ID}'></div>`,
-          active: false
-        },{
-          title: '<img class="lookup-img" src="http://localhost:3000/images/icons/wikapedia.png">',
-          content: '<h1>3</h1>',
-          active: false
-        },{
-          title: '4',
-          content: '<h1>4</h1>',
-          active: false
-        }]
-      }, 'lookup'));
-      initTabs();
-      // UI.innerHtml(`<h4>${word}</h4>
-      //   ${defHtml}
-      //   <button>Write your own</button>`);
-      }
-      UI.show();
-  }
-  return build;
-}
-
 function buildUi(props) {
   CONTEXT_EXPLAINED = props;
   if (props.enabled) {
@@ -110,31 +73,48 @@ function buildUi(props) {
 }
 
 function setDictionary(merriamWebObj) {
-  document.getElementById(MERRIAM_WEB_CNT_ID).innerHTML = merriamWebObj.html;
+  document.getElementById(MERRIAM_WEB_DEF_CNT_ID).innerHTML = merriamWebObj.defHtml || '';
+  document.getElementById(MERRIAM_WEB_SUG_CNT_ID).innerHTML = merriamWebObj.suggestionHtml || '';
 }
 
-function onHighlight() {
+function setExplanation(explanations) {
+  const scope = {};
+  tagObj = {}
+  explanations.forEach(function (expl) {
+    expl.tags.forEach(function (tag) {
+      tagObj[tag] = true;
+    });
+  });
+  scope.allTags = Object.keys(tagObj);
+  scope.words = explanations[0].words;
+  scope.explanations = explanations;
+  console.log(explanations)
+  console.log(scope);
+  document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML = $t(scope, 'explanation');
+}
+
+function onHighlight(e) {
     const selection = window.getSelection().toString()
     // Google Doc selection.
     // document.querySelector('.kix-selection-overlay')
     if (selection) {
       const trimmed = selection.trim().toLowerCase();
       if (trimmed) {
-        explanations.get(trimmed, buildInnerHtml(trimmed));
+        explanations.get(trimmed, setExplanation);
         new MerriamWebster(trimmed, setDictionary);
       }
+      UI.show();
+      e.stopPropagation();
     }
 }
 
 document.onmouseup = onHighlight;
 const UI = new ShortCutCointainer(UI_ID, ['c', 'e'], '<h1>Hello ContentExplained</h1>');
-
 function print(val) {
   if (val.enabled && val.enabled !== CONTEXT_EXPLAINED.enabled) {
     window.location.reload()
   }
-  console.log('val: ' + JSON.stringify(val));
 }
 
-chrome.storage.onChanged.addListener(print);
+// chrome.storage.onChanged.addListener(print);
 chrome.storage.local.get(['enabled'], buildUi);
