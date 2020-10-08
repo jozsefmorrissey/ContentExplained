@@ -1,7 +1,8 @@
-
+let lookupTemplate;
 function buildLookupHtml() {
-  UI.innerHtml($t({
+  UI.innerHtml(lookupTemplate.render({
     MERRIAM_WEB_SUG_CNT_ID,
+    cssUrl: chrome.runtime.getURL('css/lookup.css'),
     list: [{
       imageSrc: 'http://localhost:3000/images/icons/logo.png',
       cntId: CONTEXT_EXPLANATION_CNT_ID,
@@ -13,7 +14,7 @@ function buildLookupHtml() {
       imageSrc: 'http://localhost:3000/images/icons/wikapedia.png',
       cntId: WIKI_CNT_ID
     }]
-  }, 'lookup'));
+  }));
 }
 
 function disableAll(elem) {
@@ -36,9 +37,11 @@ function updateDisplayFunc(div) {
 }
 
 function initTabs() {
+  lookupTemplate = new $t('lookup');
+  buildLookupHtml();
     const tabCtns = document.getElementsByClassName('ce-tab-ctn');
     for (let index = 0; index < tabCtns.length; index += 1) {
-        const tabCtn = tabCtns[index];
+      const tabCtn = tabCtns[index];
       const childs = tabCtn.children;
       const lis = childs[0].children;
         for (let lIndex = 0; lIndex < lis.length; lIndex += 1) {
@@ -52,10 +55,4 @@ function initTabs() {
     }
 }
 
-buildLookupHtml();
-if (document.readyState === 'complete') {
-  initTabs();
-} else {
-  window.addEventListener('load', initTabs);
-}
-console.log('lookup');
+afterLoad.push(initTabs);

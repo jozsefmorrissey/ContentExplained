@@ -1,4 +1,4 @@
-var SHORT_CUT_CONTAINERS = [];
+var SHORT_CUT_CONTAINERS;
 
 function ShortCutCointainer(id, keys, html, config) {
   var SPACER_ID = 'ssc-html-spacer';
@@ -211,6 +211,7 @@ function ShortCutCointainer(id, keys, html, config) {
   onLoad();
   retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
                 show, hide, isOpen };
+  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
   SHORT_CUT_CONTAINERS.push(retObject);
   window.onmouseup = hide;
   return retObject;
@@ -243,8 +244,4 @@ function onLoad() {
   }
 }
 
-if (document.readyState === 'complete') {
-  setTimeout(onLoad, 1000);
-} else {
-  window.addEventListener('load', onLoad);
-}
+afterLoad.push(onLoad);

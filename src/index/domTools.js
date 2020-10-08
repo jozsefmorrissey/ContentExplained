@@ -1,4 +1,4 @@
-function lookUp(selector, node) {
+function up(selector, node) {
     if (node.matches(selector)) {
         return node;
     } else {
@@ -7,7 +7,7 @@ function lookUp(selector, node) {
 }
 
 
-function lookDown(selector, node) {
+function down(selector, node) {
     function recurse (currNode, distance) {
       if (currNode.matches(selector)) {
         return { node: currNode, distance };

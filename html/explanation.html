@@ -1,4 +1,4 @@
-<div>
+<div>change
   <span:t repeat='tag in allTags'>
     <label>{{tag}}</label>
     <input type='checkbox' value='{{tag}}'>
@@ -9,16 +9,22 @@
   </div>
   <div:t class='ce-expl-card' repeat='explanation in explanations'>
     <span class='ce-expl-rating-column'>
-      <div class='like-ctn'>
-        <button class='ce-like-btn'>Like {{explanation.likes}}</button>
-      </div>
-      <div class='like-ctn'>
-        <button class='ce-like-btn'>Dislike {{explanation.dislikes}}</button>
+      <div class='ce-expl-rating-cnt'>
+        <div class='like-ctn'>
+          <button class='ce-expl-voteup-button'>Like<br>{{explanation.likes}}</button>
+        </div>
+        <div class='like-ctn'>
+          <button class='ce-expl-votedown-button'>Dislike<br>{{explanation.dislikes}}</button>
+        </div>
       </div>
     </span>
     <span class='ce-expl'>
       {{explanation.explanation}}
     </span>
-    <span class='ce-expl-author-cnt'>{{explanation.author}}</span>
+    <span class='ce-expl-author-cnt'>
+      <div class='ce-expl-author'>
+        {{explanation.author}}
+      </div>
+    </span>
   </div:t>
 </div>

@@ -11,7 +11,7 @@
   },
 
   "options_ui": {
-    "page": "./html/text-to-html.html",
+    "page": "./text-to-html.html",
     "open_in_tab": true
   },
 
@@ -25,23 +25,14 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["./src/$t.js",
-            "./bin/$templates.js",
-            "./src/explanations.js",
-            "./json/test-words.js",
-            "./src/hover-resource.js",
-            "./src/short-cut-container.js",
-            "./src/meriam-webster.js",
-            "./src/request.js",
-            "./src/contentExplained.js",
-            "./src/lookup.js"],
+      "js": ["./index.js"],
       "css": ["./css/hover-resource.css",
               "./css/lookup.css"]
     }
   ],
 
   "background": {
-    "scripts": ["./src/background.js"]
+    "scripts": ["./src/manual/background.js"]
   },
 
   "permissions": [

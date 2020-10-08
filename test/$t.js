@@ -1,5 +1,5 @@
 const testing = require('testing');
-const $t = require('../src/$t.js').$t;
+const $t = require('../src/index/$t.js').$t;
 
 const Formatter = {
   html: function () {return '^'},
@@ -52,19 +52,19 @@ const testData = [{
   exp: 'index in 0..43-',
   type: 'rangeExpFormatError',
   typeError: 'invalidRangeExpression'
-},{
-  scope: [],
-  template: '<ul>{{$t({egg, shell, funct}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')}}',
-  built: '`<ul>` + ($t({egg: get(`egg`), shell: get(`shell`), funct: get(`funct`)}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')) + ``',
-  numberOfBlocks: 1,
-  throwsError: true,
-  exp: 'index in start..10',
-  type: 'rangeExp',
-  typeError: 'undefindVariable'
+// },{
+//   scope: [],
+//   template: '<ul>{{new $t({egg, shell, funct}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')}}',
+//   built: '`<ul>` + ($t({egg: get(`egg`), shell: get(`shell`), funct: get(`funct`)}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')) + ``',
+//   numberOfBlocks: 1,
+//   throwsError: true,
+//   exp: 'index in start..10',
+//   type: 'rangeExp',
+//   typeError: 'undefindVariable'
 },{
   scope: ['j', 'o', 'e', 'y'],
   template: '<p>{{}}</p>',
-  built: '`<p>` + (scope) + `</p>`',
+  built: '`<p>` + (get(\'scope\')) + `</p>`',
   compiled: '<p>j</p><p>o</p><p>e</p><p>y</p>',
   numberOfBlocks: 1,
   type: 'defaultArray',
@@ -106,7 +106,7 @@ const testData = [{
 },{
   scope: {},
   template: '<div>{{}}<p>{{alpha + \'do you get(`want`) get(`to`) get(`popsicle`) a popsicle\'}}</p></div>',
-  built: '`<div>` + (scope) + `<p>` + (get(`alpha`) + \'do you get(`want`) get(`to`) get(`popsicle`) a popsicle\') + `</p></div>`',
+  built: '`<div>` + (get(\'scope\')) + `<p>` + (get(`alpha`) + \'do you get(`want`) get(`to`) get(`popsicle`) a popsicle\') + `</p></div>`',
   numberOfBlocks: 2,
   throwsError: true,
   exp: 'key,: value in object',
@@ -141,19 +141,54 @@ const repeatTemplate = `<!DOCTYPE html>
   </body>
 </html>`;
 
-function mainTest(callback) {
+function typeTest(callback) {
   for (let index = 0; index < testData.length; index += 1) {
-    console.log(`Running case ${index + 1}`);
+    console.log(`Running type case ${index + 1}`);
     const tdElem = testData[index];
-    const template = $t(undefined, tdElem.template, tdElem.exp);
-    const type = template.type();
+    const template = new $t(tdElem.template);//.compiled(undefined, tdElem.exp);
+    const type = template.type(tdElem.scope, tdElem.exp);
     testing.assertEquals(type, tdElem.type, callback);
-    const blocks = template.isolateBlocks();
+    testing.success(`Type case ${index + 1} successfull`);
+  }
+  testing.success(callback);
+}
+
+
+function isolateBlocksTest(callback) {
+  for (let index = 0; index < testData.length; index += 1) {
+    console.log(`Running isolate block case ${index + 1}`);
+    const tdElem = testData[index];
+    const template = new $t(tdElem.template);//.compiled(undefined, tdElem.exp);
+
+    const blocks = template.isolateBlocks(tdElem.template);
     testing.assertEquals(blocks.length, tdElem.numberOfBlocks, callback);
-    const built = template.build();
+
+    testing.success(`Isolate block case ${index + 1} successfull`);
+  }
+  testing.success(callback);
+}
+
+function compileTest(callback) {
+  for (let index = 0; index < testData.length; index += 1) {
+    console.log(`Running compile case ${index + 1}`);
+    const tdElem = testData[index];
+    const template = new $t(tdElem.template);//.compiled(undefined, tdElem.exp);
+
+    const built = template.compiled();
     testing.assertEquals(built, tdElem.built, callback);
+
+    testing.success(`Compile case ${index + 1} successfull`);
+  }
+  testing.success(callback);
+}
+
+function renderTest(callback) {
+  for (let index = 0; index < testData.length; index += 1) {
+    console.log(`Running render case ${index + 1}`);
+    const tdElem = testData[index];
+    const template = new $t(tdElem.template);//.compiled(undefined, tdElem.exp);
     try {
-      const compiled = $t(tdElem.scope, tdElem.template, tdElem.exp);
+      const compiled = new $t(tdElem.template).render(tdElem.scope, tdElem.exp);
       testing.assertEquals(compiled, tdElem.compiled, callback);
       if (tdElem.throwsError) {
         testing.fail(`Error not detected`, callback);
@@ -164,47 +199,35 @@ function mainTest(callback) {
         console.log(e);
       }
     }
-    testing.success(`Case ${index + 1} successfull`);
+    testing.success(`Render case ${index + 1} successfull`);
   }
   testing.success(callback);
 }
 
-const repeatReg = /<(\$t)( ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\1[^>]*>|<\/\1>)).)*<\/)\1>/;
-const repeatReplace = '{{$t(scope, `<div$2$6div>`, `$5`)}}';
-let string = repeatTemplate.replace(/\s{2,}/g, ' ');
-function parseTest(callback) {
-  // prefix:2 exlpression:5 suffix:6
-  while (match = string.match(repeatReg)) {
-    let template = `<div${match[2] + match[6]}div>`.replace(/\\'/g, '\\\\\\\'').replace(/([^\\])'/g, '$1\\\'');
-    string = string.replace(match[0], `{{$t(scope, '${template}', '${match[5]}')}}`);
+function peopleTest(callback) {
+  class Person {
+    constructor(firstName, lastName, children) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.children = children || [];
+    }
   }
-  console.log(string);
+  const julia = new Person('julia', 'smith', []);
+  const justin = new Person('justin', 'smith', []);
+  const jake = new Person('jake', 'smith', [julia]);
+
+  const people = [
+    new Person('jhon', 'smith', [jake, justin]),
+    new Person('judy', 'smith', [jake, justin]),
+    julia, justin, jake
+  ]
+
+  const greetings = ['hello', 'hola'];
+
+  const html = new $t(repeatTemplate).render({people, title: 'The Smiths', greetings});
+  const answer = `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>The Smiths</title> </head> <body> <!-- object --> <div > Name: jhon smith <!-- array --> <div class='red' > <br><br> Child: jake smith <br><br> <div > Grand Children From jake: </div> <div >julia smith</div> </div><div class='red' > <br><br> Child: justin smith <br><br> <div hidden> Grand Children From justin: </div>  </div> <div >'20'</div><div >'19'</div><div >'18'</div><div >'17'</div><div >'16'</div> <br><br><br><br> </div><div > Name: judy smith <!-- array --> <div class='red' > <br><br> Child: jake smith <br><br> <div > Grand Children From jake: </div> <div >julia smith</div> </div><div class='red' > <br><br> Child: justin smith <br><br> <div hidden> Grand Children From justin: </div>  </div> <div >'20'</div><div >'19'</div><div >'18'</div><div >'17'</div><div >'16'</div> <br><br><br><br> </div><div > Name: julia smith <!-- array -->  <div >'20'</div><div >'19'</div><div >'18'</div><div >'17'</div><div >'16'</div> <br><br><br><br> </div><div > Name: justin smith <!-- array -->  <div >'20'</div><div >'19'</div><div >'18'</div><div >'17'</div><div >'16'</div> <br><br><br><br> </div><div > Name: jake smith <!-- array --> <div class='red' > <br><br> Child: julia smith <br><br> <div hidden> Grand Children From julia: </div>  </div> <div >'20'</div><div >'19'</div><div >'18'</div><div >'17'</div><div >'16'</div> <br><br><br><br> </div> <div >hello</div><div >hola</div> </body> </html>`;
+  testing.assertEquals(html, answer);
+  testing.success(callback);
 }
 
-// testing.run([mainTest]);
-// testing.run([parseTest]);
-
-class Person {
-  constructor(firstName, lastName, children) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.children = children || [];
-  }
-}
-const julia = new Person('julia', 'smith', []);
-const justin = new Person('justin', 'smith', []);
-const jake = new Person('jake', 'smith', [julia]);
-
-const people = [
-  new Person('jhon', 'smith', [jake, justin]),
-  new Person('judy', 'smith', [jake, justin]),
-  julia, justin, jake
-]
-
-const greetings = ['hello', 'hola'];
-
-console.log("final\n\n\n",$t({people, title: 'The Smiths', greetings}, repeatTemplate))
-// console.log("final\n\n\n",$t(undefined, repeatTemplate))
-// console.log($t.templates);
-
-// console.log("final\n\n\n",$t({greeting: 'Hello World!'}, 'helloWorld'))
+testing.run([typeTest, isolateBlocksTest, compileTest, renderTest, peopleTest]);

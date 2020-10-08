@@ -1,8 +1,9 @@
 const apiKey = 'f4ab4d93-c3ef-4af2-9d83-27b946471849';
 
-
 class MerriamWebster extends Object {
   constructor(selection, success, failure) {
+    const meriamTemplate = new $t('webster/webster');
+    const meriamSugTemplate = new $t('webster/webster-suggestions');
     super();
     const instance = {};
 
@@ -10,10 +11,10 @@ class MerriamWebster extends Object {
       const elem = data[0];
       if (elem.meta && elem.meta.stems) {
         instance.data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);;
-        instance.defHtml = $t({data: instance.data, key: selection}, 'websterWebster');
+        instance.defHtml = meriamTemplate.render({data: instance.data, key: selection});
       } else {
         instance.data = data;
-        instance.suggestionHtml = $t(data, 'websterWebsterSuggestions');
+        instance.suggestionHtml = meriamSugTemplate.render(data);
       }
       if ((typeof success) === 'function') success(instance);
     }

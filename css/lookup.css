@@ -39,26 +39,62 @@
 
 .ce-expl-card {
   width: 90%;
+  display: flex;
   position: relative;
   border: solid;
+  text-align: left;
   border-width: 1px;
   border-radius: 10px;
   margin: 5px 20px;
   border-color: grey;
-  padding: 5px;
   box-shadow: 1px 1px 1px grey;
 }
 
-.ce-expl-raiting-column {
-  background-color: blue;
+.ce-expl-rating-column {
+  position: relative;
+  width: 50pt;
+  min-height: 70pt;
+  float: left;
+  padding: 2pt;
+  border-right: ridge;
+  border-color: black;
+  border-width: 1pt;
+}
+
+.ce-expl-rating-cnt {
+  transform: translateY(-50%);
+  position: absolute;
+  top: 50%;
+}
+
+.ce-expl-voteup-button {
+  border-radius: 30pt 30pt 2pt 2pt;
+  font-weight: bold;
+  width: -webkit-fill-available;
+  background-color: #76ff76;
+  border-color: green;
+}
+
+.ce-expl-votedown-button {
+  border-radius: 2pt 2pt 30pt 30pt;
+  font-weight: bold;
+  width: -webkit-fill-available;
+  background-color: #ff6565;
+  border-color: red;
 }
 
 .ce-expl-author-cnt {
-    background-color: grey;
+  float: right;
+  padding: 2pt;
+  border-left: ridge;
+  border-color: black;
+  border-width: 1pt;
 }
 
 .ce-expl {
-  background-color: red;
+  padding: 2pt;
+  width: inherit;
+  overflow-wrap: break-word;
 }
 
 .ce-expl-card > .tags {
