@@ -126,10 +126,11 @@
     background-color: white;
 }
 
+.ce-key-cnt {
+  display: inline-flex;
+}
+
 .ce-add-btn {
-    position: absolute;
-    top: 0;
-    right: 5px;
     padding: 0 8px;
     font-weight: bolder;
     font-size: x-large;
@@ -142,16 +143,43 @@
   width: 40pt;
 }
 
-#merriam-webster-submission-cnt > span {
-    font-size: 12pt;
-    padding: 0pt 5pt;
-    border-style: ridge;
-    border-radius: 10pt;
-    margin: 2pt;
-    margin-top: 10pt;
+.ce-merriam-expl-card {
+  width: 90%;
+  position: relative;
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  margin: auto;
+  border-color: grey;
+  box-shadow: 1px 1px 1px grey;
+}
+
+.ce-merriam-expl {
+  text-align: left;
+}
+
+.ce-merriam-expl-cnt {
+  width: fit-content;
+  margin: auto;
+}
+
+.ce-margin {
+  margin: 3pt;
+}
+
+.ce-linear-tab {
+  font-size: 12pt;
+  padding: 0pt 5pt;
+  border-style: ridge;
+  border-radius: 10pt;
+  margin: 1pt 1pt;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 #merriam-webster-submission-cnt {
   margin: 2pt;
   text-align: center;
+  display: flex;
+  overflow: scroll;
 }

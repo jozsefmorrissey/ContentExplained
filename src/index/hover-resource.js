@@ -23,7 +23,7 @@ class HoverResources {
       }
     }
 
-    function onHover(event, kill) {
+    function onHover(event) {
       const elem = event.target;
       if (elem.tagName.toLowerCase() === tag && texts[elem.id][0].text) {
         holdOpen = true;
@@ -35,9 +35,6 @@ class HoverResources {
         holdOpen = false;
         box.style.display = 'none';
         killAt = -1;
-      } else {
-        holdOpen = false;
-        setTimeout(kill, 1000);
       }
     }
 

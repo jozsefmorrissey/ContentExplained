@@ -11,7 +11,7 @@
   },
 
   "options_ui": {
-    "page": "./text-to-html.html",
+    "page": "./html/icon-menu/links/text-to-html.html",
     "open_in_tab": true
   },
 
@@ -19,7 +19,7 @@
     "browser_style": false,
     "default_icon": "./icons/logo.png",
     "default_title": "Content Explianed",
-    "default_popup": "./html/controls.html"
+    "default_popup": "./html/icon-menu/controls.html"
   },
 
   "content_scripts": [

@@ -1,0 +1,21 @@
+<div>
+  <div>
+    <span:t repeat='tag in allTags'>
+      <label>{{tag}}</label>
+      <input type='checkbox' value='{{tag}}'>
+    </span:t>
+  </div>
+  <div class='ce-key-cnt'>
+    <h2 class='ce-key'>{{words}}</h2>
+    <button class='ce-btn ce-add-btn'>+</button>
+  </div>
+  <div class="ce-add-cnt">
+    <div:t repeat='explanation in 0..1'
+            $t-id='popup-cnt/explanation'></div:t>
+    <textarea id='{{ADD_EDITOR_ID}}' rows="8" cols="80"></textarea>
+  </div>
+  <div>
+    <div:t repeat='explanation in explanations'
+            $t-id='popup-cnt/explanation'></div:t>
+  </div>
+</div>

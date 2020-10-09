@@ -1,3 +1,4 @@
+
 let CONTEXT_EXPLAINED;
 
 function search() {
@@ -10,20 +11,6 @@ function search() {
   };
 
   let word;
-
-  function search(word) {
-    return [
-      'definition 1',
-      'definition 2',
-      'definition 3',
-      'definition 4',
-      'definition 5',
-      'definition 6',
-      'definition 7',
-      'definition 8',
-      'definition 9'
-    ];
-  }
 
   function addDefinition(definition) {
     definitions[word] = definition;
@@ -69,9 +56,21 @@ function search() {
     }
   }
 
+  function openDictionary(word) {
+    return function() {
+      lookup(word);
+      CE.showTab(1);
+    }
+  }
+
   function setDictionary(merriamWebObj) {
+    const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
     document.getElementById(MERRIAM_WEB_DEF_CNT_ID).innerHTML = merriamWebObj.defHtml || '';
-    document.getElementById(MERRIAM_WEB_SUG_CNT_ID).innerHTML = merriamWebObj.suggestionHtml || '';
+    sugCnt.innerHTML = merriamWebObj.suggestionHtml || '';
+    const spans = sugCnt.querySelectorAll('span');
+    for (let index = 0; index < spans.length; index += 1) {
+      spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+    }
   }
 
   function setExplanation(explanations) {
@@ -85,9 +84,46 @@ function search() {
     scope.allTags = Object.keys(tagObj);
     scope.words = explanations[0].words;
     scope.explanations = explanations;
+    scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
     console.log(explanations)
     console.log(scope);
-    document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML = new $t('explanation').render(scope);
+    document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML =
+        new $t('popup-cnt/tab-contents/explanation-cnt').render(scope);
+    new AddInterface();
+  }
+
+  function setAddition(request) {
+    const scope = {};
+    tagObj = {}
+    scope.words = request.responseURL.replace(/.*\/(.*)/, '$1');
+    scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
+    document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML =
+        new $t('popup-cnt/tab-contents/explanation-cnt').render(scope);
+    new AddInterface().toggleDisplay(true);
+  }
+
+  const historyTemplate = new $t('popup-cnt/linear-tab');
+  let history = [];
+  function setHistory(word) {
+    history = history.filter((value) => value !== word);
+    const sugCnt = document.getElementById(HISTORY_CNT_ID);
+    sugCnt.innerHTML = historyTemplate.render(history.reverse());
+    const spans = sugCnt.querySelectorAll('span');
+    for (let index = 0; index < spans.length; index += 1) {
+      spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+    }
+    history.reverse();
+    history.push(word);
+  }
+
+  function lookup(word) {
+    setHistory(word);
+    const trimmed = word.trim().toLowerCase();
+    if (trimmed) {
+      explanations.get(trimmed, setExplanation, setAddition);
+      new MerriamWebster(trimmed, setDictionary);
+    }
+    UI.show();
   }
 
   function onHighlight(e) {
@@ -95,12 +131,7 @@ function search() {
     // Google Doc selection.
     // document.querySelector('.kix-selection-overlay')
     if (selection) {
-      const trimmed = selection.trim().toLowerCase();
-      if (trimmed) {
-        explanations.get(trimmed, setExplanation);
-        new MerriamWebster(trimmed, setDictionary);
-      }
-      UI.show();
+      lookup(selection);
       e.stopPropagation();
     }
   }
@@ -112,7 +143,7 @@ function search() {
   }
 
   chrome.storage.local.get(['enabled'], buildUi);
-  return search;
+  CE.lookup = lookup;
 }
 
 afterLoad.push(search);

@@ -1,8 +1,9 @@
 const fs = require('fs');
 const shell = require('shelljs');
-const $t = require('./src/index/$t.js').$t;
-const RegArr = require('./src/index/reg-arr.js').RegArr;
-console.log(RegArr);
+
+shell.exec('cat ./src/index/ExprDef.js ./src/index/\\$t.js > ./bin/builder.js')
+
+const $t = require('./bin/builder.js').$t;
 const multiRunBuffer = 2000;
 const fileDumpLoc = './bin/$templates.js';
 
@@ -64,6 +65,7 @@ class Watcher {
     }
 
     this.add = function (fileOdir) {
+      fileOdir = fileOdir.trim().replace(/^(.*?)\/*$/, '$1');
       isFile[fileOdir] = shell.exec(`[ -f '${fileOdir}' ] && echo true`, {silent: true}).stdout
       runAllFiles(fileOdir);
       watch(fileOdir);
@@ -74,21 +76,35 @@ class Watcher {
 }
 
 const jsFiles = {};
+let position = 0;
 class JsFile {
   constructor(filename, contents) {
+    console.log(filename, position);
     this.filename = filename;
     this.contents = contents;
+    this.position = position++;
     jsFiles[this.filename] = this;
+    console.log('position: ', position);
+    this.updateContents = function (cont) {
+      this.contents = cont;
+    }
   }
 }
 function dummy() {};
 function jsBundler(filename, contents) {
-  new JsFile(filename, contents);
+  if (jsFiles[filename]) {
+    jsFiles[filename].updateContents(contents);
+  } else {
+    new JsFile(filename, contents);
+  }
   let bundle = 'let CE = function () {\nconst afterLoad = []\n';
-  Object.values(jsFiles).forEach((item, i) => {
+  Object.values(jsFiles).sort(function (jsF1, jsF2) {
+    return jsF1.position - jsF2.position;
+  }
+    ).forEach((item, i) => {
     bundle += item.contents;
   });
-  bundle += '\nafterLoad.forEach((item) => {item();});\n}\nCE = CE()';
+  bundle += '\nreturn {afterLoad};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});';
   fs.writeFile('./index.js', bundle, dummy);
 }
 

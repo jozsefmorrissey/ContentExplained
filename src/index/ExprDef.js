@@ -39,7 +39,11 @@ class ExprDef {
       return routes;
     }
 
-    this.always = function (exprDef) {alwaysPossible.push(exprDef);};
+    this.always = function () {
+      for (let index = 0; index < arguments.length; index += 1) {
+        alwaysPossible.push(arguments[index]);
+      }
+    };
     this.getAlways = function (exprDef) {return alwaysPossible;};
 
     this.allRoutes = function () {
@@ -155,6 +159,7 @@ class ExprDef {
       } else {
         throw new Error('Opening or closing type not supported. Needs to be a RegExp or a string');
       }
+      needleLength += options.tailOffset ? options.tailOffset : 0;
       let changes = '';
       if (start === undefined && starting && (needleLength || needle === null)) {
         string = str;
@@ -205,7 +210,7 @@ class ExprDef {
       Object.values(currStage).map(
         function (val) {if (val._meta) expressions.push(val._meta.expr);}
       )
-      return expressions.concat(alwaysPossible);
+      return alwaysPossible.concat(expressions);
     };
   }
 }
@@ -278,21 +283,32 @@ function parse(exprDef, str) {
 
   let loopCount = 0;
   index = open(exprDef, index);
-  while (loopCount < 500 && topOfStack() !== undefined) {
+  progress = [-3, -2, -1];
+  while (topOfStack() !== undefined) {
     const tos = topOfStack();
+    if (progress[0] === index) {
+      throw new Error(`ExprDef stopped making progress`);
+    }
     let stackIds = '';
     let options = '';
     stack.map(function (value) {stackIds+=value.getName() + ','});
     tos.next().map(function (value) {options+=value.getName() + ','})
+    // console.log(stackIds)
+    // console.log(options)
     index = checkArray(tos, tos.next());
     if (tos.closed()) {
       stack.pop();
     }
     loopCount++;
   }
+  // if (index < str.length) {
+  //   throw new Error("String not fully read");
+  // }
   return modified;
 }
 
 
-ExprDef.parse = parse
-exports.ExprDef = ExprDef;
+ExprDef.parse = parse;
+try {
+  exports.ExprDef = ExprDef;
+} catch (e) {}

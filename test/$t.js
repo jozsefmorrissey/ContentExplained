@@ -1,5 +1,5 @@
 const testing = require('testing');
-const $t = require('../src/index/$t.js').$t;
+const $t = require('../bin/builder.js').$t;
 
 const Formatter = {
   html: function () {return '^'},
@@ -11,7 +11,7 @@ const testData = [{
   scope: {htmlCreator: function() {return 'hello';}},
   template: '<div>{{htmlCreator()}}</div>',
   exp: 'index in 0..1',
-  built: '`<div>` + (get(`htmlCreator`)()) + `</div>`',
+  built: '`<div>` + (get("htmlCreator")()) + `</div>`',
   compiled: '<div>hello</div>',
   type: 'rangeExp',
   numberOfBlocks: 1,
@@ -19,7 +19,7 @@ const testData = [{
 },{
   scope: {start: 4, end: 15},
   template: '{{jindex}}',
-  built: '`` + (get(`jindex`)) + ``',
+  built: '`` + (get("jindex")) + ``',
   compiled: '4567891011121314',
   exp: 'jindex in start..end',
   type: 'rangeExp',
@@ -28,7 +28,7 @@ const testData = [{
 },{
   scope: {start: '0', end:  '-12', Formatter},
   template: '<div>{{Formatter.html()}}</div>',
-  built: '`<div>` + (get(`Formatter.html`)()) + `</div>`',
+  built: '`<div>` + (get("Formatter.html")()) + `</div>`',
   compiled: '<div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div>',
   numberOfBlocks: 1,
   exp: 'index in start..end',
@@ -37,7 +37,7 @@ const testData = [{
 },{
   scope: {end: 15, Formatter},
   template: '<div>{{Formatter.css(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})}}</div>',
-  built: '`<div>` + (get(`Formatter.css`)(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})) + `</div>`',
+  built: '`<div>` + (get("Formatter.css")(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})) + `</div>`',
   compiled: '<div>1true5</div><div>1true5</div>',
   numberOfBlocks: 1,
   exp: 'index in 13..end',
@@ -46,7 +46,7 @@ const testData = [{
 },{
   scope: {start: 4, end: 15},
   template: '<div>{{new Formatter.htmlFormatter(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')}}</div>',
-  built: '`<div>` + (new get(`Formatter.htmlFormatter`)(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')) + `</div>`',
+  built: '`<div>` + (new get("Formatter.htmlFormatter")(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')) + `</div>`',
   throwsError: true,
   numberOfBlocks: 1,
   exp: 'index in 0..43-',
@@ -55,7 +55,7 @@ const testData = [{
 // },{
 //   scope: [],
 //   template: '<ul>{{new $t({egg, shell, funct}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')}}',
-//   built: '`<ul>` + ($t({egg: get(`egg`), shell: get(`shell`), funct: get(`funct`)}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')) + ``',
+//   built: '`<ul>` + ($t({egg: get("egg"), shell: get("shell"), funct: get("funct")}, \'<li>{{egg}}, {{shell}}, {{(typeof funct) === "function"}}\')) + ``',
 //   numberOfBlocks: 1,
 //   throwsError: true,
 //   exp: 'index in start..10',
@@ -72,7 +72,7 @@ const testData = [{
 },{
   scope: [5,7,3,6],
   template: '<div>{{elem}}</div>',
-  built: '`<div>` + (get(`elem`)) + `</div>`',
+  built: '`<div>` + (get("elem")) + `</div>`',
   compiled: '<div>5</div><div>7</div><div>3</div><div>6</div>',
   numberOfBlocks: 1,
   exp: 'elem',
@@ -90,7 +90,7 @@ const testData = [{
 },{
   scope: {Formatter},
   template: '<div>{{Formatter.html(hello, obj.world, {party, on, dust: settles}, skittles, pizza)}}</div>',
-  built: '`<div>` + (get(`Formatter.html`)(get(`hello`), get(`obj.world`), {party: get(`party`), on: get(`on`), dust: get(`settles`)}, get(`skittles`), get(`pizza`))) + `</div>`',
+  built: '`<div>` + (get("Formatter.html")(get("hello"), get("obj.world"), {party: get("party"), on: get("on"), dust: get("settles")}, get("skittles"), get("pizza"))) + `</div>`',
   compiled: '<div>^</div>',
   numberOfBlocks: 1,
   type: 'defaultObject',
@@ -98,15 +98,15 @@ const testData = [{
 },{
   scope: {object: {key1: 'value1', key2: 'value2', key3: 'value3'}},
   template: '<div>{{(this || that) && somthingElse}}</div>',
-  built: '`<div>` + ((get(`this`) || get(`that`)) && get(`somthingElse`)) + `</div>`',
+  built: '`<div>` + ((get("this") || get("that")) && get("somthingElse")) + `</div>`',
   numberOfBlocks: 1,
   exp: 'key, value in object',
   type: 'itOverObject',
   typeError: 'iterateOverObject'
 },{
   scope: {},
-  template: '<div>{{}}<p>{{alpha + \'do you get(`want`) get(`to`) get(`popsicle`) a popsicle\'}}</p></div>',
-  built: '`<div>` + (get(\'scope\')) + `<p>` + (get(`alpha`) + \'do you get(`want`) get(`to`) get(`popsicle`) a popsicle\') + `</p></div>`',
+  template: '<div>{{}}<p>{{alpha + \'do you get("want") get("to") get("popsicle") a popsicle\'}}</p></div>',
+  built: '`<div>` + (get(\'scope\')) + `<p>` + (get("alpha") + \'do you get("want") get("to") get("popsicle") a popsicle\') + `</p></div>`',
   numberOfBlocks: 2,
   throwsError: true,
   exp: 'key,: value in object',

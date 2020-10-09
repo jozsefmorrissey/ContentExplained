@@ -8,7 +8,7 @@ Request = {
               success(data);
             }
           } else if (failure) {
-            failure(oXHR.status, oXHR.statusText);
+            failure(this);
           }
         }
       }
