@@ -36,171 +36,6 @@ class CustomEvent {
     }
   }
 }
-Request = {
-    onStateChange: function (success, failure) {
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            var data = JSON.parse(this.responseText);
-            if (success) {
-              success(data);
-            }
-          } else if (failure) {
-            failure(this);
-          }
-        }
-      }
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send();
-      return xhr;
-    },
-
-    post: function (url, body, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(JSON.stringify(body));
-      return xhr;
-    }
-}
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-
-const apiKey = 'f4ab4d93-c3ef-4af2-9d83-27b946471849';
-
-class MerriamWebster extends Object {
-  constructor(selection, success, failure) {
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    const meriamSugTemplate = new $t('popup-cnt/linear-tab');
-    super();
-    const instance = {};
-
-    instance.success = function (data) {
-      const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
-        instance.data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);;
-        instance.defHtml = meriamTemplate.render({data: instance.data, key: selection});
-      } else {
-        const noSpace = [];
-        instance.data = data;
-        instance.suggestionHtml = meriamSugTemplate.render(data);
-      }
-      if ((typeof success) === 'function') success(instance);
-    }
-
-    instance.failure = function () {
-      if ((typeof failure) === 'function') failure(instance);
-      console.error('Call to Meriam Webster failed');
-    }
-
-    if ((typeof selection) === 'string') {
-      const url = `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${selection}?key=${apiKey}`;
-      Request.get(url, instance.success, instance.failure);
-    }
-  }
-
-}
 
 class $t {
 	constructor(template, id) {
@@ -422,12 +257,6 @@ class $t {
 		}
 
 		function evaluate(get) {
-			try {
-				chrome.tabs.executeScript({
-					code: 'console.log('+ $t.functions +');'
-				});
-			} catch (e) {}
-			console.log('eval: ', $t.templates[id]);
 			if ($t.functions[id]) {
 				return $t.functions[id](get);
 			} else {
@@ -619,6 +448,62 @@ $t.dumpTemplates = function () {
 try{
 	exports.$t = $t;
 } catch (e) {}
+class User {
+  constructor() {
+    let user = undefined;
+
+    function successfullAdd(user) {
+      user = data;
+      const secret = user.secret;
+      delete user.secret;
+      chrome.storage.local.set({ secret, user });
+      USER_ADD_CALL_SUCCESS.trigger();
+    }
+
+    function loginSuccess(data) {
+      user = data;
+      props.set('loggedIn', true, true);
+    }
+
+    function loginFailure() {
+      props.set('loggedIn', false, true);
+      console.error('Failed to login');
+    }
+
+    function login(props) {
+      const username = props[username];
+      const secret = props[secret];
+      if (username && secret) {
+        const url = `${URL_USER_LOGIN}${username}/${secret}`;
+        Request.get(url, loginSuccess, loginFailure);
+      }
+    }
+
+    function failedAdd(err) {
+      USER_ADD_CALL_FAILURE.trigger(err);
+    }
+
+
+    this.add = function (username) {
+      const url = `${URL_USER_ADD}${username}`;
+      Request.get(url, successfullAdd, failedAdd);
+    }
+
+    this.get = function (username, success, failure) {
+      const url = `${URL_USER_GET}${username}`
+      Request.get(url, success, failure);
+    }
+
+    this.sync = function (username, code) {
+      const url = `${URL_USER_SYNC}${username}/${code}`
+      Request.get(url, success, failure);
+    }
+
+    if (user === undefined) {
+      chrome.storage.local.get(['username', 'secret'], login);
+    }
+  }
+}
 
 
 class HoverResources {
@@ -785,6 +670,386 @@ class HoverResources {
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', exitHover);
     this.wrapText = wrapText;
+  }
+}
+var SHORT_CUT_CONTAINERS;
+
+function ShortCutCointainer(id, keys, html, config) {
+  var SPACER_ID = 'ssc-html-spacer';
+  var OPEN = 'ssc-open';
+  var CLOSE = 'ssc-close';
+  var currentKeys = {};
+  var size = 200;
+  var container;
+  var resizeBar;
+
+  function resizeBarId() {
+    return 'ssc-resizeBar-' + id;
+  }
+  function htmlContainerId() {
+    return 'ssc-html-container-' + id;
+  }
+
+  function getResizeBarCss() {
+    return 'border-top-style: double;' +
+      'border-top-width: 10px;' +
+      'cursor: row-resize;' +
+      'border-color: rgb(22, 44, 166);';
+  }
+
+  function createResizeBar() {
+    resizeBar = document.createElement('div');
+    resizeBar.id = resizeBarId();
+    resizeBar.style.cssText = getResizeBarCss();
+    return resizeBar;
+  }
+
+  function createContainer(html) {
+    container = document.createElement('div');
+    container.id = htmlContainerId();
+    container.innerHTML = html;
+    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
+    return container;
+  }
+
+  function padBottom(height) {
+    var spacer = document.getElementById(SPACER_ID);
+    if (spacer) {
+      spacer.remove();
+    }
+    spacer = document.createElement('div');
+    spacer.id = SPACER_ID;
+    spacer.style = 'height: ' + height;
+    document.querySelector('body').append(spacer);
+  }
+
+  var noHeight = 'display: block;' +
+    'width: 100%;' +
+    'margin: 0;' +
+    'padding: 0;' +
+    'position: fixed;' +
+    'width: 100%;' +
+    'bottom: 0;' +
+    'z-index: 10000;' +
+    'left: 0;' +
+    'background-color: white;';
+
+
+    function resize(event) {
+      if (shouldResize > 0) {
+        var minHeight = 80;
+        var maxHeight = window.innerHeight - 50;
+        let dx = window.innerHeight - event.clientY;
+        dx = dx < minHeight ? minHeight : dx;
+        dx = dx > maxHeight ? maxHeight : dx;
+        var height = dx + 'px;';
+        container.style.cssText = 'overflow: scroll; max-height: ' + height;
+        ssc.style.cssText  = noHeight + 'height: ' + height;
+        padBottom(height);
+      }
+      // return event.target.height;
+    }
+
+  var shouldResize = 0;
+  function mouseup(e) {
+    shouldResize = 0;
+    e.stopPropagation();
+  }
+
+  function mousedown(e) {
+    var barPos = resizeBar.getBoundingClientRect().top;
+    let mPos = e.clientY;
+    if (barPos > mPos - 10 && barPos < mPos + 10) {
+      shouldResize++;
+    }
+  }
+
+  function show() {
+    var ce = document.getElementById(id);
+    ce.style.display = 'block';
+    var height = ce.style.height;
+    padBottom(height);
+    triggerEvent(OPEN, id);
+    isShowing = true;
+  }
+
+  function hide() {
+    var ce = document.getElementById(id);
+    ce.style.display = 'none';
+    padBottom('0px;');
+    triggerEvent(CLOSE, id);
+    isShowing = false;
+  }
+
+  let isShowing = false;
+  function toggleContentEditor() {
+        if (isShowing) {
+          hide();
+        } else {
+          show();
+        }
+  }
+
+  function isOpen() {
+    return isShowing;
+  }
+
+  function keyDownListener(e) {
+      currentKeys[e.key] = true;
+      if (shouldToggle()){
+        toggleContentEditor();
+      }
+  }
+
+  function shouldToggle() {
+    for (let index = 0; index < keys.length; index += 1) {
+      if (!currentKeys[keys[index]]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function onOpen(id) {
+    console.log(id);
+  }
+
+
+  function triggerEvent(name, id) {
+    var event; // The custom event that will be created
+
+    if (document.createEvent) {
+      event = document.createEvent("HTMLEvents");
+      event.initEvent(name, true, true);
+    } else {
+      event = document.createEventObject();
+      event.eventType = name;
+    }
+
+    event.eventName = name;
+
+    if (document.createEvent) {
+      ssc.dispatchEvent(event);
+    } else {
+      ssc.fireEvent("on" + event.eventType, event);
+    }
+  }
+
+  function onLoad() {
+    document.body.append(ssc);
+  }
+
+  function keyUpListener(e) {
+    delete currentKeys[e.key];
+  }
+
+  function innerHtml(html) {
+    container.innerHTML = html;
+  }
+
+  function mouseupOnRandDescendents(e, count) {
+    var mouseupEvent = new MouseEvent('mouseup', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+
+    function click(elem) {
+      return function () {
+        console.log('triggering mouseup event: ', elem)
+        elem.dispatchEvent(mouseupEvent);
+      };
+    }
+    const decendents = e.querySelectorAll('*');
+    for (let c = 0; c < count; c += 1) {
+       const index = Math.floor(Math.random() * decendents.length + 1);
+       if (index === decendents.length) {
+         setTimeout(click(e), 5 * c);
+       } else {
+         setTimeout(click(decendents[index]), 5 * c);
+       }
+    }
+  }
+
+  var ssc = document.createElement('div');
+  ssc.id = id;
+  ssc.append(createResizeBar());
+  ssc.append(createContainer(html));
+  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
+  if (!config || config.open !== true) {
+    ssc.style.display = 'none';
+  }
+  ssc.addEventListener(OPEN, onOpen);
+  ssc.addEventListener('mouseup', mouseup);
+  ssc.addEventListener('mousedown', mousedown);
+  onLoad();
+  retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
+                show, hide, isOpen };
+  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
+  SHORT_CUT_CONTAINERS.push(retObject);
+  window.onmouseup = hide;
+  return retObject;
+}
+
+function callOnAll(func, e) {
+  for (let index = 0; index < SHORT_CUT_CONTAINERS.length; index += 1) {
+    SHORT_CUT_CONTAINERS[index][func](e);
+  }
+}
+
+function resize(e) { callOnAll('resize', e); }
+function keyUpListener(e) { callOnAll('keyUpListener', e); }
+function keyDownListener(e) { callOnAll('keyDownListener', e); }
+
+window.onmousemove = resize;
+window.onkeyup = keyUpListener;
+window.onkeydown = keyDownListener;
+
+function onLoad() {
+  let containers = document.querySelectorAll('short-cut-container');
+  for (let index = 0; index < containers.length; index += 1) {
+    var elem = containers[index];
+    if (elem.getAttribute('keys'))
+    var keys = elem.getAttribute('keys').split(',')
+    id = elem.id || 'ssc-' + index;
+    html = elem.innerHTML;
+    ShortCutCointainer(id, keys, html);
+    elem.parentNode.removeChild(elem);
+  }
+}
+
+afterLoad.push(onLoad);
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
+
+class AddInterface {
+  constructor () {
+    const instance = this;
+    instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+    instance.inputCnt = document.querySelector('.ce-add-cnt');
+    instance.toggleButton = document.querySelector('.ce-add-btn');
+    let updatePending = false;
+    function updateDisplay (value) {
+      value = value === undefined ? '' : value;
+      value = value.replace(/\n/g, '<br>')
+                    .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                        '<a target=\'blank\' href="$2">$1</a>');
+      instance.inputElem.parentNode.querySelector('.ce-expl').innerHTML = value;
+    }
+    instance.updateDisplay = updateDisplay;
+
+    function onChange(e) {
+      updateDisplay(e.target.value);
+    }
+
+    let show;
+    function toggleDisplay(value) {
+      show = (typeof value) === "boolean" ? value : !show;
+      if (show) {
+        instance.inputCnt.style.display = 'block';
+      } else {
+        instance.inputCnt.style.display = 'none';
+      }
+    }
+
+    toggleDisplay(false);
+    this.toggleDisplay = toggleDisplay;
+    instance.inputElem.addEventListener('keyup', onChange);
+    instance.toggleButton.addEventListener('click', toggleDisplay);
   }
 }
 
@@ -1101,6 +1366,88 @@ ExprDef.parse = parse;
 try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
+function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
+    }
+}
+
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
+      }
+    }
+    return recurse(node, 0).node;
+}
+
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
+
+  return recurse(node, 0).node;
+}
+class Explanations {
+  constructor(list) {
+    this.list = list ? list : [];
+    this.add = function (expl) {
+      this.list.push(expl);
+    }
+
+    this.get = function (words, success, failure) {
+      const url = `http://localhost:3000/content-explained/${words}`
+      Request.get(url, success, failure);
+    }
+
+    this.like = function (words, index, success, failure) {
+      const currUrl = window.location.href;
+      const callUrl = `https://localhost:3001/content-explained/like/${words}/${index}?url=${currUrl}`;
+      Request.get(callUrl, successfullOpinion, failedOpinion);
+    }
+    this.dislike = function (words, index, success, failure) {
+      const currUrl = window.location.href;
+      const callUrl = `https://localhost:3001/content-explained/like/${words}/${index}?url=${currUrl}`;
+      Request.get(callUrl, successfullOpinion, failedOpinion);
+    }
+  }
+}
+
+console.log("HERE!!!!! ", chrome.runtime.getURL('./html/text-to-html.html'));
 
 let CONTEXT_EXPLAINED;
 
@@ -1245,357 +1592,12 @@ function search() {
     }
   }
 
-  chrome.storage.local.get(['enabled'], buildUi);
+  props.onUpdate('enabled', buildUi);
+  // chrome.storage.local.get(['enabled'], buildUi);
   CE.lookup = lookup;
 }
 
 afterLoad.push(search);
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
-}
-class User {
-  constructor() {
-    this.user = undefined;
-
-    function successfullAdd(user) {
-      user = data;
-      const secret = user.secret;
-      delete user.secret;
-      chrome.storage.local.set({ secret, user });
-      USER_ADD_CALL_SUCCESS.trigger();
-    }
-
-    function failedAdd(err) {
-      USER_ADD_CALL_FAILURE.trigger(err);
-    }
-
-
-    this.add = function (username) {
-      const url = `https://localhost:3001/content-explained/add/user/${username}`;
-      Request.get(url, successfullAdd, failedAdd);
-    }
-
-    this.get = function (words, success, failure) {
-      const url = `https://localhost:3001/content-explained/${words}`
-      Request.get(url, success, failure);
-    }
-
-    function successfullOpinion (data) {
-      const likeElems = document.getElementsByClassName('ce-likes');
-      likeElems.forEach((item, i) => {
-        item.innerHTML = data.likes;
-      });
-      const dislikeElems = document.getElementsByClassName('ce-dislikes');
-      dislikeElems.forEach((item, i) => {
-        item.innerHTML = data.likes;
-      });
-    }
-
-    this.loggedIn = function () {
-      return user !== undefined;
-    }
-  }
-}
-var SHORT_CUT_CONTAINERS;
-
-function ShortCutCointainer(id, keys, html, config) {
-  var SPACER_ID = 'ssc-html-spacer';
-  var OPEN = 'ssc-open';
-  var CLOSE = 'ssc-close';
-  var currentKeys = {};
-  var size = 200;
-  var container;
-  var resizeBar;
-
-  function resizeBarId() {
-    return 'ssc-resizeBar-' + id;
-  }
-  function htmlContainerId() {
-    return 'ssc-html-container-' + id;
-  }
-
-  function getResizeBarCss() {
-    return 'border-top-style: double;' +
-      'border-top-width: 10px;' +
-      'cursor: row-resize;' +
-      'border-color: rgb(22, 44, 166);';
-  }
-
-  function createResizeBar() {
-    resizeBar = document.createElement('div');
-    resizeBar.id = resizeBarId();
-    resizeBar.style.cssText = getResizeBarCss();
-    return resizeBar;
-  }
-
-  function createContainer(html) {
-    container = document.createElement('div');
-    container.id = htmlContainerId();
-    container.innerHTML = html;
-    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
-    return container;
-  }
-
-  function padBottom(height) {
-    var spacer = document.getElementById(SPACER_ID);
-    if (spacer) {
-      spacer.remove();
-    }
-    spacer = document.createElement('div');
-    spacer.id = SPACER_ID;
-    spacer.style = 'height: ' + height;
-    document.querySelector('body').append(spacer);
-  }
-
-  var noHeight = 'display: block;' +
-    'width: 100%;' +
-    'margin: 0;' +
-    'padding: 0;' +
-    'position: fixed;' +
-    'width: 100%;' +
-    'bottom: 0;' +
-    'z-index: 10000;' +
-    'left: 0;' +
-    'background-color: white;';
-
-
-    function resize(event) {
-      if (shouldResize > 0) {
-        var minHeight = 80;
-        var maxHeight = window.innerHeight - 50;
-        let dx = window.innerHeight - event.clientY;
-        dx = dx < minHeight ? minHeight : dx;
-        dx = dx > maxHeight ? maxHeight : dx;
-        var height = dx + 'px;';
-        container.style.cssText = 'overflow: scroll; max-height: ' + height;
-        ssc.style.cssText  = noHeight + 'height: ' + height;
-        padBottom(height);
-      }
-      // return event.target.height;
-    }
-
-  var shouldResize = 0;
-  function mouseup(e) {
-    shouldResize = 0;
-    e.stopPropagation();
-  }
-
-  function mousedown(e) {
-    var barPos = resizeBar.getBoundingClientRect().top;
-    let mPos = e.clientY;
-    if (barPos > mPos - 10 && barPos < mPos + 10) {
-      shouldResize++;
-    }
-  }
-
-  function show() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'block';
-    var height = ce.style.height;
-    padBottom(height);
-    triggerEvent(OPEN, id);
-    isShowing = true;
-  }
-
-  function hide() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'none';
-    padBottom('0px;');
-    triggerEvent(CLOSE, id);
-    isShowing = false;
-  }
-
-  let isShowing = false;
-  function toggleContentEditor() {
-        if (isShowing) {
-          hide();
-        } else {
-          show();
-        }
-  }
-
-  function isOpen() {
-    return isShowing;
-  }
-
-  function keyDownListener(e) {
-      currentKeys[e.key] = true;
-      if (shouldToggle()){
-        toggleContentEditor();
-      }
-  }
-
-  function shouldToggle() {
-    for (let index = 0; index < keys.length; index += 1) {
-      if (!currentKeys[keys[index]]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function onOpen(id) {
-    console.log(id);
-  }
-
-
-  function triggerEvent(name, id) {
-    var event; // The custom event that will be created
-
-    if (document.createEvent) {
-      event = document.createEvent("HTMLEvents");
-      event.initEvent(name, true, true);
-    } else {
-      event = document.createEventObject();
-      event.eventType = name;
-    }
-
-    event.eventName = name;
-
-    if (document.createEvent) {
-      ssc.dispatchEvent(event);
-    } else {
-      ssc.fireEvent("on" + event.eventType, event);
-    }
-  }
-
-  function onLoad() {
-    document.body.append(ssc);
-  }
-
-  function keyUpListener(e) {
-    delete currentKeys[e.key];
-  }
-
-  function innerHtml(html) {
-    container.innerHTML = html;
-  }
-
-  function mouseupOnRandDescendents(e, count) {
-    var mouseupEvent = new MouseEvent('mouseup', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true
-    });
-
-    function click(elem) {
-      return function () {
-        console.log('triggering mouseup event: ', elem)
-        elem.dispatchEvent(mouseupEvent);
-      };
-    }
-    const decendents = e.querySelectorAll('*');
-    for (let c = 0; c < count; c += 1) {
-       const index = Math.floor(Math.random() * decendents.length + 1);
-       if (index === decendents.length) {
-         setTimeout(click(e), 5 * c);
-       } else {
-         setTimeout(click(decendents[index]), 5 * c);
-       }
-    }
-  }
-
-  var ssc = document.createElement('div');
-  ssc.id = id;
-  ssc.append(createResizeBar());
-  ssc.append(createContainer(html));
-  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
-  if (!config || config.open !== true) {
-    ssc.style.display = 'none';
-  }
-  ssc.addEventListener(OPEN, onOpen);
-  ssc.addEventListener('mouseup', mouseup);
-  ssc.addEventListener('mousedown', mousedown);
-  onLoad();
-  retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
-                show, hide, isOpen };
-  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
-  SHORT_CUT_CONTAINERS.push(retObject);
-  window.onmouseup = hide;
-  return retObject;
-}
-
-function callOnAll(func, e) {
-  for (let index = 0; index < SHORT_CUT_CONTAINERS.length; index += 1) {
-    SHORT_CUT_CONTAINERS[index][func](e);
-  }
-}
-
-function resize(e) { callOnAll('resize', e); }
-function keyUpListener(e) { callOnAll('keyUpListener', e); }
-function keyDownListener(e) { callOnAll('keyDownListener', e); }
-
-window.onmousemove = resize;
-window.onkeyup = keyUpListener;
-window.onkeydown = keyDownListener;
-
-function onLoad() {
-  let containers = document.querySelectorAll('short-cut-container');
-  for (let index = 0; index < containers.length; index += 1) {
-    var elem = containers[index];
-    if (elem.getAttribute('keys'))
-    var keys = elem.getAttribute('keys').split(',')
-    id = elem.id || 'ssc-' + index;
-    html = elem.innerHTML;
-    ShortCutCointainer(id, keys, html);
-    elem.parentNode.removeChild(elem);
-  }
-}
-
-afterLoad.push(onLoad);
 
 function lookup() {
   let lookupTemplate;
@@ -1610,6 +1612,9 @@ function lookup() {
   },{
     imageSrc: 'http://localhost:3000/images/icons/wikapedia.png',
     cntId: WIKI_CNT_ID
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/txt.png',
+    cntId: RAW_TEXT_CNT_ID
   }];
 
   function buildLookupHtml() {
@@ -1668,32 +1673,41 @@ function lookup() {
 }
 
 afterLoad.push(lookup);
-class Explanations {
-  constructor(list) {
-    this.list = list ? list : [];
-    this.add = function (expl) {
-      this.list.push(expl);
+
+const apiKey = 'f4ab4d93-c3ef-4af2-9d83-27b946471849';
+
+class MerriamWebster extends Object {
+  constructor(selection, success, failure) {
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamSugTemplate = new $t('popup-cnt/linear-tab');
+    super();
+    const instance = {};
+
+    instance.success = function (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        instance.data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);;
+        instance.defHtml = meriamTemplate.render({data: instance.data, key: selection});
+      } else {
+        const noSpace = [];
+        instance.data = data;
+        instance.suggestionHtml = meriamSugTemplate.render(data);
+      }
+      if ((typeof success) === 'function') success(instance);
     }
 
-    this.get = function (words, success, failure) {
-      const url = `http://localhost:3000/content-explained/${words}`
-      Request.get(url, success, failure);
+    instance.failure = function () {
+      if ((typeof failure) === 'function') failure(instance);
+      console.error('Call to Meriam Webster failed');
     }
 
-    this.like = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `https://localhost:3001/content-explained/like/${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
-    }
-    this.dislike = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `https://localhost:3001/content-explained/like/${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
+    if ((typeof selection) === 'string') {
+      const url = `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${selection}?key=${apiKey}`;
+      Request.get(url, instance.success, instance.failure);
     }
   }
-}
 
-console.log("HERE!!!!! ", chrome.runtime.getURL('./html/text-to-html.html'));
+}
 const data = {
   "this": [{
   	"likes": 0,
@@ -1840,16 +1854,102 @@ const HISTORY_CNT_ID = 'ce-history-cnt';
 const ADD_EDITOR_ID = 'ce-add-editor-id';
 const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
+const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
 
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
+
+const CE_HOST = 'https://localhost:3001';
+
+const URL_USER_LOGIN = `${host}/content-explained/user/login/`;
+const URL_USER_ADD = `${host}/content-explained/user/add/`;
+const URL_USER_GET = `${host}/content-explained/user/get/`;
+const URL_USER_SYNC = `${host}/content-explained/user/sync/`;
+
+const URL_IMAGE_LOGO = `${host}/images/icons/logo.png`;
+const URL_IMAGE_MERRIAM = `${host}/images/icons/Merriam-Webster.png`;
+const URL_IMAGE_WIKI = `${host}/images/icons/wikapedia.png`;
+const URL_IMAGE_TXT = `${host}/images/icons/txt.png`;
+Request = {
+    onStateChange: function (success, failure) {
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            var data = JSON.parse(this.responseText);
+            if (success) {
+              success(data);
+            }
+          } else if (failure) {
+            failure(this);
+          }
+        }
+      }
+    },
+
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send();
+      return xhr;
+    },
+
+    post: function (url, body, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(body));
+      return xhr;
+    }
+}
 
 $t.functions['467442134'] = function (get) {
 	return `<span > <label>` + (get("tag")) + `</label> <input type='checkbox' value='` + (get("tag")) + `'> </span>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item.hwi.hw")) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+}
+$t.functions['icon-menu/controls'] = function (get) {
+	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/index/ExprDef.js'></script> <script type="text/javascript" src='/src/index/$t.js'></script> <script type="text/javascript" src='/bin/$templates.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+}
+$t.functions['icon-menu/links/profile'] = function (get) {
+	return `<h1>Profile</h1> `
+}
+$t.functions['icon-menu/settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/settings.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-settings-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
+}
+$t.functions['icon-menu/links/login'] = function (get) {
+	return `<div> <div> <input type='text' placeholder="username"> <button type="button" onclick="register()">Register</button> </div> <div> <input type='text' placeholder="sync-key"> <button type='button' onclick="sync()">Sync</button> </div> </div> `
+}
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+}
+$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
+	return `<div> <div> ` + (new $t('<span > <label>{{tag}}</label> <input type=\'checkbox\' value=\'{{tag}}\'> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn'>+</button> </div> <div class="ce-add-cnt"> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in 0..1', get)) + ` <textarea id='` + (get("ADD_EDITOR_ID")) + `' rows="8" cols="80"></textarea> </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> `
+}
+$t.functions['-1132695726'] = function (get) {
+	return `popup-cnt/explanation`
+}
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
+	return `<div class='ce-merriam-expl-card'> <a href='https://www.merriam-webster.com/dictionary/hash' target='merriam-webster'> <h3>Merriam Webster '` + (get("key")) + `'</h3> </a> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in data', get)) + ` </div> `
+}
+$t.functions['-1925646037'] = function (get) {
+	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
+}
+$t.functions['popup-cnt/tab-contents/share'] = function (get) {
+	return `<h2>words</h2> <input type='text' placeholder='space seperated tags i.e. "science biology genetics"' id='ce-tag-input'> <trix-editor class="trix-content" id='ce-expl-input'></trix-editor> <button class='ce-btn'>Post</button> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-rating-column'> <div class='ce-expl-rating-cnt'> <div class='like-ctn'> <button class='ce-expl-voteup-button'>Like<br>` + (get("explanation.likes")) + `</button> </div> <div class='like-ctn'> <button class='ce-expl-votedown-button'>Dislike<br>` + (get("explanation.dislikes")) + `</button> </div> </div> </span> <span class='ce-expl'> ` + (get("explanation.explanation")) + ` </span> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation.author")) + ` </div> </span> </div> `
@@ -1863,83 +1963,244 @@ $t.functions['-837702886'] = function (get) {
 $t.functions['-364439612'] = function (get) {
 	return `<div class='ce-lookup-cnt' id='` + (get("elem.cntId")) + `'></div>`
 }
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </body> <script type="text/javascript" src='/index.js'></script> </html> `
 }
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
-$t.functions['popup-cnt/tab-contents/share'] = function (get) {
-	return `<h2>words</h2> <input type='text' placeholder='space seperated tags i.e. "science biology genetics"' id='ce-tag-input'> <trix-editor class="trix-content" id='ce-expl-input'></trix-editor> <button class='ce-btn'>Post</button> `
-}
-$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-expl-card'> <a href='https://www.merriam-webster.com/dictionary/hash' target='merriam-webster'> <h3>Merriam Webster '` + (get("key")) + `'</h3> </a> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in data', get)) + ` </div> `
-}
-$t.functions['-1925646037'] = function (get) {
-	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
-}
-$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div> ` + (new $t('<span > <label>{{tag}}</label> <input type=\'checkbox\' value=\'{{tag}}\'> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn'>+</button> </div> <div class="ce-add-cnt"> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in 0..1', get)) + ` <textarea id='` + (get("ADD_EDITOR_ID")) + `' rows="8" cols="80"></textarea> </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> `
-}
-$t.functions['-1132695726'] = function (get) {
-	return `popup-cnt/explanation`
-}
-$t.functions['icon-menu/controls'] = function (get) {
-	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/src/index/ExprDef.js'></script> <script type="text/javascript" src='/src/index/$t.js'></script> <script type="text/javascript" src='/bin/$templates.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
-}
-$t.functions['icon-menu/links/login'] = function (get) {
-	return `<div> <div> <input type='text' placeholder="username"> <button type="button" onclick="register()">Register</button> </div> <div> <input type='text' placeholder="sync-key"> <button type='button' onclick="sync()">Sync</button> </div> </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='text-to-html-btn'> Raw&nbsp;Text&nbsp;Tool </menuitem> <menuitem id='ce-login'> Login </menuitem> <menuitem id='ce-profile'> Profile </menuitem> <menuitem id='ce-favorite-lists'> Favorite&nbsp;Lists </menuitem> </menu> `
-}
-$t.functions['icon-menu/links/text-to-html'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <link rel="stylesheet" href="/css/text-to-html.css"> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </body> <script type="text/javascript" src='/index.js'></script> </html> `
-}
-$t.functions['icon-menu/links/favorite-links'] = function (get) {
-	return ``
-}
-$t.functions['icon-menu/links/profile'] = function (get) {
-	return ``
-}
-class AddInterface {
+class Properties {
   constructor () {
-    const instance = this;
-    instance.inputElem = document.getElementById(ADD_EDITOR_ID);
-    instance.inputCnt = document.querySelector('.ce-add-cnt');
-    instance.toggleButton = document.querySelector('.ce-add-btn');
-    let updatePending = false;
-    function updateDisplay (value) {
-      value = value === undefined ? '' : value;
-      value = value.replace(/\n/g, '<br>')
-                    .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                        '<a target=\'blank\' href="$2">$1</a>');
-      instance.inputElem.parentNode.querySelector('.ce-expl').innerHTML = value;
-    }
-    instance.updateDisplay = updateDisplay;
+    const properties = {};
+    const updateFuncs = {};
+    const interface = {};
 
-    function onChange(e) {
-      updateDisplay(e.target.value);
-    }
-
-    let show;
-    function toggleDisplay(value) {
-      show = (typeof value) === "boolean" ? value : !show;
-      if (show) {
-        instance.inputCnt.style.display = 'block';
-      } else {
-        instance.inputCnt.style.display = 'none';
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](value);
       }
     }
 
-    toggleDisplay(false);
-    this.toggleDisplay = toggleDisplay;
-    instance.inputElem.addEventListener('keyup', onChange);
-    instance.toggleButton.addEventListener('click', toggleDisplay);
+    interface.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          chrome.storage.local.set(key, value);
+        } else {
+          notify(key);
+        }
+    };
+
+    interface.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = properties[key];
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        interface.add(key, values[index]);
+      }
+    }
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (key, func) {
+      keyDefinitionCheck(key);
+      if ((typeof key) !== func) throw new Error('update function must be defined');
+      if (updateFuncs[key] === undefined) {
+        updateFuncs[key] = [];
+      }
+      updateFuncs[key].add(func);
+    }
+
+    function init() {
+      chrom.storage.local.getAll(storageUpdate);
+    }
+
+    chrome.storage.onChanged.addListener(storageUpdate);
   }
 }
 
-return {afterLoad};
+props = new Properties();
+
+function lookup() {
+  let lookupTemplate;
+
+  const list = [{
+    imageSrc: 'http://localhost:3000/images/icons/logo.png',
+    cntId: CONTEXT_EXPLANATION_CNT_ID,
+    active: true,
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/Merriam-Webster.png',
+    cntId: MERRIAM_WEB_DEF_CNT_ID
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/wikapedia.png',
+    cntId: WIKI_CNT_ID
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/txt.png',
+    cntId: RAW_TEXT_CNT_ID
+  }];
+
+  function buildLookupHtml() {
+    UI.innerHtml(lookupTemplate.render({
+      MERRIAM_WEB_SUG_CNT_ID, HISTORY_CNT_ID,
+      cssUrl: chrome.runtime.getURL('css/lookup.css'),
+      list
+    }));
+  }
+
+  function switchTo(elem, div) {
+      const childs = elem.closest('.ce-tab-ctn').children;
+      const lis = childs[0].children;
+      for (let index = 0; index < lis.length; index += 1) {
+          lis[index].className = lis[index].className.replace(/(^| )active($| )/g, ' ');
+          childs[index + 1].style.display = 'none';
+      }
+      elem.className = elem.className + ' active';
+      div.style.display = 'block';
+  }
+
+  function showTab(index) {
+    const elem = document.getElementsByClassName('ce-tab-list-item ')[index];
+    const div = document.getElementById(list[index].cntId);
+    switchTo(elem, div);
+  }
+
+  function updateDisplayFunc(div) {
+    console.log('lookup');
+    return function (event) {
+      const elem = event.target.closest('.ce-tab-list-item');
+      switchTo(elem, div);
+    }
+  }
+
+  function initTabs() {
+    lookupTemplate = new $t('popup-cnt/lookup');
+    buildLookupHtml();
+      const tabCtns = document.getElementsByClassName('ce-tab-ctn');
+      for (let index = 0; index < tabCtns.length; index += 1) {
+        const tabCtn = tabCtns[index];
+        const childs = tabCtn.children;
+        const lis = childs[0].children;
+          for (let lIndex = 0; lIndex < lis.length; lIndex += 1) {
+            const li = lis[lIndex];
+            const div = childs[lIndex + 1];
+            li.onclick = updateDisplayFunc(div);
+              if (li.className.split(' ').indexOf('active') !== -1) {
+                  div.style.display = 'block';
+              }
+          }
+      }
+      CE.showTab = showTab;
+  }
+  initTabs();
+}
+
+afterLoad.push(lookup);
+
+function lookup() {
+  let lookupTemplate;
+
+  const list = [{
+    imageSrc: 'http://localhost:3000/images/icons/logo.png',
+    cntId: CONTEXT_EXPLANATION_CNT_ID,
+    active: true,
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/Merriam-Webster.png',
+    cntId: MERRIAM_WEB_DEF_CNT_ID
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/wikapedia.png',
+    cntId: WIKI_CNT_ID
+  },{
+    imageSrc: 'http://localhost:3000/images/icons/txt.png',
+    cntId: RAW_TEXT_CNT_ID
+  }];
+
+  function buildLookupHtml() {
+    UI.innerHtml(lookupTemplate.render({
+      MERRIAM_WEB_SUG_CNT_ID, HISTORY_CNT_ID,
+      cssUrl: chrome.runtime.getURL('css/lookup.css'),
+      list
+    }));
+  }
+
+  function switchTo(elem, div) {
+      const childs = elem.closest('.ce-tab-ctn').children;
+      const lis = childs[0].children;
+      for (let index = 0; index < lis.length; index += 1) {
+          lis[index].className = lis[index].className.replace(/(^| )active($| )/g, ' ');
+          childs[index + 1].style.display = 'none';
+      }
+      elem.className = elem.className + ' active';
+      div.style.display = 'block';
+  }
+
+  function showTab(index) {
+    const elem = document.getElementsByClassName('ce-tab-list-item ')[index];
+    const div = document.getElementById(list[index].cntId);
+    switchTo(elem, div);
+  }
+
+  function updateDisplayFunc(div) {
+    console.log('lookup');
+    return function (event) {
+      const elem = event.target.closest('.ce-tab-list-item');
+      switchTo(elem, div);
+    }
+  }
+
+  function initTabs() {
+    lookupTemplate = new $t('popup-cnt/lookup');
+    buildLookupHtml();
+      const tabCtns = document.getElementsByClassName('ce-tab-ctn');
+      for (let index = 0; index < tabCtns.length; index += 1) {
+        const tabCtn = tabCtns[index];
+        const childs = tabCtn.children;
+        const lis = childs[0].children;
+          for (let lIndex = 0; lIndex < lis.length; lIndex += 1) {
+            const li = lis[lIndex];
+            const div = childs[lIndex + 1];
+            li.onclick = updateDisplayFunc(div);
+              if (li.className.split(' ').indexOf('active') !== -1) {
+                  div.style.display = 'block';
+              }
+          }
+      }
+      CE.showTab = showTab;
+  }
+  initTabs();
+}
+
+afterLoad.push(lookup);
+
+class Tab {
+  constructor(imageSrc, id, template, show) {
+    const t = new $t(template);
+    show = show || function () {return true;};
+
+    this.imageSrc = function () {return imageSrc};
+    this.id = function () {return id;}
+    this.template = function () {return template;}
+    this.show = show;
+    this.update = function (scope) {
+      document.getElementById(id).innerHtml = t.render(scope);
+    }
+    Tab.tabs.push(this);
+  }
+}
+
+Tab.tabs = [];
+
+return {afterLoad, $t};
 }
 CE = CE()
 CE.afterLoad.forEach((item) => {item();});

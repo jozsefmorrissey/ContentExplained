@@ -219,12 +219,6 @@ class $t {
 		}
 
 		function evaluate(get) {
-			try {
-				chrome.tabs.executeScript({
-					code: 'console.log('+ $t.functions +');'
-				});
-			} catch (e) {}
-			console.log('eval: ', $t.templates[id]);
 			if ($t.functions[id]) {
 				return $t.functions[id](get);
 			} else {

@@ -1,0 +1,29 @@
+
+body {
+  height: 100%;
+  position: absolute;
+  margin: 0;
+  width: 100%;
+}
+
+.ce-setting-cnt {
+  display: inline-flex;
+  height: 100%;
+  width: 100%;
+}
+#ce-setting-list {
+  list-style-type: none;
+  padding: 5pt;
+}
+
+#ce-setting-list-cnt {
+  background-color: blue;
+}
+
+.ce-setting-list-item {
+  font-weight: 600;
+  font-size: medium;
+  color: aliceblue;
+  margin: 10pt;
+  padding: 0;
+}

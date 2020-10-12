@@ -104,7 +104,7 @@ function jsBundler(filename, contents) {
     ).forEach((item, i) => {
     bundle += item.contents;
   });
-  bundle += '\nreturn {afterLoad};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});';
+  bundle += '\nreturn {afterLoad, $t};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});';
   fs.writeFile('./index.js', bundle, dummy);
 }
 

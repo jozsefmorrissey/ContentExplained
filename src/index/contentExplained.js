@@ -142,7 +142,8 @@ function search() {
     }
   }
 
-  chrome.storage.local.get(['enabled'], buildUi);
+  props.onUpdate('enabled', buildUi);
+  // chrome.storage.local.get(['enabled'], buildUi);
   CE.lookup = lookup;
 }
 

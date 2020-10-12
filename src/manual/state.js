@@ -2,7 +2,7 @@
 function stateOnLoad() {
   let eventCount = 0;
   const TEXT_TO_HTML_NAME = 'text-to-html-page-identifier';
-  const menuTemplate = new $t('icon-menu/menu');
+  const menuTemplate = new CE.$t('icon-menu/menu');
   document.addEventListener('DOMContentLoaded', function () {
     function toggleEnable(onOff) {
       return function () {
@@ -21,20 +21,10 @@ function stateOnLoad() {
       });
     }
 
-    function displayTextToHtmlPage(event) {
-      function openTextToHtmlPage(props) {
-        const textToHtmlTab = window.open(chrome.runtime.getURL("/html/icon-menu/links/text-to-html.html"), TEXT_TO_HTML_NAME);
-        chrome.storage.local.set({ textToHtmlTab });
+    function openPage(page) {
+      return function() {
+        window.open(chrome.runtime.getURL(page), TEXT_TO_HTML_NAME);
       }
-      chrome.tabs.executeScript({
-        code: 'console.log("hello state", "' + event + '");'
-        // code: 'console.log("hello state", JSON.parse(' + JSON.stringify(event) + '));'
-      });
-      chrome.tabs.executeScript({
-        code: 'console.log('+eventCount+++');'
-      });
-
-      chrome.storage.local.get(['textToHtmlTab'], openTextToHtmlPage);
     }
 
     function displayMenu(props) {
@@ -46,7 +36,7 @@ function stateOnLoad() {
       });
       document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
       document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
-      document.getElementById('text-to-html-btn').addEventListener('click', displayTextToHtmlPage);
+      document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html"));
     }
 
     chrome.storage.local.get(['enabled'], displayMenu);

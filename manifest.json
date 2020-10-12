@@ -11,7 +11,7 @@
   },
 
   "options_ui": {
-    "page": "./html/icon-menu/links/text-to-html.html",
+    "page": "/html/icon-menu/links/raw-text-tool.html",
     "open_in_tab": true
   },
 
