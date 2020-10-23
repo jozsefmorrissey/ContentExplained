@@ -1,11 +1,13 @@
 const fs = require('fs');
 const shell = require('shelljs');
 
-shell.exec('cat ./src/index/ExprDef.js ./src/index/\\$t.js > ./bin/builder.js')
+shell.exec('cat ./src/index/ExprDef.js ./src/index/services/\\$t.js > ./bin/builder.js')
 
 const $t = require('./bin/builder.js').$t;
+const CssFile = require('./src/index/css.js').CssFile;
 const multiRunBuffer = 2000;
 const fileDumpLoc = './bin/$templates.js';
+const cssDumpLoc = './bin/$css.js';
 
 class Watcher {
   constructor(func) {
@@ -77,17 +79,49 @@ class Watcher {
 
 const jsFiles = {};
 let position = 0;
+const refRegex = /(class|function)\s{1}([\$a-zA-Z][a-zA-Z0-9\$]*)/g;
 class JsFile {
   constructor(filename, contents) {
-    console.log(filename, position);
+    const instance = this;
     this.filename = filename;
     this.contents = contents;
+    this.children = [];
+    const firstLine = contents.split('\n')[0];
+    const after = firstLine.replace(/^\s*\/\/\s*(.*)\s*$/, '$1');
+    console.log('after: ', after);
     this.position = position++;
-    jsFiles[this.filename] = this;
-    console.log('position: ', position);
+    if (after && after !== firstLine) {
+      setTimeout(function () {
+        if (!jsFiles[after]) {
+          jsFiles[instance.filename] = instance;
+          console.log(JSON.stringify(Object.keys(jsFiles), null, 2));
+          console.error('Invalid file indicated: ' + after);
+        } else {
+          jsFiles[after].addChild(instance);
+        }
+      }, 1000);
+    } else {
+      jsFiles[this.filename] = this;
+    }
+    // console.log('position: ', position);
     this.updateContents = function (cont) {
       this.contents = cont;
+      const newRefs = {};
+
+      const matches = contents.match(refRegex);
+      if (matches) {
+        matches.map(function (elem) {
+          const name = elem.replace(refRegex, '$2');
+          newRefs[name] = true;
+      });
     }
+      this.references = newRefs;
+    }
+    this.addChild = function (jsFile) {
+      this.children.push(jsFile);
+    }
+    this.updateContents(contents);
+    // console.log(this)
   }
 }
 function dummy() {};
@@ -98,11 +132,16 @@ function jsBundler(filename, contents) {
     new JsFile(filename, contents);
   }
   let bundle = 'let CE = function () {\nconst afterLoad = []\n';
+
   Object.values(jsFiles).sort(function (jsF1, jsF2) {
-    return jsF1.position - jsF2.position;
-  }
-    ).forEach((item, i) => {
+    return jsF1.filename.replace(/[^\/]/g, '').length -
+          jsF2.filename.replace(/[^\/]/g, '').length;
+  }).forEach((item, i) => {
     bundle += item.contents;
+    item.children.forEach((child, i) => {
+      console.log('child name', child.filename)
+      bundle += child.contents;
+    });
   });
   bundle += '\nreturn {afterLoad, $t};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});';
   fs.writeFile('./index.js', bundle, dummy);
@@ -114,14 +153,22 @@ function compHtml(filename, contents) {
   try {
     shell.touch(fileDumpLoc);
     console.log('writing file', filename)
-    fs.writeFileSync(fileDumpLoc, $t.dumpTemplates());
+    fs.writeFileSync(fileDumpLoc, '// ./src/index/services/$t.js\n' + $t.dumpTemplates());
   } catch (e) {
     console.log(e);
   }
 }
 
+function compCss(filename, contents) {
+  if (!filename) return;
+  new CssFile(filename, contents);
+  fs.writeFileSync(cssDumpLoc, '// ./src/index/css.js\n' + CssFile.dump());
+}
+
 new Watcher(compHtml).add('./html');
-new Watcher(jsBundler).add('./src/index/')
+new Watcher(compCss).add('./css/');
+new Watcher(jsBundler).add('./constants/global.js')
+                      .add('./src/index/')
+                      .add('./bin/$css.js')
                       .add('./bin/$templates.js')
-                      .add('./json/test-words.js')
-                      .add('./constants/global.js');
+                      .add('./json/test-words.js');

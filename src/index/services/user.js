@@ -12,11 +12,11 @@ class User {
 
     function loginSuccess(data) {
       user = data;
-      props.set('loggedIn', true, true);
+      CE.properties.set('loggedIn', true, true);
     }
 
     function loginFailure() {
-      props.set('loggedIn', false, true);
+      CE.properties.set('loggedIn', false, true);
       console.error('Failed to login');
     }
 

@@ -9,18 +9,20 @@ const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
 const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
 
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-
 const CE_HOST = 'https://localhost:3001';
 
-const URL_USER_LOGIN = `${host}/content-explained/user/login/`;
-const URL_USER_ADD = `${host}/content-explained/user/add/`;
-const URL_USER_GET = `${host}/content-explained/user/get/`;
-const URL_USER_SYNC = `${host}/content-explained/user/sync/`;
+const URL_MERRIAM_REQ = `${CE_HOST}/content-explained/merriam/webster/`;
 
-const URL_IMAGE_LOGO = `${host}/images/icons/logo.png`;
-const URL_IMAGE_MERRIAM = `${host}/images/icons/Merriam-Webster.png`;
-const URL_IMAGE_WIKI = `${host}/images/icons/wikapedia.png`;
-const URL_IMAGE_TXT = `${host}/images/icons/txt.png`;
+const URL_USER_LOGIN = `${CE_HOST}/content-explained/user/login/`;
+const URL_USER_ADD = `${CE_HOST}/content-explained/user/add/`;
+const URL_USER_GET = `${CE_HOST}/content-explained/user/get/`;
+const URL_USER_SYNC = `${CE_HOST}/content-explained/user/sync/`;
+
+const URL_IMAGE_LOGO = `${CE_HOST}/images/icons/logo.png`;
+const URL_IMAGE_MERRIAM = `${CE_HOST}/images/icons/Merriam-Webster.png`;
+const URL_IMAGE_WIKI = `${CE_HOST}/images/icons/wikapedia.png`;
+const URL_IMAGE_TXT = `${CE_HOST}/images/icons/txt.png`;
+
+const URL_CE_GET = `${CE_HOST}/content-explained/`;
+const URL_CE_LIKE = `${CE_HOST}/content-explained/like/`;
+const URL_CE_DISLIKE = `${CE_HOST}/content-explained/dislike/`;

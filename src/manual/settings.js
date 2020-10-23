@@ -2,14 +2,19 @@ class Settings {
   constructor(page) {
     function update() {
       settingsCnt.innerHTML = new CE.$t(page.template()).render(page.scope());
+      page.onOpen();
+      CE.properties.set('settingsPage', page.label());
     }
+    this.onOpen = function () {CE.hide();};
     let settingsCnt = document.getElementById('ce-settings-cnt');
     let li = document.createElement('li')
     li.className = 'ce-setting-list-item';
     li.innerText = page.label();
     li.addEventListener('click', update);
     const settingsList = document.getElementById('ce-setting-list');
+    const listWidth = settingsList.clientWidth;
     settingsList.append(li);
+    settingsCnt.style = `padding-left: ${listWidth + 10}px`;
   }
 }
 
@@ -53,6 +58,10 @@ class RawTextTool extends Page {
     super();
     this.label = function () {return 'Raw Text Tool';};
     this.template = function() {return 'icon-menu/links/raw-text-tool';}
+    this.onOpen = function () {
+      CE.show();
+      CE.showTab(2);
+    }
   }
 }
 new Settings(new RawTextTool());

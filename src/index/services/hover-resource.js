@@ -2,6 +2,9 @@
 
 class HoverResources {
   constructor (wordExplanationObj, tag) {
+    let running = false;
+    const instance = this;
+    running = true;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     let count = Math.floor(Math.random() * 10000000000000000);
     tag = tag ? tag : 'hover-resource';
@@ -24,8 +27,10 @@ class HoverResources {
     }
 
     function onHover(event) {
+      if (!CE.properties.get('enabled')) return;
       const elem = event.target;
-      if (elem.tagName.toLowerCase() === tag && texts[elem.id][0].text) {
+      if (elem.tagName.toLowerCase() === tag && texts[elem.id] &&
+              texts[elem.id][0].text) {
         holdOpen = true;
         positionText(elem);
       } else if (elem.id === box.id || killAt === -1){
@@ -118,6 +123,7 @@ class HoverResources {
     let wrapList = [];
     let wrapIndex = 0;
     function wrapOne() {
+        if (!CE.properties.get('enabled')) return;
         for (let index = 0; index < 50; index += 1) {
           const wrapInfo = wrapList[wrapIndex];
           if (wrapInfo) {
@@ -127,6 +133,7 @@ class HoverResources {
         }
         setTimeout(wrapOne, 1);
     }
+    this.wrapOne = wrapOne;
 
     function getDepth(elem){
     	var depth = 0
@@ -164,5 +171,11 @@ class HoverResources {
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', exitHover);
     this.wrapText = wrapText;
+
+    function enableToggled(enabled) {
+      instance.wrapOne();
+    }
+
+    CE.properties.onUpdate('enabled', enableToggled);
   }
 }

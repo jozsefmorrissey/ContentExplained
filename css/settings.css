@@ -18,6 +18,8 @@ body {
 
 #ce-setting-list-cnt {
   background-color: blue;
+  position: fixed;
+  height: 100vh;
 }
 
 .ce-setting-list-item {

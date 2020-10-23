@@ -68,7 +68,7 @@
 }
 
 .ce-expl-voteup-button {
-  border-radius: 30pt 30pt 2pt 2pt;
+  border-radius: 30pt 30pt 2pt 2pt!important;
   font-weight: bold;
   width: -webkit-fill-available;
   background-color: #76ff76;
@@ -175,6 +175,10 @@
   margin: 1pt 1pt;
   display: inline-block;
   white-space: nowrap;
+}
+
+.ce-inline-flex {
+  display: inline-flex;
 }
 
 #merriam-webster-submission-cnt {

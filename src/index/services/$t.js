@@ -286,7 +286,6 @@ class $t {
 				default:
 					throw new Error(`Programming error defined type '${type()}' not implmented in switch`);
 			}
-			console.log('\n\n\nRendered: ', id, '\n', rendered, '\n')
 			return rendered;
 		}
 
@@ -344,6 +343,7 @@ class $t {
 		const repeatReg = /<([a-zA-Z-]*):t( ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\1:t[^>]*>|<\/\1:t>)).)*<\/)\1:t>/;
 		function formatRepeat(string) {
 			// tagname:1 prefix:2 quote:4 exlpression:5 suffix:6
+			// string = string.replace(/<([^\s^:^-^>]*)/g, '<$1-ce');
 			let match;
 			while (match = string.match(repeatReg)) {
 				let tagContents = match[2] + match[6];
@@ -363,7 +363,6 @@ class $t {
 		}
 		template = template.replace(/\s{1,}/g, ' ');
 		id = $t.functions[template] ? template : id || stringHash(template);
-		console.log('\n\n\nTemplate: ', id, '\n', template, '\n')
 		if (!$t.functions[id]) {
 			if (!$t.templates[id]) {
 				template = template.replace(/\s{2,}|\n/g, ' ');

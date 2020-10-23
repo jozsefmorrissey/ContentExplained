@@ -25,7 +25,7 @@ const keyWordProps = {opening: /(new|null|undefined|NaN|true|false)[^a-z^A-Z]/, 
 const ignoreProps = {opening: /new \$t\('.*?'\).render\(get\('scope'\), '(.*?)', get\)/};
 const commaProps = {opening: /,/};
 const colonProps = {opening: /:/};
-const multiplierProps = {opening: /([-+=*\/](=|)|===)/};
+const multiplierProps = {opening: /(===|([-+=*\/](=|)))/};
 const stringProps = {opening: /('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))/};
 const spaceProps = {opening: /\s{1}/};
 const numberProps = {opening: /[0-9]*((\.)[0-9]*|)/};
@@ -203,6 +203,10 @@ const expressions = [
   '{one: "one", two: {three: get("three"), four: +4, five: {six: ``}}}',
   '(ter ? nar : !ey)',
   '(get("ter") ? get("nar") : !get("ey"))',
+  '$index === openTab',
+  'get(\"$index\") === get(\"openTab\")',
+  "$index === openTab ? '' : 'hidden'",
+  "get(\"$index\") === get(\"openTab\") ? '' : 'hidden'",
   "child.children.length > 0 ? '' : 'hidden'",
   "get(\"child.children.length\") > 0 ? '' : 'hidden'",
   '(((((alpha + beta) - func(party, on, wayne) / arr[45 + func(sauce)] * newFUnc({shorthand, label: "value"})))))',

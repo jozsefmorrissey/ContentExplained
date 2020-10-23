@@ -1,8 +1,9 @@
 
-let CONTEXT_EXPLAINED;
 
 function search() {
-  let explanations = new Explanations();
+  const explanations = new Explanations();
+  const merriamWebster = new MerriamWebster()
+  const rawText = new RawText()
 
   let definitions = {
     if: "conditional",
@@ -35,71 +36,30 @@ function search() {
     .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
   }
 
-  function buildUi(props) {
+  let built = false;
+  function buildUi() {
+    built = true;
     document.onmouseup = onHighlight;
-    CONTEXT_EXPLAINED = props;
-    if (props.enabled) {
-      new HoverResources(data);
-      UI.id = UI_ID;
-      UI.style = `position: fixed;
-      width: 100%;
-      height: 30%;
-      top: 0px;
-      left: 0px;
-      text-align: center;
-      display: none;
-      z-index: 999;
-      background-color: whitesmoke;
-      overflow: auto;
-      border-style: outset;
-      border-width: 1pt;`;
-    }
+    new HoverResources(data);
+    UI.id = UI_ID;
+    UI.style = `position: fixed;
+                width: 100%;
+                height: 30%;
+                top: 0px;
+                left: 0px;
+                text-align: center;
+                display: none;
+                z-index: 999;
+                background-color: whitesmoke;
+                overflow: auto;
+                border-style: outset;
+                border-width: 1pt;`;
   }
 
-  function openDictionary(word) {
+  function goTo(word) {
     return function() {
       lookup(word);
-      CE.showTab(1);
     }
-  }
-
-  function setDictionary(merriamWebObj) {
-    const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-    document.getElementById(MERRIAM_WEB_DEF_CNT_ID).innerHTML = merriamWebObj.defHtml || '';
-    sugCnt.innerHTML = merriamWebObj.suggestionHtml || '';
-    const spans = sugCnt.querySelectorAll('span');
-    for (let index = 0; index < spans.length; index += 1) {
-      spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-    }
-  }
-
-  function setExplanation(explanations) {
-    const scope = {};
-    tagObj = {}
-    explanations.forEach(function (expl) {
-      expl.tags.forEach(function (tag) {
-        tagObj[tag] = true;
-      });
-    });
-    scope.allTags = Object.keys(tagObj);
-    scope.words = explanations[0].words;
-    scope.explanations = explanations;
-    scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
-    console.log(explanations)
-    console.log(scope);
-    document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML =
-        new $t('popup-cnt/tab-contents/explanation-cnt').render(scope);
-    new AddInterface();
-  }
-
-  function setAddition(request) {
-    const scope = {};
-    tagObj = {}
-    scope.words = request.responseURL.replace(/.*\/(.*)/, '$1');
-    scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
-    document.getElementById(CONTEXT_EXPLANATION_CNT_ID).innerHTML =
-        new $t('popup-cnt/tab-contents/explanation-cnt').render(scope);
-    new AddInterface().toggleDisplay(true);
   }
 
   const historyTemplate = new $t('popup-cnt/linear-tab');
@@ -110,7 +70,7 @@ function search() {
     sugCnt.innerHTML = historyTemplate.render(history.reverse());
     const spans = sugCnt.querySelectorAll('span');
     for (let index = 0; index < spans.length; index += 1) {
-      spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      spans[index].addEventListener('click', goTo(spans[index].innerText.trim().substr(0, 20)));
     }
     history.reverse();
     history.push(word);
@@ -120,8 +80,8 @@ function search() {
     setHistory(word);
     const trimmed = word.trim().toLowerCase();
     if (trimmed) {
-      explanations.get(trimmed, setExplanation, setAddition);
-      new MerriamWebster(trimmed, setDictionary);
+      explanations.get(trimmed);
+      merriamWebster.update(trimmed);
     }
     UI.show();
   }
@@ -130,21 +90,34 @@ function search() {
     const selection = window.getSelection().toString()
     // Google Doc selection.
     // document.querySelector('.kix-selection-overlay')
-    if (selection) {
+    if (CE.properties.get('enabled') && selection) {
       lookup(selection);
       e.stopPropagation();
     }
   }
 
-  function print(val) {
-    if (val.enabled && val.enabled !== CONTEXT_EXPLAINED.enabled) {
-      window.location.reload()
+  function enableToggled(enabled) {
+    if (enabled) {
+      if (!built) {
+        buildUi()
+      }
     }
   }
 
-  props.onUpdate('enabled', buildUi);
-  // chrome.storage.local.get(['enabled'], buildUi);
+  function refresh() {
+    let hoverResources = document.getElementsByTagName('hover-resource');
+    for (let index = 0; index < hoverResources.length; index += 1) {
+      hoverResources[index].outerHTML = hoverResources[index].innerText;
+    }
+
+    new HoverResources(data);
+  }
+
+  CE.properties.onUpdate('enabled', enableToggled);
   CE.lookup = lookup;
+  CE.refresh = refresh;
+  CE.show = UI.show;
+  CE.hide = UI.hide;
 }
 
 afterLoad.push(search);

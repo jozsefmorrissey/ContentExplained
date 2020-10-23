@@ -3,25 +3,27 @@ class Properties {
   constructor () {
     const properties = {};
     const updateFuncs = {};
-    const interface = {};
+    const instance = this;
 
     function notify(key) {
       const funcList = updateFuncs[key];
       for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](value);
+        funcList[index](properties[key]);
       }
     }
 
-    interface.set = function (key, value, storeIt) {
+    this.set = function (key, value, storeIt) {
         properties[key] = value;
         if (storeIt) {
-          chrome.storage.local.set(key, value);
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
         } else {
           notify(key);
         }
     };
 
-    interface.get = function (key) {
+    this.get = function (key) {
       if (arguments.length === 1) {
         return properties[key]
       }
@@ -36,7 +38,12 @@ class Properties {
       const keys = Object.keys(values);
       for (let index = 0; index < keys.length; index += 1) {
         const key = keys[index];
-        interface.add(key, values[index]);
+        const value = values[key];
+        if (value.newValue) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
       }
     }
 
@@ -48,19 +55,17 @@ class Properties {
 
     this.onUpdate = function (key, func) {
       keyDefinitionCheck(key);
-      if ((typeof key) !== func) throw new Error('update function must be defined');
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
       if (updateFuncs[key] === undefined) {
         updateFuncs[key] = [];
       }
-      updateFuncs[key].add(func);
+      updateFuncs[key].push(func);
+      func(properties[key])
     }
 
-    function init() {
-      chrom.storage.local.getAll(storageUpdate);
-    }
-
+    chrome.storage.local.get(null, storageUpdate);
     chrome.storage.onChanged.addListener(storageUpdate);
   }
 }
 
-props = new Properties();
+afterLoad.push(function () {CE.properties = new Properties();})

@@ -6,43 +6,37 @@ function stateOnLoad() {
   document.addEventListener('DOMContentLoaded', function () {
     function toggleEnable(onOff) {
       return function () {
-        chrome.storage.local.set({ enabled: onOff });
+        CE.properties.set('enabled', onOff, true);
         document.getElementById('control-ctn').innerHTML = menuTemplate.render({ enabled: onOff });
 
         document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
         document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
-
+        document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html"));
         chrome.tabs.executeScript({
-          code: 'console.log('+ eventCount++ +');'
+          code: 'console.log("here", '+ eventCount++ +');'
         });
       }
       chrome.tabs.executeScript({
-        code: 'console.log('+ eventCount++ +');'
-      });
-    }
+        code: 'console.log("here", '+ eventCount++ +');'
+      });    }
 
     function openPage(page) {
       return function() {
-        window.open(chrome.runtime.getURL(page), TEXT_TO_HTML_NAME);
+        chrome.tabs.executeScript({
+          code: 'console.log("here", '+ eventCount++ +');'
+        });
+        window.open(chrome.extension.getURL(page), TEXT_TO_HTML_NAME);
       }
     }
 
-    function displayMenu(props) {
-      document.getElementById('control-ctn').innerHTML = menuTemplate.render({ enabled: props.enabled });
-      const nblBtn = document.getElementById('enable-btn');
-      chrome.tabs.executeScript({
-        // code: 'console.log("len: " + ' + document.getElementById('text-to-html-btn') + ');'
-        code: 'console.log("len: " + "' + nblBtn + '");'
-      });
+    function displayMenu(enabled) {
+      document.getElementById('control-ctn').innerHTML = menuTemplate.render({ enabled });
       document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
       document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
-      document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html"));
     }
 
-    chrome.storage.local.get(['enabled'], displayMenu);
+    displayMenu(CE.properties.get('enabled'));
   });
-
-  chrome.storage.local.set({ state2: Math.random() });
 }
 
 stateOnLoad();
