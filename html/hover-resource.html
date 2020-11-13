@@ -1,0 +1,35 @@
+<div>
+  <div class="ce-inline">
+    <div class="">
+      <ul id='{{HOVER_SWITCH_LIST_ID}}'>
+        <li:t class='ce-hover-list{{expl.id === active.expl.id ? " active": ""}}'
+              repeat='expl in active.list'>
+          {{expl.words}}
+        </li:t>
+      </ul>
+    </div>
+    <div>
+      <div class='ce-inline ce-center'>
+        <div class='ce-center'>
+          <button id='ce-expl-voteup-btn'{{canLike ? '' : ' disabled'}}></button>
+          <br>
+          {{likes}}
+        </div>
+        <h3>{{hoveredText}}</h3>
+        <div class='ce-center'>
+          {{dislikes}}
+          <br>
+          <button id='ce-expl-votedown-btn'{{canDislike ? '' : ' disabled'}}></button>
+        </div>
+      </div>
+      <div class=''>
+        <div id='{{HOVER_DISPLAY_CNT_ID}}'>{{active.expl.content}}</div>
+      </div>
+    </div>
+  </div>
+  <div class='ce-center'>
+    <button {{loggedIn ? ' hidden' : ''}} id='{{HOVER_LOGIN_BTN_ID}}'>
+      Login
+    </button>
+  </div>
+</div>

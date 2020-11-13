@@ -44,7 +44,7 @@ class MerriamWebster {
         }
       }
 
-      function failure () {
+      function failure (error) {
         console.error('Call to Meriam Webster failed');
         hideTab = true;
         CE.updateTabVisibility();

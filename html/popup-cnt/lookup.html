@@ -1,5 +1,4 @@
 <div>
-  <link rel="stylesheet" href="{{cssUrl}}">
   <div class='ce-inline-flex' id='{{HISTORY_CNT_ID}}'></div>
   <div class='ce-inline-flex' id='{{MERRIAM_WEB_SUG_CNT_ID}}'></div>
   <div class='ce-tab-ctn'>
@@ -9,6 +8,8 @@
             <img class="lookup-img" src="{{elem.imageSrc()}}">
       </li:t>
     </ul>
-    <div:t repeat='elem in list' class='ce-lookup-cnt' id='{{elem.id()}}'></div:t>
+    <div class='ce-lookup-cnt'>
+      <div:t repeat='elem in list' class='ce-full-width' id='{{elem.id()}}'></div:t>
+    </div>
   </div>
 </div>

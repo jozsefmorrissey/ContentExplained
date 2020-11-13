@@ -1,0 +1,40 @@
+.ce-relative {
+  position: relative;
+}
+
+.ce-width-full {
+  width: 100%;
+}
+
+.ce-center {
+  text-align: center;
+  width: 100%;
+}
+
+.ce-float-right {
+  float: right;
+}
+
+.ce-no-bullet {
+  list-style: none;
+}
+
+.ce-inline {
+  display: inline-flex;
+}
+
+button {
+  background-color: blue;
+  color: white;
+  font-weight: bolder;
+  font-size: medium;
+  border-radius: 20pt;
+  padding: 4pt 10pt;
+  border-color: #7979ff;
+}
+
+input {
+  padding: 1pt 3pt;
+  border-width: 1px;
+  border-radius: 5pt;
+}

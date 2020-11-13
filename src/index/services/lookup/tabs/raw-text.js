@@ -10,8 +10,8 @@ class RawText {
     const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
             'popup-cnt/tab-contents/raw-text-input', show);
 
-    const space = new Array(4).fill('&nbsp;').join('');
-    const tabSpacing = new Array(16).fill('&nbsp;').join('');
+    const space = new Array(1).fill('&nbsp;').join('');
+    const tabSpacing = new Array(2).fill('&nbsp;').join('');
     function textToHtml(text) {
       return text.replace(/\n/g, '<br>').replace(/\s/g, space)
                   .replace(/\t/g, tabSpacing);
@@ -37,7 +37,7 @@ class RawText {
     }
 
     function settingsPageChange (settingsPage) {
-      if (settingsPage === 'Raw Text Tool') {
+      if (settingsPage === 'RawTextTool') {
         writeChanges();
       }
     }

@@ -30,7 +30,7 @@ class Properties {
       const retObj = {};
       for (let index = 0; index < arguments.length; index += 1) {
         key = arguments[index];
-        retObj[key] = properties[key];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
       }
     };
 
@@ -39,7 +39,7 @@ class Properties {
       for (let index = 0; index < keys.length; index += 1) {
         const key = keys[index];
         const value = values[key];
-        if (value.newValue) {
+        if (value && value.newValue !== undefined) {
           instance.set(key, values[key].newValue);
         } else {
           instance.set(key, value);
@@ -53,14 +53,19 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (key, func) {
-      keyDefinitionCheck(key);
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      if (updateFuncs[key] === undefined) {
-        updateFuncs[key] = [];
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
       }
-      updateFuncs[key].push(func);
-      func(properties[key])
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
     }
 
     chrome.storage.local.get(null, storageUpdate);
@@ -68,4 +73,4 @@ class Properties {
   }
 }
 
-afterLoad.push(function () {CE.properties = new Properties();})
+const properties = new Properties();

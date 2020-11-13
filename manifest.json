@@ -15,6 +15,10 @@
     "open_in_tab": true
   },
 
+  "web_accessible_resources": [
+    "/html/icon-menu/settings.html"
+  ],
+
   "browser_action": {
     "browser_style": false,
     "default_icon": "./icons/logo.png",
@@ -26,7 +30,8 @@
     {
       "matches": ["*://*/*"],
       "js": ["./index.js"],
-      "css": ["./css/hover-resource.css",
+      "css": ["./css/index.css",
+              "./css/hover-resource.css",
               "./css/lookup.css"]
     }
   ],

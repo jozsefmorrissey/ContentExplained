@@ -1,5 +1,9 @@
 const testing = require('testing');
-const $t = require('../bin/builder.js').$t;
+const shell = require('shelljs');
+const jsFile = '../bin/builder.js'
+shell.exec(`cat ../src/index/ExprDef.js ../src/index/services/\\$t.js > ${jsFile}`)
+shell.exec(`echo 'exports.$t = $t;' >> ${jsFile}`)
+const $t = require(jsFile).$t;
 
 const Formatter = {
   html: function () {return '^'},
@@ -62,14 +66,6 @@ const testData = [{
 //   type: 'rangeExp',
 //   typeError: 'undefindVariable'
 },{
-  scope: ['j', 'o', 'e', 'y'],
-  template: '<p>{{}}</p>',
-  built: '`<p>` + (get(\'scope\')) + `</p>`',
-  compiled: '<p>j</p><p>o</p><p>e</p><p>y</p>',
-  numberOfBlocks: 1,
-  type: 'defaultArray',
-  typeError: 'defaultArray'
-},{
   scope: [5,7,3,6],
   template: '<div>{{elem}}</div>',
   built: '`<div>` + (get("elem")) + `</div>`',
@@ -105,14 +101,23 @@ const testData = [{
   typeError: 'iterateOverObject'
 },{
   scope: {},
-  template: '<div>{{}}<p>{{alpha + \'do you get("want") get("to") get("popsicle") a popsicle\'}}</p></div>',
-  built: '`<div>` + (get(\'scope\')) + `<p>` + (get("alpha") + \'do you get("want") get("to") get("popsicle") a popsicle\') + `</p></div>`',
-  numberOfBlocks: 2,
+  template: '<div><p>{{alpha + \'do you get("want") get("to") get("popsicle") a popsicle\'}}</p></div>',
+  built: '`<div><p>` + (get("alpha") + \'do you get("want") get("to") get("popsicle") a popsicle\') + `</p></div>`',
+  numberOfBlocks: 1,
   throwsError: true,
   exp: 'key,: value in object',
   type: 'invalidObject',
   typeError: 'invalidObject'
+},{
+  scope: {state: 'illinois'},
+  template: '<div>{{state.substr(0, 4) === \'Login\' ? \'\' : \'hidden\'}}</div>',
+  built: '`<div>` + (get("state.substr")(0, 4) === \'Login\' ? \'\' : \'hidden\') + `</div>`',
+  compiled: '<div>hidden</div>',
+  numberOfBlocks: 1,
+  type: 'defaultObject'
 }];
+
+
 
 const repeatTemplate = `<!DOCTYPE html>
 <html lang="en" dir="ltr">

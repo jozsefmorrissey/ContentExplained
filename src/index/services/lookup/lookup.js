@@ -6,7 +6,6 @@ function lookup() {
   function buildLookupHtml() {
     UI.innerHtml(lookupTemplate.render({
       MERRIAM_WEB_SUG_CNT_ID, HISTORY_CNT_ID,
-      cssUrl: chrome.runtime.getURL('css/lookup.css'),
       list: Tab.tabs,
       openTab: 0
     }));
@@ -14,11 +13,11 @@ function lookup() {
   }
 
   function switchTo(elem, div) {
-      const childs = elem.closest('.ce-tab-ctn').children;
-      const lis = childs[0].children;
+      const lis = elem.parentElement.children;
+      const childs = elem.parentElement.parentElement.querySelector('.ce-lookup-cnt').children;
       for (let index = 0; index < lis.length; index += 1) {
           lis[index].className = lis[index].className.replace(/(^| )active($| )/g, ' ');
-          childs[index + 1].style.display = 'none';
+          childs[index].style.display = 'none';
       }
       elem.className = elem.className + ' active';
       div.style.display = 'block';

@@ -2,6 +2,12 @@
 <menu>
   <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css">
   <link rel="stylesheet" href="/css/menu.css">
+  <menuitem id='login-btn' {{loggedIn ? 'hidden': ''}}>
+    Login
+  </menuitem>
+  <menuitem id='logout-btn' {{!loggedIn ? 'hidden': ''}}>
+    Logout
+  </menuitem>
   <menuitem id='enable-btn' {{enabled ? 'hidden': ''}}>
     Enable
   </menuitem>

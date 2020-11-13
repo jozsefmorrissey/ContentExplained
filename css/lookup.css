@@ -6,11 +6,14 @@
 
 .ce-lookup-cnt {
   width: 100%;
+  padding: 5pt;
+  padding-left: 50pt;
 }
 
 .ce-tab-list{
   display: block;
   list-style-type: none;
+  position: absolute;
   width: max-content;
   margin: auto;
   padding: 0;
@@ -18,7 +21,7 @@
 }
 
 .ce-tab-list > li {
-  padding: 10pt;
+  padding: 4pt;
   border-style: solid;
   border-width: 1px;
   border-radius: 10px;
@@ -33,26 +36,19 @@
     box-shadow: 0 0 0 black;
   }
 
-.ce-tab-ctn > div {
-  display: none;
-}
-
 .ce-expl-card {
-  width: 90%;
   display: flex;
   position: relative;
   border: solid;
   text-align: left;
   border-width: 1px;
   border-radius: 10px;
-  margin: 5px 20px;
+  margin: 5px 0px;
   border-color: grey;
   box-shadow: 1px 1px 1px grey;
 }
 
 .ce-expl-rating-column {
-  position: relative;
-  width: 50pt;
   min-height: 70pt;
   float: left;
   padding: 2pt;
@@ -67,32 +63,84 @@
   top: 50%;
 }
 
-.ce-expl-voteup-button {
-  border-radius: 30pt 30pt 2pt 2pt!important;
-  font-weight: bold;
-  width: -webkit-fill-available;
-  background-color: #76ff76;
-  border-color: green;
+#ce-expl-voteup-btn {
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-right: 20px solid transparent;
+  border-left: 20px solid transparent;
+  border-bottom: 20px solid #3dd23d;
+  background-color: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+#ce-expl-voteup-btn:disabled {
+  border-bottom: 20px solid grey;
 }
 
-.ce-expl-votedown-button {
-  border-radius: 2pt 2pt 30pt 30pt;
-  font-weight: bold;
-  width: -webkit-fill-available;
-  background-color: #ff6565;
-  border-color: red;
+#ce-expl-votedown-btn {
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-right: 20px solid transparent;
+  border-left: 20px solid transparent;
+  border-top: 20px solid #f74848;
+  background-color: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#ce-expl-votedown-btn:disabled {
+  border-top: 20px solid grey;
+}
+
+.ce-expl-tag-cnt > span {
+  display: inline-flex;
+  margin: 0 5pt;
+}
+
+.ce-expls-cnt {
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  margin: 5px 0px;
+  border-color: grey;
+  box-shadow: 1px 1px 1px grey;
+  padding: 5pt;
+}
+
+.ce-apply-expl-btn-cnt {
+  position: relative;
+  width: 5%;
+}
+
+.ce-apply-expl-btn {
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+.ce-expl-author {
+  width: 15%;
+  overflow: auto;
+  text-align: center;
+  border-right: black;
+  border-style: solid;
+  border-width: 0 1px 0 0;
 }
 
 .ce-expl-author-cnt {
   float: right;
-  padding: 2pt;
-  border-left: ridge;
-  border-color: black;
-  border-width: 1pt;
+  padding: 0;
+  width: 100%;
+  display: inline-flex;
 }
 
 .ce-expl {
   padding: 2pt;
+  display: inline-flex;
   width: inherit;
   overflow-wrap: break-word;
 }
@@ -140,11 +188,10 @@
 }
 
 .lookup-img {
-  width: 40pt;
+  width: 30pt;
 }
 
 .ce-merriam-expl-card {
-  width: 90%;
   position: relative;
   border: solid;
   border-width: 1px;

@@ -11,168 +11,176 @@ const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
 const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
 
-const CE_HOST = 'https://localhost:3001';
+const CE_HOST = 'https://localhost:3001/content-explained';
 
-const URL_MERRIAM_REQ = `${CE_HOST}/content-explained/merriam/webster/`;
+const URL_MERRIAM_REQ = `${CE_HOST}/merriam/webster/`;
 
-const URL_USER_LOGIN = `${CE_HOST}/content-explained/user/login/`;
-const URL_USER_ADD = `${CE_HOST}/content-explained/user/add/`;
-const URL_USER_GET = `${CE_HOST}/content-explained/user/get/`;
-const URL_USER_SYNC = `${CE_HOST}/content-explained/user/sync/`;
+const URL_USER_LOGIN = `${CE_HOST}/user/login/`;
+const URL_USER_ADD = `${CE_HOST}/user/add/`;
+const URL_USER_GET = `${CE_HOST}/user/`;
+const URL_USER_SYNC = `${CE_HOST}/user/sync/`;
 
 const URL_IMAGE_LOGO = `${CE_HOST}/images/icons/logo.png`;
 const URL_IMAGE_MERRIAM = `${CE_HOST}/images/icons/Merriam-Webster.png`;
 const URL_IMAGE_WIKI = `${CE_HOST}/images/icons/wikapedia.png`;
 const URL_IMAGE_TXT = `${CE_HOST}/images/icons/txt.png`;
 
-const URL_CE_GET = `${CE_HOST}/content-explained/`;
-const URL_CE_LIKE = `${CE_HOST}/content-explained/like/`;
-const URL_CE_DISLIKE = `${CE_HOST}/content-explained/dislike/`;
-const data = {
-  "this": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "the person, thing, or idea that is present or near in place, time, or thought or that has just been mentioned "
-  	}],
-  "page": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "the block of information found at a single World Wide Web address"
-  	}],
-  "is": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "present tense third-person singular of be"
-  	}],
-  "created": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "to produce or bring about by a course of action or behavior"
-  	}],
-  "from": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate a starting point of a physical movement or a starting point in measuring or reckoning or in a statement of limits"
-  	}],
-  "http": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "hypertext transfer protocol; hypertext transport protocol"
-  	}],
-  "status": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "state or condition with respect to circumstances"
-  	}],
-  "information": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "the attribute inherent in and communicated by one of two or more alternative sequences or arrangements of something (such as nucleotides in DNA or binary digits in a computer program) that produce specific effects"
-  	}],
-  "found": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "having all usual, standard, or reasonably expected equipment"
-  	}],
-  "at": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate the goal of an indicated or implied action"
-  	}],
-  "ietf.org": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "A website not for the faint of heart"
-  	}],
-  "and": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate connection or addition especially of items within the same class or type —used to join sentence elements of the same grammatical rank or function"
-  	}],
-  "wikipedia": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "croud sourced information, thats all linked up"
-  	}],
-  "click": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "to change or move through (channels) especially by pushing buttons on a remote control"
-  	}],
-  "on": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate position in contact with and supported"
-  	}],
-  "category heading": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "a division within a system of classification "
-  	}],
-  "or": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "the equivalent or substitutive character of two words or phrases"
-  	}],
-  "the": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate that a following noun or noun equivalent is definite or has been previously specified by context or by circumstance"
-  	}],
-  "code": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "coded language : a word or phrase chosen in place of another word or phrase in order to communicate an attitude or meaning without stating it explicitly"
-  },{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "a system of symbols (such as letters or numbers) used to represent assigned and often secret meanings"
-	},{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "a system of signals or symbols for communication"
-	},{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "a system of principles or rules"
-	},{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "a systematic statement of a body of law "
-	},{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "instructions for a computer (as within a piece of software)"
-	}],
-  "link": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "one of the standardized divisions of a surveyor's chain that is 7.92 inches (20.1 centimeters) long and serves as a measure of length"
-  	}],
-  "to": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "used as a function word to indicate movement or an action or condition suggestive of movement toward a place, person, or thing reached"
-  	}],
-  "read": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "to receive or take in the sense of (letters, symbols, etc.) especially by sight or touch"
-  	}],
-  "more": [{
-  	"likes": 0,
-  	"dislikes": 0,
-  	"text": "to a greater or higher degree —often used with an adjective or adverb to form the comparative"
-  	}],
+const URL_CE_GET = `${CE_HOST}/`;
+const URL_CE_LIKE = `${CE_HOST}/like/`;
+const URL_CE_DISLIKE = `${CE_HOST}/dislike/`;
+
+class Endpoints {
+  constructor(object, host) {
+    host = host || '';
+    const endPointFuncs = {}
+    this.getFuncObj = function () {return endPointFuncs;};
+
+    function build(str) {
+      const pieces = str.split(/:[a-zA-Z0-9]*/g);
+      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
+      return function () {
+        let values = [];
+        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
+          values = arguments;
+        } else {
+          const obj = arguments[0];
+          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
+        }
+        let endpoint = '';
+        for (let index = 0; index < pieces.length; index += 1) {
+          const arg = values[index];
+          let value = '';
+          if (index < pieces.length - 1) {
+            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
+          }
+          endpoint += pieces[index] + value;
+        }
+        return `${host}${endpoint}`;
+      }
+    }
+
+    function objectRecurse(currObject, currFunc) {
+      const keys = Object.keys(currObject);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        if (key.indexOf('_') !== 0) {
+          const value = currObject[key];
+          if (value instanceof Object) {
+            currFunc[key] = {};
+            objectRecurse(value, currFunc[key]);
+          } else {
+            currFunc[key] = build(value);
+          }
+        }
+      }
+    }
+
+    objectRecurse(object, endPointFuncs);
+  }
 }
+
+try {
+  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
+} catch (e) {}
+
+const EPNTS = new Endpoints({
+  "user": {
+    "add": "/user",
+    "get": "/user/:idsOemail",
+    "login": "/user/login",
+    "update": "/user/update/:updateSecret",
+    "requestUpdate": "/user/update/request"
+  },
+  "credential": {
+    "add": "/credential/add/:userId",
+    "activate": "/credential/activate/:userId/:activationSecret",
+    "delete": "/credential/:idOauthorization",
+    "get": "/credential/:userId",
+    "status": "/credential/status/:authorization"
+  },
+  "site": {
+    "add": "/site",
+    "get": "/site/get"
+  },
+  "explanation": {
+    "add": "/explanation",
+    "author": "/explanation/author/:authorId",
+    "get": "/explanation/:words",
+    "update": "/explanation"
+  },
+  "siteExplanation": {
+    "add": "/site/explanation/:explanationId",
+    "get": "/site/explanation"
+  },
+  "opinion": {
+    "like": "/like/:explanationId/:siteId",
+    "dislike": "/dislike/:explanationId/:siteId",
+    "bySite": "/opinion/:siteId/:userId"
+  },
+  "endpoints": {
+    "json": "/html/endpoints.json",
+    "EPNTS": "/EPNTS"
+  },
+  "_secure": [
+    "user.update",
+    "credential.get",
+    "credential.delete",
+    "site.add",
+    "explanation.add",
+    "explanation.update",
+    "siteExplanation.add",
+    "opinion.like",
+    "opinion.dislike"
+  ]
+}
+, 'https://localhost:3001/content-explained').getFuncObj();
+class CustomEvent {
+  constructor(name) {
+    const watchers = {};
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        if (watchers[name] === undefined) {
+          watchers[name] = [];
+        }
+        watchers[name].push(func);
+      } else {
+        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+
 Request = {
     onStateChange: function (success, failure) {
       return function () {
         if (this.readyState == 4) {
           if (this.status == 200) {
-            var data = JSON.parse(this.responseText);
+            var resp = this.responseText;
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){}
             if (success) {
-              success(data);
+              success(resp);
             }
           } else if (failure) {
             failure(this);
@@ -186,479 +194,29 @@ Request = {
       xhr.open("GET", url, true);
       xhr.onreadystatechange =  Request.onStateChange(success, failure);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
       xhr.send();
       return xhr;
     },
 
-    post: function (url, body, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(JSON.stringify(body));
-      return xhr;
-    }
-}
-
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
       }
-    }
+    },
 
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = properties[key];
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = values[key];
-        if (value.newValue) {
-          instance.set(key, values[key].newValue);
-        } else {
-          instance.set(key, value);
-        }
-      }
-    }
-
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (key, func) {
-      keyDefinitionCheck(key);
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      if (updateFuncs[key] === undefined) {
-        updateFuncs[key] = [];
-      }
-      updateFuncs[key].push(func);
-      func(properties[key])
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
-  }
-}
-
-afterLoad.push(function () {CE.properties = new Properties();})
-var SHORT_CUT_CONTAINERS;
-
-function ShortCutCointainer(id, keys, html, config) {
-  var SPACER_ID = 'ssc-html-spacer';
-  var OPEN = 'ssc-open';
-  var CLOSE = 'ssc-close';
-  var currentKeys = {};
-  var size = 200;
-  var container;
-  var resizeBar;
-
-  function resizeBarId() {
-    return 'ssc-resizeBar-' + id;
-  }
-  function htmlContainerId() {
-    return 'ssc-html-container-' + id;
-  }
-
-  function getResizeBarCss() {
-    return 'border-top-style: double;' +
-      'border-top-width: 10px;' +
-      'cursor: row-resize;' +
-      'border-color: rgb(22, 44, 166);';
-  }
-
-  function createResizeBar() {
-    resizeBar = document.createElement('div');
-    resizeBar.id = resizeBarId();
-    resizeBar.style.cssText = getResizeBarCss();
-    return resizeBar;
-  }
-
-  function createContainer(html) {
-    container = document.createElement('div');
-    container.id = htmlContainerId();
-    container.innerHTML = html;
-    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
-    return container;
-  }
-
-  function padBottom(height) {
-    var spacer = document.getElementById(SPACER_ID);
-    if (spacer) {
-      spacer.remove();
-    }
-    spacer = document.createElement('div');
-    spacer.id = SPACER_ID;
-    spacer.style = 'height: ' + height;
-    document.querySelector('body').append(spacer);
-  }
-
-  var noHeight = 'display: block;' +
-    'width: 100%;' +
-    'margin: 0;' +
-    'padding: 0;' +
-    'position: fixed;' +
-    'width: 100%;' +
-    'bottom: 0;' +
-    'z-index: 10000;' +
-    'left: 0;' +
-    'background-color: white;';
-
-
-    function resize(event) {
-      if (shouldResize > 0) {
-        var minHeight = 80;
-        var maxHeight = window.innerHeight - 50;
-        let dx = window.innerHeight - event.clientY;
-        dx = dx < minHeight ? minHeight : dx;
-        dx = dx > maxHeight ? maxHeight : dx;
-        var height = dx + 'px;';
-        container.style.cssText = 'overflow: scroll; max-height: ' + height;
-        ssc.style.cssText  = noHeight + 'height: ' + height;
-        padBottom(height);
-      }
-      // return event.target.height;
-    }
-
-  var shouldResize = 0;
-  function mouseup(e) {
-    shouldResize = 0;
-    e.stopPropagation();
-  }
-
-  function mousedown(e) {
-    var barPos = resizeBar.getBoundingClientRect().top;
-    let mPos = e.clientY;
-    if (barPos > mPos - 10 && barPos < mPos + 10) {
-      shouldResize++;
-    }
-  }
-
-  function show() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'block';
-    var height = ce.style.height;
-    padBottom(height);
-    triggerEvent(OPEN, id);
-    isShowing = true;
-  }
-
-  function hide() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'none';
-    padBottom('0px;');
-    triggerEvent(CLOSE, id);
-    isShowing = false;
-  }
-
-  let isShowing = false;
-  function toggleContentEditor() {
-        if (isShowing) {
-          hide();
-        } else {
-          show();
-        }
-  }
-
-  function isOpen() {
-    return isShowing;
-  }
-
-  function keyDownListener(e) {
-      currentKeys[e.key] = true;
-      if (shouldToggle()){
-        toggleContentEditor();
-      }
-  }
-
-  function shouldToggle() {
-    for (let index = 0; index < keys.length; index += 1) {
-      if (!currentKeys[keys[index]]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function onOpen(id) {
-    console.log(id);
-  }
-
-
-  function triggerEvent(name, id) {
-    var event; // The custom event that will be created
-
-    if (document.createEvent) {
-      event = document.createEvent("HTMLEvents");
-      event.initEvent(name, true, true);
-    } else {
-      event = document.createEventObject();
-      event.eventType = name;
-    }
-
-    event.eventName = name;
-
-    if (document.createEvent) {
-      ssc.dispatchEvent(event);
-    } else {
-      ssc.fireEvent("on" + event.eventType, event);
-    }
-  }
-
-  function onLoad() {
-    document.body.append(ssc);
-  }
-
-  function keyUpListener(e) {
-    delete currentKeys[e.key];
-  }
-
-  function innerHtml(html) {
-    container.innerHTML = html;
-  }
-
-  function mouseupOnRandDescendents(e, count) {
-    var mouseupEvent = new MouseEvent('mouseup', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true
-    });
-
-    function click(elem) {
-      return function () {
-        console.log('triggering mouseup event: ', elem)
-        elem.dispatchEvent(mouseupEvent);
-      };
-    }
-    const decendents = e.querySelectorAll('*');
-    for (let c = 0; c < count; c += 1) {
-       const index = Math.floor(Math.random() * decendents.length + 1);
-       if (index === decendents.length) {
-         setTimeout(click(e), 5 * c);
-       } else {
-         setTimeout(click(decendents[index]), 5 * c);
-       }
-    }
-  }
-
-  var ssc = document.createElement('div');
-  ssc.id = id;
-  ssc.append(createResizeBar());
-  ssc.append(createContainer(html));
-  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
-  if (!config || config.open !== true) {
-    ssc.style.display = 'none';
-  }
-  ssc.addEventListener(OPEN, onOpen);
-  ssc.addEventListener('mouseup', mouseup);
-  ssc.addEventListener('mousedown', mousedown);
-  onLoad();
-  retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
-                show, hide, isOpen };
-  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
-  SHORT_CUT_CONTAINERS.push(retObject);
-  window.onmouseup = hide;
-  return retObject;
-}
-
-function callOnAll(func, e) {
-  for (let index = 0; index < SHORT_CUT_CONTAINERS.length; index += 1) {
-    SHORT_CUT_CONTAINERS[index][func](e);
-  }
-}
-
-function resize(e) { callOnAll('resize', e); }
-function keyUpListener(e) { callOnAll('keyUpListener', e); }
-function keyDownListener(e) { callOnAll('keyDownListener', e); }
-
-window.onmousemove = resize;
-window.onkeyup = keyUpListener;
-window.onkeydown = keyDownListener;
-
-function onLoad() {
-  let containers = document.querySelectorAll('short-cut-container');
-  for (let index = 0; index < containers.length; index += 1) {
-    var elem = containers[index];
-    if (elem.getAttribute('keys'))
-    var keys = elem.getAttribute('keys').split(',')
-    id = elem.id || 'ssc-' + index;
-    html = elem.innerHTML;
-    ShortCutCointainer(id, keys, html);
-    elem.parentNode.removeChild(elem);
-  }
-}
-
-afterLoad.push(onLoad);
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
-    this.apply = function () {
-      console.log('here')
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
-      }
-    }
-  }
-}
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  CE.applyCss = CssFile.apply;
-}
-
-try {
-  afterLoad.push(cssAfterLoad);
-} catch (e) {}
-
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-// ./src/index/css.js
-new CssFile('hover-resource', 'hover-resource {     background-color:     #fde66d;     border-radius: 2pt; }  hover-resource:hover {   font-weight: bolder; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  .ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 10pt;   padding: 0; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%; }  .ce-tab-list{   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 10pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-tab-ctn > div {   display: none; }  .ce-expl-card {   width: 90%;   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 20px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   position: relative;   width: 50pt;   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-expl-voteup-button {   border-radius: 30pt 30pt 2pt 2pt!important;   font-weight: bold;   width: -webkit-fill-available;   background-color: #76ff76;   border-color: green; }  .ce-expl-votedown-button {   border-radius: 2pt 2pt 30pt 30pt;   font-weight: bold;   width: -webkit-fill-available;   background-color: #ff6565;   border-color: red; }  .ce-expl-author-cnt {   float: right;   padding: 2pt;   border-left: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl {   padding: 2pt;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 40pt; }  .ce-merriam-expl-card {   width: 90%;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {  } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
 }
 
 let idCount = 0;
@@ -975,41 +533,540 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+
+function search() {
+  const explanations = new Explanations();
+  const merriamWebster = new MerriamWebster()
+  const rawText = new RawText()
+
+  let definitions = {
+    if: "conditional",
+    is: "to be or not to be",
+    the: "come on man"
+  };
+
+  let word;
+
+  function addDefinition(definition) {
+    definitions[word] = definition;
+  }
+
+  function topNodeText(el) {
+    child = el.firstChild,
+    texts = [];
+
+    while (child) {
+      if (child.nodeType == 3) {
+        texts.push(child.data);
+      }
+      child = child.nextSibling;
+    }
+
+    return texts.join("");
+  }
+
+  function findWord(word) {
+    return Array.from(document.querySelectorAll('*'))
+    .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
+  }
+
+  let built = false;
+  function buildUi(data) {
+    built = true;
+    document.onmouseup = onHighlight;
+    UI.id = UI_ID;
+    UI.style = `position: fixed;
+                width: 100%;
+                height: 30%;
+                top: 0px;
+                left: 0px;
+                text-align: center;
+                display: none;
+                z-index: 999;
+                background-color: whitesmoke;
+                overflow: auto;
+                border-style: outset;
+                border-width: 1pt;`;
+  }
+
+  function goTo(word) {
+    return function() {
+      lookup(word);
+    }
+  }
+
+  const historyTemplate = new $t('popup-cnt/linear-tab');
+  let history = [];
+  function setHistory(word) {
+    history = history.filter((value) => value !== word);
+    const sugCnt = document.getElementById(HISTORY_CNT_ID);
+    sugCnt.innerHTML = historyTemplate.render(history.reverse());
+    const spans = sugCnt.querySelectorAll('span');
+    for (let index = 0; index < spans.length; index += 1) {
+      spans[index].addEventListener('click', goTo(spans[index].innerText.trim().substr(0, 20)));
+    }
+    history.reverse();
+    history.push(word);
+  }
+
+  function lookup(word) {
+    setHistory(word);
+    const trimmed = word.trim().toLowerCase();
+    if (trimmed) {
+      explanations.get(trimmed);
+      merriamWebster.update(trimmed);
+    }
+    UI.show();
+  }
+
+  function onHighlight(e) {
+    const selection = window.getSelection().toString()
+    // Google Doc selection.
+    // document.querySelector('.kix-selection-overlay')
+    if (CE.properties.get('enabled') && selection) {
+      lookup(selection);
+      e.stopPropagation();
+    }
+  }
+
+  function enableToggled(enabled) {
+    if (enabled) {
+      if (!built) {
+        buildUi()
+      }
+    }
+  }
+
+  function refresh() {
+    let hoverResources = document.getElementsByTagName('hover-resource');
+    for (let index = 0; index < hoverResources.length; index += 1) {
+      hoverResources[index].outerHTML = hoverResources[index].innerText;
+    }
+
+    new HoverResources(data);
+  }
+
+  CE.properties.onUpdate('enabled', enableToggled);
+  CE.lookup = lookup;
+  CE.refresh = refresh;
+  CE.show = UI.show;
+  CE.hide = UI.hide;
+}
+
+afterLoad.push(search);
+
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
+
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
       }
     }
 
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
+    };
+
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
       }
     }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
+  }
+}
+
+const properties = new Properties();
+var SHORT_CUT_CONTAINERS;
+
+function ShortCutCointainer(id, keys, html, config) {
+  var SPACER_ID = 'ssc-html-spacer';
+  var OPEN = 'ssc-open';
+  var CLOSE = 'ssc-close';
+  var currentKeys = {};
+  var size = 200;
+  var container;
+  var resizeBar;
+
+  function resizeBarId() {
+    return 'ssc-resizeBar-' + id;
+  }
+  function htmlContainerId() {
+    return 'ssc-html-container-' + id;
+  }
+
+  function getResizeBarCss() {
+    return 'border-top-style: double;' +
+      'border-top-width: 10px;' +
+      'cursor: row-resize;' +
+      'border-color: rgb(22, 44, 166);';
+  }
+
+  function createResizeBar() {
+    resizeBar = document.createElement('div');
+    resizeBar.id = resizeBarId();
+    resizeBar.style.cssText = getResizeBarCss();
+    return resizeBar;
+  }
+
+  function createContainer(html) {
+    container = document.createElement('div');
+    container.id = htmlContainerId();
+    container.innerHTML = html;
+    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
+    return container;
+  }
+
+  function padBottom(height) {
+    var spacer = document.getElementById(SPACER_ID);
+    if (spacer) {
+      spacer.remove();
+    }
+    spacer = document.createElement('div');
+    spacer.id = SPACER_ID;
+    spacer.style = 'height: ' + height;
+    document.querySelector('body').append(spacer);
+  }
+
+  var noHeight = 'display: block;' +
+    'width: 100%;' +
+    'margin: 0;' +
+    'padding: 0;' +
+    'position: fixed;' +
+    'width: 100%;' +
+    'bottom: 0;' +
+    'z-index: 10000;' +
+    'left: 0;' +
+    'background-color: white;';
+
+
+    function resize(event) {
+      if (shouldResize > 0) {
+        var minHeight = 80;
+        var maxHeight = window.innerHeight - 50;
+        let dx = window.innerHeight - event.clientY;
+        dx = dx < minHeight ? minHeight : dx;
+        dx = dx > maxHeight ? maxHeight : dx;
+        var height = dx + 'px;';
+        container.style.cssText = 'overflow: scroll; max-height: ' + height;
+        ssc.style.cssText  = noHeight + 'height: ' + height;
+        padBottom(height);
+      }
+      // return event.target.height;
+    }
+
+  var shouldResize = 0;
+  function mouseup(e) {
+    shouldResize = 0;
+    e.stopPropagation();
+  }
+
+  function mousedown(e) {
+    var barPos = resizeBar.getBoundingClientRect().top;
+    let mPos = e.clientY;
+    if (barPos > mPos - 10 && barPos < mPos + 10) {
+      shouldResize++;
+    }
+  }
+
+  function show() {
+    var ce = document.getElementById(id);
+    ce.style.display = 'block';
+    var height = ce.style.height;
+    padBottom(height);
+    triggerEvent(OPEN, id);
+    isShowing = true;
+  }
+
+  function hide() {
+    var ce = document.getElementById(id);
+    ce.style.display = 'none';
+    padBottom('0px;');
+    triggerEvent(CLOSE, id);
+    isShowing = false;
+  }
+
+  let isShowing = false;
+  function toggleContentEditor() {
+        if (isShowing) {
+          hide();
+        } else {
+          show();
+        }
+  }
+
+  function isOpen() {
+    return isShowing;
+  }
+
+  function keyDownListener(e) {
+      currentKeys[e.key] = true;
+      if (shouldToggle()){
+        toggleContentEditor();
+      }
+  }
+
+  function shouldToggle() {
+    for (let index = 0; index < keys.length; index += 1) {
+      if (!currentKeys[keys[index]]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function onOpen(id) {
+    console.log(id);
+  }
+
+
+  function triggerEvent(name, id) {
+    var event; // The custom event that will be created
+
+    if (document.createEvent) {
+      event = document.createEvent("HTMLEvents");
+      event.initEvent(name, true, true);
     } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
+      event = document.createEventObject();
+      event.eventType = name;
+    }
+
+    event.eventName = name;
+
+    if (document.createEvent) {
+      ssc.dispatchEvent(event);
+    } else {
+      ssc.fireEvent("on" + event.eventType, event);
+    }
+  }
+
+  function onLoad() {
+    document.body.append(ssc);
+  }
+
+  function keyUpListener(e) {
+    delete currentKeys[e.key];
+  }
+
+  function innerHtml(html) {
+    if (container) {
+      container.innerHTML = html;
+    }
+  }
+
+  function mouseupOnRandDescendents(e, count) {
+    var mouseupEvent = new MouseEvent('mouseup', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+
+    function click(elem) {
+      return function () {
+        console.log('triggering mouseup event: ', elem)
+        elem.dispatchEvent(mouseupEvent);
+      };
+    }
+    const decendents = e.querySelectorAll('*');
+    for (let c = 0; c < count; c += 1) {
+       const index = Math.floor(Math.random() * decendents.length + 1);
+       if (index === decendents.length) {
+         setTimeout(click(e), 5 * c);
+       } else {
+         setTimeout(click(decendents[index]), 5 * c);
+       }
+    }
+  }
+
+  var ssc = document.createElement('div');
+  ssc.id = id;
+  ssc.append(createResizeBar());
+  ssc.append(createContainer(html));
+  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
+  if (!config || config.open !== true) {
+    ssc.style.display = 'none';
+  }
+  ssc.addEventListener(OPEN, onOpen);
+  ssc.addEventListener('mouseup', mouseup);
+  ssc.addEventListener('mousedown', mousedown);
+  onLoad();
+  retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
+                show, hide, isOpen };
+  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
+  SHORT_CUT_CONTAINERS.push(retObject);
+  window.onmouseup = hide;
+  return retObject;
+}
+
+function callOnAll(func, e) {
+  for (let index = 0; index < SHORT_CUT_CONTAINERS.length; index += 1) {
+    SHORT_CUT_CONTAINERS[index][func](e);
+  }
+}
+
+function resize(e) { callOnAll('resize', e); }
+function keyUpListener(e) { callOnAll('keyUpListener', e); }
+function keyDownListener(e) { callOnAll('keyDownListener', e); }
+
+window.onmousemove = resize;
+window.onkeyup = keyUpListener;
+window.onkeydown = keyDownListener;
+
+function onLoad() {
+  let containers = document.querySelectorAll('short-cut-container');
+  for (let index = 0; index < containers.length; index += 1) {
+    var elem = containers[index];
+    if (elem.getAttribute('keys'))
+    var keys = elem.getAttribute('keys').split(',')
+    id = elem.id || 'ssc-' + index;
+    html = elem.innerHTML;
+    ShortCutCointainer(id, keys, html);
+    elem.parentNode.removeChild(elem);
+  }
+}
+
+afterLoad.push(onLoad);
+class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        matchingElems[index].style = this.value + matchingElems[index].style;
+      }
     }
   }
 }
+
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files.push(this);
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
+    }
+
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
+      }
+    }
+
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
+    }
+  }
+}
+
+CssFile.files = [];
+
+CssFile.apply = function () {
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
+    }
+  }
+}
+
+CssFile.dump = function () {
+  let dumpStr = '';
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  CE.applyCss = CssFile.apply;
+}
+
+try {
+  afterLoad.push(cssAfterLoad);
+} catch (e) {}
+
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+// ./src/index/css.js
+new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
 class RegArr {
   constructor(string, array) {
     const newLine = 'akdiehtpwksldjfurioeidu';
@@ -1106,185 +1163,67 @@ class RegArr {
 try{
 	exports.RegArr = RegArr;
 } catch (e) {}
-
-
-function search() {
-  const explanations = new Explanations();
-  const merriamWebster = new MerriamWebster()
-  const rawText = new RawText()
-
-  let definitions = {
-    if: "conditional",
-    is: "to be or not to be",
-    the: "come on man"
-  };
-
-  let word;
-
-  function addDefinition(definition) {
-    definitions[word] = definition;
-  }
-
-  function topNodeText(el) {
-    child = el.firstChild,
-    texts = [];
-
-    while (child) {
-      if (child.nodeType == 3) {
-        texts.push(child.data);
-      }
-      child = child.nextSibling;
+function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
     }
-
-    return texts.join("");
-  }
-
-  function findWord(word) {
-    return Array.from(document.querySelectorAll('*'))
-    .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
-  }
-
-  let built = false;
-  function buildUi() {
-    built = true;
-    document.onmouseup = onHighlight;
-    new HoverResources(data);
-    UI.id = UI_ID;
-    UI.style = `position: fixed;
-                width: 100%;
-                height: 30%;
-                top: 0px;
-                left: 0px;
-                text-align: center;
-                display: none;
-                z-index: 999;
-                background-color: whitesmoke;
-                overflow: auto;
-                border-style: outset;
-                border-width: 1pt;`;
-  }
-
-  function goTo(word) {
-    return function() {
-      lookup(word);
-    }
-  }
-
-  const historyTemplate = new $t('popup-cnt/linear-tab');
-  let history = [];
-  function setHistory(word) {
-    history = history.filter((value) => value !== word);
-    const sugCnt = document.getElementById(HISTORY_CNT_ID);
-    sugCnt.innerHTML = historyTemplate.render(history.reverse());
-    const spans = sugCnt.querySelectorAll('span');
-    for (let index = 0; index < spans.length; index += 1) {
-      spans[index].addEventListener('click', goTo(spans[index].innerText.trim().substr(0, 20)));
-    }
-    history.reverse();
-    history.push(word);
-  }
-
-  function lookup(word) {
-    setHistory(word);
-    const trimmed = word.trim().toLowerCase();
-    if (trimmed) {
-      explanations.get(trimmed);
-      merriamWebster.update(trimmed);
-    }
-    UI.show();
-  }
-
-  function onHighlight(e) {
-    const selection = window.getSelection().toString()
-    // Google Doc selection.
-    // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
-      lookup(selection);
-      e.stopPropagation();
-    }
-  }
-
-  function enableToggled(enabled) {
-    if (enabled) {
-      if (!built) {
-        buildUi()
-      }
-    }
-  }
-
-  function refresh() {
-    let hoverResources = document.getElementsByTagName('hover-resource');
-    for (let index = 0; index < hoverResources.length; index += 1) {
-      hoverResources[index].outerHTML = hoverResources[index].innerText;
-    }
-
-    new HoverResources(data);
-  }
-
-  CE.properties.onUpdate('enabled', enableToggled);
-  CE.lookup = lookup;
-  CE.refresh = refresh;
-  CE.show = UI.show;
-  CE.hide = UI.hide;
 }
 
-afterLoad.push(search);
-class User {
-  constructor() {
-    let user = undefined;
 
-    function successfullAdd(user) {
-      user = data;
-      const secret = user.secret;
-      delete user.secret;
-      chrome.storage.local.set({ secret, user });
-      USER_ADD_CALL_SUCCESS.trigger();
-    }
-
-    function loginSuccess(data) {
-      user = data;
-      CE.properties.set('loggedIn', true, true);
-    }
-
-    function loginFailure() {
-      CE.properties.set('loggedIn', false, true);
-      console.error('Failed to login');
-    }
-
-    function login(props) {
-      const username = props[username];
-      const secret = props[secret];
-      if (username && secret) {
-        const url = `${URL_USER_LOGIN}${username}/${secret}`;
-        Request.get(url, loginSuccess, loginFailure);
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
       }
     }
+    return recurse(node, 0).node;
+}
 
-    function failedAdd(err) {
-      USER_ADD_CALL_FAILURE.trigger(err);
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
     }
-
-
-    this.add = function (username) {
-      const url = `${URL_USER_ADD}${username}`;
-      Request.get(url, successfullAdd, failedAdd);
-    }
-
-    this.get = function (username, success, failure) {
-      const url = `${URL_USER_GET}${username}`
-      Request.get(url, success, failure);
-    }
-
-    this.sync = function (username, code) {
-      const url = `${URL_USER_SYNC}${username}/${code}`
-      Request.get(url, success, failure);
-    }
-
-    if (user === undefined) {
-      chrome.storage.local.get(['username', 'secret'], login);
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
     }
   }
+
+  return recurse(node, 0).node;
 }
+
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_UI_BUILT = new CustomEvent('ce-ui-built');
 
 class $t {
 	constructor(template, id) {
@@ -1306,13 +1245,13 @@ class $t {
 		}
 
 		const signProps = {opening: /([-+\!])/};
-		const relationalProps = {opening: /((\<|\>|\<\=|\>\=))/};
+		const relationalProps = {opening: /((\<|\>|\<\=|\>\=|\|\||\||&&|&))/};
 		const ternaryProps = {opening: /\?/};
 		const keyWordProps = {opening: /(new|null|undefined|NaN|true|false)[^a-z^A-Z]/, tailOffset: -1};
 		const ignoreProps = {opening: /new \$t\('.*?'\).render\(get\('scope'\), '(.*?)', get\)/};
 		const commaProps = {opening: /,/};
 		const colonProps = {opening: /:/};
-		const multiplierProps = {opening: /([-+=*\/](=|)|===)/};
+		const multiplierProps = {opening: /(===|[-+=*\/](=|))/};
 		const stringProps = {opening: /('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))/};
 		const spaceProps = {opening: /\s{1}/};
 		const numberProps = {opening: /[0-9]*((\.)[0-9]*|)/};
@@ -1407,8 +1346,10 @@ class $t {
 				for (let index = 0; currObj != undefined && index < split.length; index += 1) {
 					currObj = currObj[split[index]];
 				}
-				const value = currObj || parentScope(name) || '';
-				return value;
+				if (currObj !== undefined) return currObj;
+				const parentScopeVal = parentScope(name);
+				if (parentScopeVal !== undefined) return parentScopeVal;
+				return '';
 			}
 			return get;
 		}
@@ -1638,7 +1579,7 @@ class $t {
 				let templateName = tagContents.replace(/.*\$t-id=('|")([a-zA-Z-_\/]*?)(\1).*/, '$2');
 				template = templateName !== tagContents ? templateName : template;
 				string = string.replace(match[0], `{{new $t('${template}').render(get('scope'), '${match[5]}', get)}}`);
-				console.log('\n\n\nformrepeat: ', string, '\n\n\n')
+				// console.log('\n\n\nformrepeat: ', string, '\n\n\n')
 				eval(`new $t(\`${template}\`)`);
 			}
 			return string;
@@ -1698,29 +1639,32 @@ try{
 } catch (e) {}
 // ./src/index/services/$t.js
 
-$t.functions['467442134'] = function (get) {
-	return `<span > <label>` + (get("tag")) + `</label> <input type='checkbox' value='` + (get("tag")) + `'> </span>`
+$t.functions['492362584'] = function (get) {
+	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
 }
 $t.functions['863427587'] = function (get) {
-	return `<li class='ce-tab-list-item' ` + (get("elem.show")() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem.imageSrc")()) + `"> </li>`
+	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
 }
 $t.functions['1870015841'] = function (get) {
-	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item.hwi.hw")) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+}
+$t.functions['hover-resource'] = function (get) {
+	return `<div> <div class="ce-inline"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}} </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div> <div class='ce-inline ce-center'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("hoveredText")) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> </div> <div class=''> <div id='` + (get("HOVER_DISPLAY_CNT_ID")) + `'>` + (get("active").expl) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+}
+$t.functions['-2095533744'] = function (get) {
+	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl) + `' > ` + (get("expl").word) + ` </li>`
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-rating-column'> <div class='ce-expl-rating-cnt'> <div class='like-ctn'> <button class='ce-expl-voteup-button'>Like<br>` + (get("explanation.likes")) + `</button> </div> <div class='like-ctn'> <button class='ce-expl-votedown-button'>Dislike<br>` + (get("explanation.dislikes")) + `</button> </div> </div> </span> <span class='ce-expl'> ` + (get("explanation.explanation")) + ` </span> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation.author")) + ` </div> </span> </div> `
+	return `<div class='ce-expl-card'> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation").shortUsernam) + ` <br> Likes / Dislikes <br> ` + (get("explanation").author) + ` / ` + (get("explanation").author) + ` </div> <span class='ce-expl'> <div class='ce-apply-expl-btn-cnt'> <button class='ce-apply-expl-btn'>Apply</button> </div> <div> <h3>` + (get("explanation").word) + `</h3> ` + (get("explanation").conten) + ` </div> </span> </span> </div> `
 }
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
 	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <link rel="stylesheet" href="` + (get("cssUrl")) + `"> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> ` + (new $t('<div  class=\'ce-lookup-cnt\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> `
-}
-$t.functions['-415007478'] = function (get) {
-	return `<div class='ce-lookup-cnt' id='` + (get("elem.id")()) + `'></div>`
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
 $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
@@ -1732,47 +1676,318 @@ $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div> ` + (new $t('<span > <label>{{tag}}</label> <input type=\'checkbox\' value=\'{{tag}}\'> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn'>+</button> </div> <div class="ce-add-cnt"> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in 0..1', get)) + ` <textarea id='` + (get("ADD_EDITOR_ID")) + `' rows="8" cols="80"></textarea> </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> `
+	return `<div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn'>+</button> </div> <div class="ce-add-cnt"> <textarea id='` + (get("ADD_EDITOR_ID")) + `' rows="8" cols="80"></textarea> </div> <br> <div class='ce-expls-cnt'> <div class='ce-expl-tag-cnt'> <button id='ce-expl-tag-select-btn'>All</button> <br> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` <br> <button id='ce-expl-tag-deselect-btn'>None</button> </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> </div> `
+}
+$t.functions['-1828676604'] = function (get) {
+	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexO) + `> <label>` + (get("tag")) + `</label> </span>`
 }
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-settings-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
-}
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+}
+$t.functions['icon-menu/settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
 }
 $t.functions['icon-menu/links/raw-text-tool'] = function (get) {
 	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
-	return `<div> <div> <input type='text' placeholder="username"> <button type="button" onclick="register()">Register</button> </div> <div> <input type='text' placeholder="sync-key"> <button type='button' onclick="sync()">Sync</button> </div> </div> `
+	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
 $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 	return `<h1>favorite lists</h1> `
 }
 $t.functions['icon-menu/links/profile'] = function (get) {
-	return `<h1>Profile</h1> `
+	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
+}
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      CE.properties.set('loggedIn', true, true);
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = CE.EPNTS.user.get(email);
+        CE.Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    this.logout = function (soft) {
+      user = undefined;
+      status = 'expired';
+      if (soft !== true) {
+        const cred = CE.properties.get('credential');
+        CE.properties.set('credential', null, true);
+        CE.properties.set('loggedIn', false, true);
+        dispatchUpdate();
+        if(cred !== null) {
+          if (status === 'active') {
+            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+            CE.Request.delete(deleteCredUrl, undefined, instance.update);
+          }
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          CE.properties.set('credential', credential, true);
+        } else {
+          CE.properties.set('credential', null, true);
+          credential = null;
+        }
+      } else {
+        credential = CE.properties.get('credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = CE.EPNTS.credential.status(credential);
+        CE.Request.get(url, updateStatus);
+        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        CE.Request.get(url, setUser);
+      } else if (credential === null) {
+        this.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = CE.EPNTS.credential.add(user.id);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = CE.EPNTS.credential.add(uId);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    }
+
+    this.register = function (email, username) {
+      const url = CE.EPNTS.user.add();
+      const body = {email, username};
+      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    }
+    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
+  }
 }
 
+User = new User();
+
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            CE.Request.get(url, success, fail);
+          } else {
+            CE.Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
+
+class Expl {
+  constructor () {
+    let addedResources = false;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverResources.set(data.list);
+    }
+
+    function addHoverResources (enabled) {
+      if (enabled && !addedResources) {
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate('enabled', addHoverResources);
+  }
+}
+
+Expl = new Expl();
+
+class Opinion {
+  constructor() {
+    let siteId, userId;
+    const amendments = {};
+    const opinions = {};
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
+
 class HoverResources {
-  constructor (wordExplanationObj, tag) {
+  constructor (tag) {
+    const resourceTemplate = new $t('hover-resource');
     let running = false;
+    const HOVER_DISPLAY_CNT_ID = 'ce-hover-display-cnt-id';
+    const HOVER_SWITCH_LIST_ID = 'ce-hover-switch-list-id';
+    const HOVER_LOGIN_BTN_ID = 'ce-hover-login-btn-id';
+    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id'
     const instance = this;
     running = true;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     let count = Math.floor(Math.random() * 10000000000000000);
-    tag = tag ? tag : 'hover-resource';
-    const texts = {};
+    const  active = {expl: {}};
+    let switches = [];
+    let siteId;
+    tag = (tag ? tag : 'hover-resource').toLowerCase();
+    const explanations = {};
 
     console.log('HoverResources');
     const box = document.createElement('div');
-    box.id = `hover-pop-up-${count}`;
-    box.innerText = 'Hello World';
+    box.id = POPUP_CNT_ID;
     box.style = 'display: none;';
     document.body.append(box);
 
@@ -1785,18 +2000,18 @@ class HoverResources {
       }
     }
 
+    const waitTime = 750;
+    function dontHoldOpen(elem) {holdOpen = false; killAt = new Date().getTime() + waitTime;}
+
     function onHover(event) {
-      if (!CE.properties.get('enabled')) return;
+      if (!properties.get('enabled')) return;
       const elem = event.target;
-      if (elem.tagName.toLowerCase() === tag && texts[elem.id] &&
-              texts[elem.id][0].text) {
-        holdOpen = true;
+      if (elem.tagName.toLowerCase() === tag && explanations[elem.id]) {
+        killAt = new Date().getTime() + waitTime;
         positionText(elem);
       } else if (elem.id === box.id || killAt === -1){
         holdOpen = true;
-        killAt = new Date().getTime() + 750;
       } else if (killAt < new Date().getTime()) {
-        holdOpen = false;
         box.style.display = 'none';
         killAt = -1;
       }
@@ -1804,6 +2019,53 @@ class HoverResources {
 
     function exitHover() {
       setTimeout(kill, 1000);
+    }
+
+    function switchFunc (index) {
+      return () => {
+        updateContent(index);
+      };
+    }
+
+    function openLogin() {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    }
+
+    function voteup() {Opinion.voteup(active.expl, updateContent);}
+
+    function votedown() {Opinion.votedown(active.expl, updateContent);}
+
+    function setSwitches() {
+      if (active.list.length > 1) {
+        switches = Array.from(document.getElementById(HOVER_SWITCH_LIST_ID).children);
+        switches.forEach((elem, index) => elem.onclick = switchFunc(index));
+      }
+      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = openLogin;
+      document.getElementById('ce-expl-voteup-btn').addEventListener('click', voteup);
+      document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
+    }
+
+    function updateContent(index) {
+      const hoveredText = active.elem.innerText;
+      if (index !== undefined) {
+        active.expl.isActive = false;
+        active.expl = active.list[index];
+        active.expl.isActive = true;
+        active.list = active.list.length > 1 ? active.list : [];
+      }
+      const loggedIn = User.isLoggedIn();
+      const scope = {
+        HOVER_LOGIN_BTN_ID, HOVER_DISPLAY_CNT_ID, HOVER_SWITCH_LIST_ID,
+        active, hoveredText, loggedIn,
+        likes: Opinion.likes(active.expl),
+        dislikes: Opinion.dislikes(active.expl),
+        canLike: Opinion.canLike(active.expl),
+        canDislike: Opinion.canDislike(active.expl)
+      };
+      box.innerHTML = resourceTemplate.render(scope);
+      setSwitches();
     }
 
     function positionText(elem) {
@@ -1815,7 +2077,8 @@ class HoverResources {
       const calcWidth = rect.left + 10 < screenWidth / 2 ? rect.left + 10 : screenWidth / 2;
       const left = `${calcWidth}px`;
 
-      const width = `${screenWidth - calcWidth - 10}`;
+      const maxWidth = `${screenWidth - calcWidth - 10}px`;
+      const minWidth = '20%';
       const css = `
         cursor: pointer;
         position: fixed;
@@ -1824,7 +2087,8 @@ class HoverResources {
         display: block;
         left: ${left};
         max-height: 40%;
-        max-width: ${width};
+        min-width: ${minWidth};
+        max-width: ${maxWidth};
         overflow: auto;
         border: 1px solid;
         border-radius: 5pt;
@@ -1833,7 +2097,9 @@ class HoverResources {
         `;
 
       box.style = css;
-      box.innerHTML = texts[elem.id][0].text;
+      active.elem = elem;
+      active.list = explanations[elem.id];
+      updateContent(0);
 
       let top = `${rect.top}px`;
       const boxHeight = box.getBoundingClientRect().height;
@@ -1843,21 +2109,21 @@ class HoverResources {
         top = `${rect.top - boxHeight}px`;
       }
       box.style = `${css}top: ${top};`;
-
     }
+
 
     function topNodeText(el) {
         let child = el.firstChild;
-        const texts = [];
+        const explanations = [];
 
         while (child) {
             if (child.nodeType == 3) {
-                texts.push(child.data);
+                explanations.push(child.data);
             }
             child = child.nextSibling;
         }
 
-        return texts.join("");
+        return explanations.join("");
     }
 
     function findWord(word) {
@@ -1872,25 +2138,35 @@ class HoverResources {
 
     function wrapText(elem, text, hoverText) {
       const id = getId(count++);
-      let textRegStr = `((^|>)([^>^<]* |))(${text}(|s|es))(([^>^<]* |)(<|$|))`;
+      function replaceRef() {
+        const prefix = arguments[1];
+        const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
+        const suffix = arguments[5];
+        return `${prefix}<${tag} id='${id}'>${text}</${tag}>${suffix}`;
+      }
+      // if (text.indexOf('code') === 0) {
+      //   console.log('here');
+      // }
+      let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
       let textReg = new RegExp(textRegStr, 'ig');
-      const replaceStr = `$1<${tag} id='${id}'>$4</${tag}>$6`;
-      elem.innerHTML = elem.innerHTML.replace(textReg, replaceStr);
-      texts[id] = hoverText;
+      elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
+      explanations[id] = hoverText;
     }
 
     let wrapList = [];
     let wrapIndex = 0;
     function wrapOne() {
-        if (!CE.properties.get('enabled')) return;
+        if (!properties.get('enabled')) return;
         for (let index = 0; index < 50; index += 1) {
           const wrapInfo = wrapList[wrapIndex];
-          if (wrapInfo) {
+          if (wrapInfo && wrapInfo.elem.tagName.toLowerCase() !== tag) {
             wrapText(wrapInfo.elem, wrapInfo.word, wrapInfo.explainations);
             wrapInfo[wrapIndex++] = undefined;
           }
         }
-        setTimeout(wrapOne, 1);
+        if (wrapIndex < wrapList.length) {
+          setTimeout(wrapOne, 1);
+        }
     }
     this.wrapOne = wrapOne;
 
@@ -1907,42 +2183,63 @@ class HoverResources {
       return info2.depth - info1.depth;
     }
 
-    function buildWrapList() {
-      const wordList = Object.keys(wordExplanationObj);
+    function removeAll() {
+      let resources = document.getElementsByTagName('hover-resource');
+      while (resources.length > 0) {
+        Array.from(resources)
+        .forEach((elem) => elem.outerHTML = elem.innerHTML);
+        resources = document.getElementsByTagName('hover-resource');
+      }
+    }
+
+    function sortByLength(str1, str2) {return str2.length - str1.length;}
+
+    function uniqueWords(explList) {
+      const uniq = {}
+      explList.forEach((expl) => uniq[expl.words] = true);
+      return Object.keys(uniq).sort(sortByLength);
+    }
+
+    function set(explList) {
+      removeAll();
+      const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
-        const word = wordList[index];
-        const elems = findWord(word);
-        for(let eIndex = 0; eIndex < elems.length; eIndex += 1) {
-          const elem = elems[eIndex];
-          if (excludedTags.indexOf(elem.tagName) === -1) {
-            const explainations = wordExplanationObj[word];
-            const depth = getDepth(elem);
-            wrapList.push({ elem, word, explainations, depth });
+        const explainations = explList[wordList[index]];
+        const uniqWords = uniqueWords(explainations);
+        for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
+          const word = uniqWords[wIndex];
+          const elems = findWord(word);
+          for(let eIndex = 0; eIndex < elems.length; eIndex += 1) {
+            const elem = elems[eIndex];
+            if (excludedTags.indexOf(elem.tagName) === -1) {
+              const depth = getDepth(elem);
+              wrapList.push({ elem, word, explainations, depth });
+            }
           }
         }
       }
       wrapList.sort(sortDepth);
+      wrapOne();
     }
 
-    buildWrapList();
-    setTimeout(wrapOne, 1);
+    this.set = set;
 
     document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', exitHover);
+    document.addEventListener('click', kill);
+    document.getElementById(POPUP_CNT_ID).addEventListener('mouseout', dontHoldOpen);
+    document.getElementById(POPUP_CNT_ID).addEventListener('click', (e) => e.preventDefault());
     this.wrapText = wrapText;
 
     function enableToggled(enabled) {
+      removeAll();
       instance.wrapOne();
     }
 
-    CE.properties.onUpdate('enabled', enableToggled);
+    properties.onUpdate('enabled', enableToggled);
   }
 }
 
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_UI_BUILT = new CustomEvent('ce-ui-built');
+HoverResources = new HoverResources();
 
 class AddInterface {
   constructor () {
@@ -2012,7 +2309,6 @@ function lookup() {
   function buildLookupHtml() {
     UI.innerHtml(lookupTemplate.render({
       MERRIAM_WEB_SUG_CNT_ID, HISTORY_CNT_ID,
-      cssUrl: chrome.runtime.getURL('css/lookup.css'),
       list: Tab.tabs,
       openTab: 0
     }));
@@ -2020,11 +2316,11 @@ function lookup() {
   }
 
   function switchTo(elem, div) {
-      const childs = elem.closest('.ce-tab-ctn').children;
-      const lis = childs[0].children;
+      const lis = elem.parentElement.children;
+      const childs = elem.parentElement.parentElement.querySelector('.ce-lookup-cnt').children;
       for (let index = 0; index < lis.length; index += 1) {
           lis[index].className = lis[index].className.replace(/(^| )active($| )/g, ' ');
-          childs[index + 1].style.display = 'none';
+          childs[index].style.display = 'none';
       }
       elem.className = elem.className + ' active';
       div.style.display = 'block';
@@ -2098,26 +2394,67 @@ class Explanations {
   constructor(list) {
     const tab = new Tab(URL_IMAGE_LOGO, CONTEXT_EXPLANATION_CNT_ID,
             'popup-cnt/tab-contents/explanation-cnt');
+    let selected = [];
+    let explanations;
     this.list = list ? list : [];
     this.add = function (expl) {
       this.list.push(expl);
     }
 
-    function setExplanation(explanations) {
+    function forTags(func) {
+      const tags = document.getElementsByClassName('ce-expl-tag');
+      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
+    }
+
+    function selectUpdate() {
+      selected = [];
+      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
+      setExplanation();
+    }
+
+    function deselectAll() {
+      forTags((elem) => elem.checked = false);
+    }
+
+    function selectAll() {
+      forTags((elem) => elem.checked = true);
+    }
+
+    function byTags(expl) {
+      if (selected.length === 0) return true;
+      for (let index = 0; index < selected.length; index += 1) {
+        if (expl.tags.indexOf(selected[index]) === -1) return false;
+      }
+      return true;
+    }
+
+    function setTagOnclick() {
+      forTags((elem) => elem.onclick = selectUpdate);
+      document.getElementById('ce-expl-tag-select-btn').onclick = selectAll;
+      document.getElementById('ce-expl-tag-deselect-btn').onclick = deselectAll;
+    }
+
+    function setExplanation(expls) {
       const scope = {};
       const tagObj = {}
+      if (expls !== undefined) {
+        explanations = expls;
+      }
       explanations.forEach(function (expl) {
+        const username = expl.author.username;
+        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
         expl.tags.forEach(function (tag) {
           tagObj[tag] = true;
         });
       });
+
       scope.allTags = Object.keys(tagObj);
       scope.words = explanations[0].words;
-      scope.explanations = explanations;
+      scope.explanations = explanations.filter(byTags);
       scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
-      console.log(explanations)
-      console.log(scope);
+      scope.selected = selected;
       tab.update(scope);
+      setTagOnclick();
       new AddInterface();
     }
 
@@ -2132,7 +2469,7 @@ class Explanations {
     }
 
     this.get = function (words, success, failure) {
-      const url = `${URL_CE_GET}${words}`;
+      const url = EPNTS.explanation.get(words);
       Request.get(url, setExplanation, setAddition(words));
     }
 
@@ -2162,8 +2499,8 @@ class RawText {
     const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
             'popup-cnt/tab-contents/raw-text-input', show);
 
-    const space = new Array(4).fill('&nbsp;').join('');
-    const tabSpacing = new Array(16).fill('&nbsp;').join('');
+    const space = new Array(1).fill('&nbsp;').join('');
+    const tabSpacing = new Array(2).fill('&nbsp;').join('');
     function textToHtml(text) {
       return text.replace(/\n/g, '<br>').replace(/\s/g, space)
                   .replace(/\t/g, tabSpacing);
@@ -2189,7 +2526,7 @@ class RawText {
     }
 
     function settingsPageChange (settingsPage) {
-      if (settingsPage === 'Raw Text Tool') {
+      if (settingsPage === 'RawTextTool') {
         writeChanges();
       }
     }
@@ -2246,7 +2583,7 @@ class MerriamWebster {
         }
       }
 
-      function failure () {
+      function failure (error) {
         console.error('Call to Meriam Webster failed');
         hideTab = true;
         CE.updateTabVisibility();
@@ -2264,7 +2601,7 @@ class MerriamWebster {
   }
 }
 
-return {afterLoad, $t};
+return {afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }
 CE = CE()
 CE.afterLoad.forEach((item) => {item();});

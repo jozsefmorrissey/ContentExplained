@@ -2,6 +2,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 
 shell.exec('cat ./src/index/ExprDef.js ./src/index/services/\\$t.js > ./bin/builder.js')
+shell.exec("curl -X GET --insecure 'https://localhost:3001/content-explained/EPNTS' > ./bin/EPNTS.js");
 
 const $t = require('./bin/builder.js').$t;
 const CssFile = require('./src/index/css.js').CssFile;
@@ -78,10 +79,12 @@ class Watcher {
 }
 
 const jsFiles = {};
+const allJsFiles = {};
 let position = 0;
 const refRegex = /(class|function)\s{1}([\$a-zA-Z][a-zA-Z0-9\$]*)/g;
 class JsFile {
   constructor(filename, contents) {
+    allJsFiles[filename] = this;
     const instance = this;
     this.filename = filename;
     this.contents = contents;
@@ -91,15 +94,15 @@ class JsFile {
     console.log('after: ', after);
     this.position = position++;
     if (after && after !== firstLine) {
-      setTimeout(function () {
         if (!jsFiles[after]) {
           jsFiles[instance.filename] = instance;
           console.log(JSON.stringify(Object.keys(jsFiles), null, 2));
           console.error('Invalid file indicated: ' + after);
         } else {
+          console.log("Add Child", jsFiles[after].filename);
+          console.log("children", JSON.stringify(Object.keys(jsFiles[after].children), null, 2));
           jsFiles[after].addChild(instance);
         }
-      }, 1000);
     } else {
       jsFiles[this.filename] = this;
     }
@@ -120,15 +123,21 @@ class JsFile {
     this.addChild = function (jsFile) {
       this.children.push(jsFile);
     }
+    this.replace = function () {
+      this.overwrite = true;
+    }
     this.updateContents(contents);
     // console.log(this)
   }
 }
 function dummy() {};
 function jsBundler(filename, contents) {
-  if (jsFiles[filename]) {
-    jsFiles[filename].updateContents(contents);
+  console.log(JSON.stringify(Object.keys(jsFiles)));
+  if (allJsFiles[filename]) {
+    console.log('updating', filename);
+    allJsFiles[filename].updateContents(contents);
   } else {
+    console.log('new one', filename);
     new JsFile(filename, contents);
   }
   let bundle = 'let CE = function () {\nconst afterLoad = []\n';
@@ -143,7 +152,8 @@ function jsBundler(filename, contents) {
       bundle += child.contents;
     });
   });
-  bundle += '\nreturn {afterLoad, $t};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});';
+  const exposed = '{afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
+  bundle += `\nreturn ${exposed};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});`;
   fs.writeFile('./index.js', bundle, dummy);
 }
 
@@ -171,4 +181,4 @@ new Watcher(jsBundler).add('./constants/global.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js')
-                      .add('./json/test-words.js');
+                      .add('./bin/EPNTS.js');

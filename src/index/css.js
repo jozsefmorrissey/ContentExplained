@@ -3,7 +3,6 @@ class Css {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
     this.value = value.trim().replace(/\s{1,}/g, ' ');
     this.apply = function () {
-      console.log('here')
       const matchingElems = document.querySelectorAll(this.identifier);
       for (let index = 0; index < matchingElems.length; index += 1) {
         matchingElems[index].style = this.value + matchingElems[index].style;

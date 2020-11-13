@@ -19,13 +19,13 @@ class $t {
 		}
 
 		const signProps = {opening: /([-+\!])/};
-		const relationalProps = {opening: /((\<|\>|\<\=|\>\=))/};
+		const relationalProps = {opening: /((\<|\>|\<\=|\>\=|\|\||\||&&|&))/};
 		const ternaryProps = {opening: /\?/};
 		const keyWordProps = {opening: /(new|null|undefined|NaN|true|false)[^a-z^A-Z]/, tailOffset: -1};
 		const ignoreProps = {opening: /new \$t\('.*?'\).render\(get\('scope'\), '(.*?)', get\)/};
 		const commaProps = {opening: /,/};
 		const colonProps = {opening: /:/};
-		const multiplierProps = {opening: /([-+=*\/](=|)|===)/};
+		const multiplierProps = {opening: /(===|[-+=*\/](=|))/};
 		const stringProps = {opening: /('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))/};
 		const spaceProps = {opening: /\s{1}/};
 		const numberProps = {opening: /[0-9]*((\.)[0-9]*|)/};
@@ -120,8 +120,10 @@ class $t {
 				for (let index = 0; currObj != undefined && index < split.length; index += 1) {
 					currObj = currObj[split[index]];
 				}
-				const value = currObj || parentScope(name) || '';
-				return value;
+				if (currObj !== undefined) return currObj;
+				const parentScopeVal = parentScope(name);
+				if (parentScopeVal !== undefined) return parentScopeVal;
+				return '';
 			}
 			return get;
 		}
@@ -351,7 +353,7 @@ class $t {
 				let templateName = tagContents.replace(/.*\$t-id=('|")([a-zA-Z-_\/]*?)(\1).*/, '$2');
 				template = templateName !== tagContents ? templateName : template;
 				string = string.replace(match[0], `{{new $t('${template}').render(get('scope'), '${match[5]}', get)}}`);
-				console.log('\n\n\nformrepeat: ', string, '\n\n\n')
+				// console.log('\n\n\nformrepeat: ', string, '\n\n\n')
 				eval(`new $t(\`${template}\`)`);
 			}
 			return string;

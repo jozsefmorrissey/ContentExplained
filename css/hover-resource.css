@@ -1,11 +1,31 @@
 hover-resource {
-    background-color:
-    #fde66d;
-    border-radius: 2pt;
+  border-radius: 10pt;
+  background-color: rgba(150, 162, 249, 0.56);
 }
 
 hover-resource:hover {
   font-weight: bolder;
+}
+
+#ce-hover-display-cnt-id {
+  padding: 0 10pt;
+}
+
+#ce-hover-switch-list-id {
+  margin: 0;
+}
+
+.ce-hover-list {
+  list-style: none;
+  font-size: medium;
+  color: blue;
+  font-weight: 600;
+  padding: 0 10pt;
+}
+
+.ce-hover-list.active {
+  background-color: #ada5a5;
+  border-radius: 10pt;
 }
 
 .arrow-up {

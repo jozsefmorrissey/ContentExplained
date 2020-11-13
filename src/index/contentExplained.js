@@ -37,10 +37,9 @@ function search() {
   }
 
   let built = false;
-  function buildUi() {
+  function buildUi(data) {
     built = true;
     document.onmouseup = onHighlight;
-    new HoverResources(data);
     UI.id = UI_ID;
     UI.style = `position: fixed;
                 width: 100%;

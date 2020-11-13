@@ -170,7 +170,9 @@ function ShortCutCointainer(id, keys, html, config) {
   }
 
   function innerHtml(html) {
-    container.innerHTML = html;
+    if (container) {
+      container.innerHTML = html;
+    }
   }
 
   function mouseupOnRandDescendents(e, count) {

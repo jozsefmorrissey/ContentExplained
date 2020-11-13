@@ -6,7 +6,20 @@ body {
   width: 100%;
 }
 
-.ce-setting-cnt {
+#ce-logout-btn {
+  position: absolute;
+  right: 50%;
+  bottom: 50%;
+  transform: translate(50%, 50%);
+}
+
+#ce-profile-header-ctn {
+  display: inline-flex;
+  position: relative;
+  width: 100%;
+}
+
+#ce-setting-cnt {
   display: inline-flex;
   height: 100%;
   width: 100%;
@@ -26,6 +39,28 @@ body {
   font-weight: 600;
   font-size: medium;
   color: aliceblue;
-  margin: 10pt;
-  padding: 0;
+  margin: 5pt 0;
+  padding: 0 10pt;
+  width: max-content;
+}
+
+.ce-error-msg {
+  color: red;
+}
+
+.ce-active-list-item {
+  background: dodgerblue;
+  border-radius: 15pt;
+}
+
+#ce-login-cnt {
+  text-align: center;
+  width: 100%;
+  height: 100vh;
+}
+
+#ce-login-center {
+  position: relative;
+  top: 50%;
+  transform: translate(0, -50%);1
 }

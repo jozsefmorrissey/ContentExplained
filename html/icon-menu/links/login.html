@@ -1,10 +1,22 @@
-<div>
-  <div>
-      <input type='text' placeholder="username">
-      <button type="button" onclick="register()">Register</button>
-  </div>
-  <div>
-    <input type='text' placeholder="sync-key">
-    <button type='button' onclick="sync()">Sync</button>
+<div id='ce-login-cnt'>
+  <div id='ce-login-center'>
+    <h3 class='ce-error-msg'>{{errorMsg}}</h3>
+    <div {{state === LOGIN ? '' : 'hidden'}}>
+      <input type='text' placeholder="Email" id='{{EMAIL_INPUT}}' value='{{email}}'>
+      <br/><br/>
+      <button type="button" id='{{LOGIN_BTN_ID}}'>Submit</button>
+    </div>
+    <div {{state === REGISTER ? '' : 'hidden'}}>
+      <input type='text' placeholder="Username" id='{{USERNAME_INPUT}}' value='{{username}}'>
+      <br/><br/>
+      <button type="button" id='{{REGISTER_BTN_ID}}'>Register</button>
+    </div>
+    <div {{state === CHECK ? '' : 'hidden'}}>
+      <h4>To proceed check your email confirm your request</h4>
+      <br/><br/>
+      <button type="button" id='{{RESEND_BTN_ID}}'>Resend</button>
+      <h2>or<h2/>
+      <button type="button" id='{{LOGOUT_BTN_ID}}'>Use Another Email</button>
+    </div>
   </div>
 </div>
