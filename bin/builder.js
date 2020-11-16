@@ -293,8 +293,6 @@ function parse(exprDef, str) {
     let options = '';
     stack.map(function (value) {stackIds+=value.getName() + ','});
     tos.next().map(function (value) {options+=value.getName() + ','})
-    // console.log(stackIds)
-    // console.log(options)
     index = checkArray(tos, tos.next());
     if (tos.closed()) {
       stack.pop();
@@ -316,7 +314,7 @@ try {
 class $t {
 	constructor(template, id) {
 		function varReg(prefix, suffix) {
-		  const vReg = '([a-zA-Z_\\$][a-zA-Z0-9_.\\$]*)';
+		  const vReg = '([a-zA-Z_\\$][a-zA-Z0-9_\\$]*)';
 		  prefix = prefix ? prefix : '';
 		  suffix = suffix ? suffix : '';
 		  return new RegExp(`${prefix}${vReg}${suffix}`)
@@ -347,12 +345,13 @@ class $t {
 		const objectLabelProps = {opening: varReg(null, '\\:')};
 		const groupProps = {opening: /\(/, closing: /\)/};
 		const expressionProps = {opening: null, closing: null};
+		const attrProps = {opening: varReg('(\\.', '){1,}')};
 
-		const funcProps = {
-		  opening: varReg(null, '\\('),
-		  onOpen: replace(varReg(null, '\\('), 'get("$1")('),
-		  closing: /\)/
-		};
+		// const funcProps = {
+		//   opening: varReg(null, '\\('),
+		//   onOpen: replace(varReg(null, '\\('), 'get("$1")('),
+		//   closing: /\)/
+		// };
 		const arrayProps = {
 		  opening: varReg(null, '\\['),
 		  onOpen: replace(varReg(null, '\\['), 'get("$1")['),
@@ -373,7 +372,8 @@ class $t {
 		const relational = new ExprDef('relational', relationalProps);
 		const comma = new ExprDef('comma', commaProps);
 		const colon = new ExprDef('colon', colonProps);
-		const func = new ExprDef('func', funcProps);
+		const attr = new ExprDef('attr', attrProps);
+		// const func = new ExprDef('func', funcProps);
 		const string = new ExprDef('string', stringProps);
 		const space = new ExprDef('space', spaceProps);
 		const keyWord = new ExprDef('keyWord', keyWordProps);
@@ -389,20 +389,32 @@ class $t {
 		const objectShorthand = new ExprDef('objectShorthand', objectShorthandProps);
 
 		expression.always(space, ignore, keyWord);
-		expression.if(string, number, func, array, variable, group)
-		      .then(multiplier, sign, relational)
+		expression.if(string, number, group, array, variable)
+		      .then(multiplier, sign, relational, group)
 		      .repeat();
+		expression.if(string, group, array, variable)
+					.then(attr)
+		      .then(multiplier, sign, relational, expression)
+					.repeat();
+		expression.if(string, group, array, variable)
+					.then(attr)
+					.end();
 		expression.if(sign)
 		      .then(expression)
-		      .then(multiplier, sign, relational)
+		      .then(multiplier, sign, relational, group)
 		      .repeat();
-		expression.if(string, number, func, array, variable, group)
+		expression.if(string, number, group, array, variable)
 		      .then(ternary)
 		      .then(expression)
 		      .then(colon)
 		      .then(expression)
 		      .end();
-		expression.if(object, string, number, func, array, variable, group)
+		expression.if(ternary)
+		      .then(expression)
+		      .then(colon)
+		      .then(expression)
+		      .end();
+		expression.if(object, string, number, group, array, variable)
 		      .end();
 		expression.if(sign)
 		      .then(number)
@@ -415,15 +427,12 @@ class $t {
 		object.if(objectShorthand).end();
 
 		group.always(space, ignore, keyWord);
+		group.if(expression).then(comma).repeat();
 		group.if(expression).end();
 
 		array.always(space, ignore, keyWord);
 		array.if(expression).then(comma).repeat();
 		array.if(expression).end();
-
-		func.always(space, ignore, keyWord);
-		func.if(expression).then(comma).repeat();
-		func.if(expression).end();
 
 		function getter(scope, parentScope) {
 			parentScope = parentScope || function () {return undefined};
@@ -536,7 +545,9 @@ class $t {
 
 		function evaluate(get) {
 			if ($t.functions[id]) {
-				return $t.functions[id](get);
+				try {
+					return $t.functions[id](get);
+				} catch (e) {}
 			} else {
 				return eval($t.templates[id])
 			}
@@ -725,4 +736,3 @@ $t.dumpTemplates = function () {
 try{
 	exports.$t = $t;
 } catch (e) {}
-exports.$t = $t;

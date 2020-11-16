@@ -293,8 +293,6 @@ function parse(exprDef, str) {
     let options = '';
     stack.map(function (value) {stackIds+=value.getName() + ','});
     tos.next().map(function (value) {options+=value.getName() + ','})
-    // console.log(stackIds)
-    // console.log(options)
     index = checkArray(tos, tos.next());
     if (tos.closed()) {
       stack.pop();

@@ -25,10 +25,14 @@ class HoverResources {
 
     let killAt = -1;
     let holdOpen = false;
+    this.close = () => {
+      box.style.display = 'none';
+      killAt = -1;
+    }
+
     function kill() {
       if (!holdOpen && killAt < new Date().getTime()) {
-          box.style.display = 'none';
-          killAt = -1;
+        instance.close();
       }
     }
 
@@ -79,7 +83,7 @@ class HoverResources {
       document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
     }
 
-    function updateContent(index) {
+    function updateDefined(index) {
       const hoveredText = active.elem.innerText;
       if (index !== undefined) {
         active.expl.isActive = false;
@@ -91,6 +95,7 @@ class HoverResources {
       const scope = {
         HOVER_LOGIN_BTN_ID, HOVER_DISPLAY_CNT_ID, HOVER_SWITCH_LIST_ID,
         active, hoveredText, loggedIn,
+        content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),
         canLike: Opinion.canLike(active.expl),
@@ -100,7 +105,35 @@ class HoverResources {
       setSwitches();
     }
 
-    function positionText(elem) {
+    function exampleUpdate(obj) {
+      const hoveredText = obj.words;
+      active.expl.isActive = false;
+      active.expl = obj;
+      active.expl.isActive = true;
+      active.list = [];
+
+      const loggedIn = User.isLoggedIn();
+      const scope = {
+        HOVER_LOGIN_BTN_ID, HOVER_DISPLAY_CNT_ID, HOVER_SWITCH_LIST_ID,
+        active, hoveredText, loggedIn,
+        content: textToHtml(active.expl.content),
+        likes: 700000,
+        dislikes: -70000,
+        canLike: true,
+        canDislike: true
+      };
+      box.innerHTML = resourceTemplate.render(scope);
+    }
+
+    function updateContent(value) {
+      if(Number.isInteger(value) || value === undefined) {
+        updateDefined(value);
+      } else {
+        exampleUpdate(value);
+      }
+    }
+
+    function positionText(elem, obj) {
       const tbSpacing = 10;
       const rect = elem.getBoundingClientRect();
       const height = rect.height;
@@ -131,11 +164,11 @@ class HoverResources {
       box.style = css;
       active.elem = elem;
       active.list = explanations[elem.id];
-      updateContent(0);
+      updateContent(obj || 0);
 
       let top = `${rect.top}px`;
       const boxHeight = box.getBoundingClientRect().height;
-      if (screenHeight / 2 > rect.top) {
+      if (screenHeight / 2 > rect.top && obj === undefined) {
         top = `${rect.top + height}px`;
       } else {
         top = `${rect.top - boxHeight}px`;
@@ -179,10 +212,12 @@ class HoverResources {
       // if (text.indexOf('code') === 0) {
       //   console.log('here');
       // }
-      let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
-      let textReg = new RegExp(textRegStr, 'ig');
-      elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
-      explanations[id] = hoverText;
+      if (text) {
+        let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
+        let textReg = new RegExp(textRegStr, 'ig');
+        elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
+        explanations[id] = hoverText;
+      }
     }
 
     let wrapList = [];
@@ -257,10 +292,14 @@ class HoverResources {
     this.set = set;
 
     document.addEventListener('mouseover', onHover);
-    document.addEventListener('click', kill);
+    document.addEventListener('click', instance.close);
     document.getElementById(POPUP_CNT_ID).addEventListener('mouseout', dontHoldOpen);
-    document.getElementById(POPUP_CNT_ID).addEventListener('click', (e) => e.preventDefault());
+    document.getElementById(POPUP_CNT_ID).addEventListener('click', (e) => {
+      if (e.target.tagName !== 'A')
+        e.stopPropagation()
+    });
     this.wrapText = wrapText;
+    this.positionText = positionText;
 
     function enableToggled(enabled) {
       removeAll();

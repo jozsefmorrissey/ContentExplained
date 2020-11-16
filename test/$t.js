@@ -32,7 +32,7 @@ const testData = [{
 },{
   scope: {start: '0', end:  '-12', Formatter},
   template: '<div>{{Formatter.html()}}</div>',
-  built: '`<div>` + (get("Formatter.html")()) + `</div>`',
+  built: '`<div>` + (get("Formatter").html()) + `</div>`',
   compiled: '<div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div><div>^</div>',
   numberOfBlocks: 1,
   exp: 'index in start..end',
@@ -41,7 +41,7 @@ const testData = [{
 },{
   scope: {end: 15, Formatter},
   template: '<div>{{Formatter.css(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})}}</div>',
-  built: '`<div>` + (get("Formatter.css")(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})) + `</div>`',
+  built: '`<div>` + (get("Formatter").css(1, 3, 4, 5, true, false, {one: 3, two: 5, four: 20})) + `</div>`',
   compiled: '<div>1true5</div><div>1true5</div>',
   numberOfBlocks: 1,
   exp: 'index in 13..end',
@@ -50,7 +50,7 @@ const testData = [{
 },{
   scope: {start: 4, end: 15},
   template: '<div>{{new Formatter.htmlFormatter(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')}}</div>',
-  built: '`<div>` + (new get("Formatter.htmlFormatter")(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')) + `</div>`',
+  built: '`<div>` + (new get("Formatter").htmlFormatter(\'Sally took the dog walking\', "and It was a lot of obj.fun", \'turtle shell island\')) + `</div>`',
   throwsError: true,
   numberOfBlocks: 1,
   exp: 'index in 0..43-',
@@ -86,7 +86,7 @@ const testData = [{
 },{
   scope: {Formatter},
   template: '<div>{{Formatter.html(hello, obj.world, {party, on, dust: settles}, skittles, pizza)}}</div>',
-  built: '`<div>` + (get("Formatter.html")(get("hello"), get("obj.world"), {party: get("party"), on: get("on"), dust: get("settles")}, get("skittles"), get("pizza"))) + `</div>`',
+  built: '`<div>` + (get("Formatter").html(get("hello"), get("obj").world, {party: get("party"), on: get("on"), dust: get("settles")}, get("skittles"), get("pizza"))) + `</div>`',
   compiled: '<div>^</div>',
   numberOfBlocks: 1,
   type: 'defaultObject',
@@ -109,11 +109,11 @@ const testData = [{
   type: 'invalidObject',
   typeError: 'invalidObject'
 },{
-  scope: {state: 'illinois'},
-  template: '<div>{{state.substr(0, 4) === \'Login\' ? \'\' : \'hidden\'}}</div>',
-  built: '`<div>` + (get("state.substr")(0, 4) === \'Login\' ? \'\' : \'hidden\') + `</div>`',
-  compiled: '<div>hidden</div>',
-  numberOfBlocks: 1,
+  scope: {state: 'illinois', expl: {id: 0, words: 'hello there'}, active: {expl: {id: 0}}},
+  template: '<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\'></li><div>{{state.substr(0, 4) === \'illi\' ? \'\' : \'hidden\'}}</div>',
+  built: '`<li class=\'ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `\'></li><div>` + (get("state").substr(0, 4) === \'illi\' ? \'\' : \'hidden\') + `</div>`',
+  compiled: '<li class=\'ce-hover-list active\'></li><div></div>',
+  numberOfBlocks: 2,
   type: 'defaultObject'
 }];
 

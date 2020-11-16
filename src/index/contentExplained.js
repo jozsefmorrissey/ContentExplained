@@ -1,4 +1,13 @@
 
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  return text.replace(/\n/g, '<br>').replace(/\s/g, space)
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script>/, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
 
 function search() {
   const explanations = new Explanations();

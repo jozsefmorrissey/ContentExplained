@@ -4,6 +4,7 @@ class Explanations {
             'popup-cnt/tab-contents/explanation-cnt');
     let selected = [];
     let explanations;
+    let searchWords;
     this.list = list ? list : [];
     this.add = function (expl) {
       this.list.push(expl);
@@ -22,24 +23,37 @@ class Explanations {
 
     function deselectAll() {
       forTags((elem) => elem.checked = false);
+      selected = [];
+      setExplanation();
     }
 
     function selectAll() {
-      forTags((elem) => elem.checked = true);
+      forTags((elem) => {elem.checked = true; selected.push(elem.value)});
+      setExplanation();
     }
 
+    const tagReg = /#[a-zA-Z0-9]*/g;
     function byTags(expl) {
       if (selected.length === 0) return true;
       for (let index = 0; index < selected.length; index += 1) {
-        if (expl.tags.indexOf(selected[index]) === -1) return false;
+        if (expl.content.match(tagReg).indexOf(`#${selected[index]}`) === -1) return false;
       }
       return true;
+    }
+
+    function addExpl(e) {
+      const explId = e.target.attributes['expl-id'].value;
+      const url = EPNTS.siteExplanation.add(explId);
+      const siteUrl = window.location.href;
+      Request.post(url, {siteUrl, content});
     }
 
     function setTagOnclick() {
       forTags((elem) => elem.onclick = selectUpdate);
       document.getElementById('ce-expl-tag-select-btn').onclick = selectAll;
       document.getElementById('ce-expl-tag-deselect-btn').onclick = deselectAll;
+      const applyBtns = document.getElementsByClassName('ce-apply-expl-btn');
+      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
     }
 
     function setExplanation(expls) {
@@ -48,37 +62,44 @@ class Explanations {
       if (expls !== undefined) {
         explanations = expls;
       }
-      explanations.forEach(function (expl) {
+      scope.explanations = explanations.filter(byTags);
+      scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.tags.forEach(function (tag) {
-          tagObj[tag] = true;
+        expl.content.match(tagReg).forEach(function (tag) {
+          tagObj[tag.substr(1)] = true;
         });
       });
 
       scope.allTags = Object.keys(tagObj);
-      scope.words = explanations[0].words;
-      scope.explanations = explanations.filter(byTags);
-      scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
+      scope.words = searchWords;
+      scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
+      scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
+      scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
+      scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
       scope.selected = selected;
       tab.update(scope);
       setTagOnclick();
-      new AddInterface();
+      AddInterface.update(searchWords);
     }
 
-    function setAddition(words) {
-      return function (request) {
+    function setAddition() {
         const scope = {};
-        scope.words = words;
+        scope.words = searchWords;
         scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
+        scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
+        scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
+        scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
+        scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
         tab.update(scope);
-        new AddInterface().toggleDisplay(true);
-      }
+        AddInterface.update(searchWords);
+        AddInterface.toggleDisplay(true);
     }
 
     this.get = function (words, success, failure) {
       const url = EPNTS.explanation.get(words);
-      Request.get(url, setExplanation, setAddition(words));
+      searchWords = words;
+      Request.get(url, setExplanation, setAddition);
     }
 
     this.like = function (words, index, success, failure) {

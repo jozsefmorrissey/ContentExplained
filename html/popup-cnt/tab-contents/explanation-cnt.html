@@ -1,13 +1,14 @@
 <div>
   <div class='ce-key-cnt'>
     <h2 class='ce-key'>{{words}}</h2>
-    <button class='ce-btn ce-add-btn'>+</button>
+    <button class='ce-btn ce-add-btn' id='{{ADD_EDITOR_TOGGLE_BTN}}'>+</button>
   </div>
-  <div class="ce-add-cnt">
-    <textarea id='{{ADD_EDITOR_ID}}' rows="8" cols="80"></textarea>
+  <div class="ce-add-cnt" id='{{ADD_EDITOR_CNT_ID}}'>
+    <textarea id='{{ADD_EDITOR_ID}}' class='ce-width-full' rows='15'></textarea>
+    <button id='{{SUBMIT_EXPL_BTN_ID}}'>Add To Url</button>
   </div>
   <br>
-  <div class='ce-expls-cnt'>
+  <div class='ce-expls-cnt'{{explanations.length > 0 ? '' : ' hidden'}}>
     <div class='ce-expl-tag-cnt'>
       <button id='ce-expl-tag-select-btn'>All</button>
       <br>
