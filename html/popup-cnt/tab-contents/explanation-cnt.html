@@ -10,15 +10,11 @@
   <br>
   <div class='ce-expls-cnt'{{explanations.length > 0 ? '' : ' hidden'}}>
     <div class='ce-expl-tag-cnt'>
-      <button id='ce-expl-tag-select-btn'>All</button>
-      <br>
       <span:t repeat='tag in allTags'>
         <input type='checkbox' class='ce-expl-tag' value='{{tag}}'
             {{selected.indexOf(tag) === -1 ? '' : 'checked'}}>
         <label>{{tag}}</label>
       </span:t>
-      <br>
-      <button id='ce-expl-tag-deselect-btn'>None</button>
     </div>
     <div>
       <div:t repeat='explanation in explanations'

@@ -1,15 +1,15 @@
 <div>
-  <div class="ce-inline">
+  <div class="ce-inline ce-width-full">
     <div class="">
       <ul id='{{HOVER_SWITCH_LIST_ID}}'>
         <li:t class='ce-hover-list{{expl.id === active.expl.id ? " active": ""}}'
               repeat='expl in active.list'>
-          {{expl.words}}
+          {{expl.words}}&nbsp;<b class='ce-small-text'>({{expl.popularity}}%)</b>
         </li:t>
       </ul>
     </div>
-    <div>
-      <div class='ce-inline ce-center'>
+    <div class='ce-width-full'>
+      <div class='ce-inline ce-center ce-width-full'>
         <div class='ce-center'>
           <button id='ce-expl-voteup-btn'{{canLike ? '' : ' disabled'}}></button>
           <br>

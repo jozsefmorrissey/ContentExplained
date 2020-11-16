@@ -17,8 +17,11 @@ class AddInterface {
       }
     }
 
-    function addExplSuccessful() {
+    function addExplSuccessful(expl) {
       toggleDisplay(false);
+      HoverResources.add(expl);
+      properties.set('userContent', '', true)
+      content = '';
     }
 
     function addExplanation() {
@@ -45,6 +48,7 @@ class AddInterface {
       instance.toggleButton.addEventListener('click', toggleDisplay);
       instance.addExplBtn.addEventListener('click', addExplanation);
       instance.updateDisplay(content);
+      toggleDisplay(false);
     }
     instance.updateDisplay = updateDisplay;
 

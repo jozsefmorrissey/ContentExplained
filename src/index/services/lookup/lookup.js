@@ -47,7 +47,9 @@ function lookup() {
   function showTab(index) {
     updateTabVisibility();
     const elem = document.getElementsByClassName('ce-tab-list-item ')[index];
+    Tab.tabs.forEach((tab) => tab.showing = false);
     const div = document.getElementById(Tab.tabs[index].id());
+    Tab.tabs[index].showing = true;
     switchTo(elem, div);
   }
 
@@ -67,19 +69,6 @@ function lookup() {
       for (let index = 0; index < tabItems.length; index += 1) {
         tabItems[index].onclick = call(showTab, index);
       }
-      // for (let index = 0; index < tabCtns.length; index += 1) {
-      //   const tabCtn = tabCtns[index];
-      //   const childs = tabCtn.children;
-      //   const lis = childs[0].children;
-      //     for (let lIndex = 0; lIndex < lis.length; lIndex += 1) {
-      //       const li = lis[lIndex];
-      //       const div = childs[lIndex + 1];
-      //       li.onclick = updateDisplayFunc(div);
-      //         if (li.className.split(' ').indexOf('active') !== -1) {
-      //             div.style.display = 'block';
-      //         }
-      //     }
-      // }
       showTab(activeIndex);
       CE.showTab = showTab;
   }

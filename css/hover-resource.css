@@ -7,8 +7,14 @@ hover-resource:hover {
   font-weight: bolder;
 }
 
+.ce-apply-expl-btn:disabled {
+    background-color: grey;
+    border-color: darkgray;
+}
+
 #ce-hover-display-cnt-id {
   padding: 0 10pt;
+  width: 100%;
 }
 
 #ce-hover-switch-list-id {

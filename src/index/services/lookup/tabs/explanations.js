@@ -21,17 +21,6 @@ class Explanations {
       setExplanation();
     }
 
-    function deselectAll() {
-      forTags((elem) => elem.checked = false);
-      selected = [];
-      setExplanation();
-    }
-
-    function selectAll() {
-      forTags((elem) => {elem.checked = true; selected.push(elem.value)});
-      setExplanation();
-    }
-
     const tagReg = /#[a-zA-Z0-9]*/g;
     function byTags(expl) {
       if (selected.length === 0) return true;
@@ -41,17 +30,23 @@ class Explanations {
       return true;
     }
 
+
     function addExpl(e) {
-      const explId = e.target.attributes['expl-id'].value;
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            HoverResources.add(expl);
+            setExplanation();
+        })
+      }
       const url = EPNTS.siteExplanation.add(explId);
       const siteUrl = window.location.href;
-      Request.post(url, {siteUrl, content});
+      Request.post(url, {siteUrl, content}, addExplSuccessful);
     }
 
     function setTagOnclick() {
       forTags((elem) => elem.onclick = selectUpdate);
-      document.getElementById('ce-expl-tag-select-btn').onclick = selectAll;
-      document.getElementById('ce-expl-tag-deselect-btn').onclick = deselectAll;
       const applyBtns = document.getElementsByClassName('ce-apply-expl-btn');
       Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
     }
@@ -66,7 +61,9 @@ class Explanations {
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.content.match(tagReg).forEach(function (tag) {
+        expl.canApply = HoverResources.canApply(expl);
+        const tags = expl.content.match(tagReg) || [];
+        tags.forEach(function (tag) {
           tagObj[tag.substr(1)] = true;
         });
       });

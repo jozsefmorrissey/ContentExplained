@@ -661,82 +661,6 @@ function search() {
 }
 
 afterLoad.push(search);
-
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
-      }
-    }
-
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = values[key];
-        if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
-          instance.set(key, value);
-        }
-      }
-    }
-
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (keys, func) {
-      keyDefinitionCheck(keys);
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      keys.forEach((key) => {
-        if (updateFuncs[key] === undefined) {
-          updateFuncs[key] = [];
-        }
-        updateFuncs[key].push(func);
-        func(properties[key])
-      });
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
-  }
-}
-
-const properties = new Properties();
 var SHORT_CUT_CONTAINERS;
 
 function ShortCutCointainer(id, keys, html, config) {
@@ -986,6 +910,82 @@ function onLoad() {
 }
 
 afterLoad.push(onLoad);
+
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
+
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
+      }
+    }
+
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
+    };
+
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
+      }
+    }
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
+  }
+}
+
+const properties = new Properties();
 class Css {
   constructor(identifier, value) {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
@@ -1060,19 +1060,25 @@ try{
 	exports.CssFile = CssFile;
 } catch (e) {}
 // ./src/index/css.js
-new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
 new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
 
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
 
 new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  .ce-apply-expl-btn:disabled {     background-color: grey;     border-color: darkgray; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 class RegArr {
   constructor(string, array) {
@@ -1231,121 +1237,6 @@ const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
 const CE_UI_BUILT = new CustomEvent('ce-ui-built');
-
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      CE.properties.set('loggedIn', true, true);
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = CE.EPNTS.user.get(email);
-        CE.Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    this.logout = function (soft) {
-      user = undefined;
-      status = 'expired';
-      if (soft !== true) {
-        const cred = CE.properties.get('credential');
-        CE.properties.set('credential', null, true);
-        CE.properties.set('loggedIn', false, true);
-        dispatchUpdate();
-        if(cred !== null) {
-          if (status === 'active') {
-            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-            CE.Request.delete(deleteCredUrl, undefined, instance.update);
-          }
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          CE.properties.set('credential', credential, true);
-        } else {
-          CE.properties.set('credential', null, true);
-          credential = null;
-        }
-      } else {
-        credential = CE.properties.get('credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = CE.EPNTS.credential.status(credential);
-        CE.Request.get(url, updateStatus);
-        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        CE.Request.get(url, setUser);
-      } else if (credential === null) {
-        this.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = CE.EPNTS.credential.add(user.id);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = CE.EPNTS.credential.add(uId);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    }
-
-    this.register = function (email, username) {
-      const url = CE.EPNTS.user.add();
-      const body = {email, username};
-      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    }
-    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
-  }
-}
-
-User = new User();
 
 class $t {
 	constructor(template, id) {
@@ -1777,29 +1668,35 @@ try{
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
 }
+$t.functions['755294900'] = function (get) {
+	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `&nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
+}
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
+}
+$t.functions['1172691506'] = function (get) {
+	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `$nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
+}
+$t.functions['1718777020'] = function (get) {
+	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + ` (` + (get("expl").popularity) + `%) </li>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
 }
 $t.functions['hover-resource'] = function (get) {
-	return `<div> <div class="ce-inline"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}} </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div> <div class='ce-inline ce-center'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("hoveredText")) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> </div> <div class=''> <div id='` + (get("HOVER_DISPLAY_CNT_ID")) + `'>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-inline ce-center ce-width-full'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("hoveredText")) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> </div> <div class=''> <div id='` + (get("HOVER_DISPLAY_CNT_ID")) + `'>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
 }
 $t.functions['-2095533744'] = function (get) {
 	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + ` </li>`
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation").shortUsername) + ` <br> Likes / Dislikes <br> ` + (get("explanation").author.likes) + ` / ` + (get("explanation").author.dislikes) + ` </div> <span class='ce-expl'> <div class='ce-apply-expl-btn-cnt'> <button class='ce-apply-expl-btn' expl-id="` + (get("explanation").id) + `">Apply</button> </div> <div> <h3>` + (get("explanation").words) + `</h3> ` + (get("explanation").content) + ` </div> </span> </span> </div> `
+	return `<div class='ce-expl-card'> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation").shortUsername) + ` <br> Likes / Dislikes <br> ` + (get("explanation").author.likes) + ` / ` + (get("explanation").author.dislikes) + ` </div> <span class='ce-expl'> <div class='ce-apply-expl-btn-cnt'> <button class='ce-apply-expl-btn' expl-id="` + (get("explanation").id) + `" ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <div> <h3>` + (get("explanation").words) + `</h3> ` + (get("explanation").content) + ` </div> </span> </span> </div> `
 }
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
 $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
-	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
 }
 $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
@@ -1810,11 +1707,8 @@ $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
-$t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn' id='` + (get("ADD_EDITOR_TOGGLE_BTN")) + `'>+</button> </div> <div class="ce-add-cnt" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-width-full' rows='15'></textarea> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add To Url</button> </div> <br> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> <button id='ce-expl-tag-select-btn'>All</button> <br> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` <br> <button id='ce-expl-tag-deselect-btn'>None</button> </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> </div> `
+	return `<div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn' id='` + (get("ADD_EDITOR_TOGGLE_BTN")) + `'>+</button> </div> <div class="ce-add-cnt" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-width-full' rows='15'></textarea> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add To Url</button> </div> <br> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> </div> `
 }
 $t.functions['-1828676604'] = function (get) {
 	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
@@ -1822,14 +1716,17 @@ $t.functions['-1828676604'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
+$t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
+	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
+}
+$t.functions['icon-menu/settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+}
 $t.functions['icon-menu/menu'] = function (get) {
 	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
-}
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
@@ -1840,6 +1737,124 @@ $t.functions['icon-menu/links/profile'] = function (get) {
 $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 	return `<h1>favorite lists</h1> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
+}
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      CE.properties.set('loggedIn', true, true);
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = CE.EPNTS.user.get(email);
+        CE.Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    this.logout = function (soft) {
+      user = undefined;
+      status = 'expired';
+      if (soft !== true) {
+        const cred = CE.properties.get('credential');
+        CE.properties.set('credential', null, true);
+        CE.properties.set('loggedIn', false, true);
+        dispatchUpdate();
+        if(cred !== null) {
+          if (status === 'active') {
+            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+            CE.Request.delete(deleteCredUrl, undefined, instance.update);
+          }
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          CE.properties.set('credential', credential, true);
+        } else {
+          CE.properties.set('credential', null, true);
+          credential = null;
+        }
+      } else {
+        credential = CE.properties.get('credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = CE.EPNTS.credential.status(credential);
+        CE.Request.get(url, updateStatus);
+        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        CE.Request.get(url, setUser);
+      } else if (credential === null) {
+        this.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = CE.EPNTS.credential.add(user.id);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = CE.EPNTS.credential.add(uId);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    }
+
+    this.register = function (email, username) {
+      const url = CE.EPNTS.user.add();
+      const body = {email, username};
+      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    }
+    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
+  }
+}
+
+User = new User();
+
 class Expl {
   constructor () {
     let addedResources = false;
@@ -1927,6 +1942,7 @@ class Opinion {
     let siteId, userId;
     const amendments = {};
     const opinions = {};
+    const instance = this;
 
     function voteSuccess(explId, favorable, callback) {
       return function () {
@@ -1969,6 +1985,11 @@ class Opinion {
       Request.get(url, voteSuccess(expl.id, false, callback));
     }
 
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
     function saveVotes(results) {
       results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
     }
@@ -1987,78 +2008,6 @@ class Opinion {
 
 Opinion = new Opinion();
 
-class AddInterface {
-  constructor () {
-    const instance = this;
-    let content = '';
-    let words = '';
-    this.ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
-    this.ADD_EDITOR_ID = 'ce-add-editor-id';
-    this.ADD_EDITOR_TOGGLE_BTN = 'ce-add-editor-toggle-btn-id';
-    this.SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
-    let updatePending = false;
-
-    function initContent(userContent) {
-      if (content === '' && (typeof userContent) === 'string') {
-        content = userContent;
-        updateDisplay()
-      }
-    }
-
-    function addExplSuccessful() {
-      toggleDisplay(false);
-    }
-
-    function addExplanation() {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
-    }
-
-    function updateDisplay () {
-      if (instance.inputElem !== undefined) {
-        instance.inputElem.value = content;
-        const ceUi = document.getElementById('ce-ui');
-        HoverResources.positionText(ceUi, {words, content});
-      }
-    }
-
-    this.update = (newWords) => {
-      words = newWords || words;
-      instance.inputElem = document.getElementById(this.ADD_EDITOR_ID);
-      instance.inputCnt = document.getElementById(this.ADD_EDITOR_CNT_ID);
-      instance.toggleButton = document.getElementById(this.ADD_EDITOR_TOGGLE_BTN);
-      instance.addExplBtn = document.getElementById(this.SUBMIT_EXPL_BTN_ID);
-      instance.inputElem.addEventListener('keyup', onChange);
-      instance.inputElem.addEventListener('blur', HoverResources.close);
-      instance.toggleButton.addEventListener('click', toggleDisplay);
-      instance.addExplBtn.addEventListener('click', addExplanation);
-      instance.updateDisplay(content);
-    }
-    instance.updateDisplay = updateDisplay;
-
-    function onChange(e) {
-      content = (typeof e.target.value) === "string" ? e.target.value : content;
-      properties.set('userContent', content, true)
-      updateDisplay();
-    }
-
-    let show;
-    function toggleDisplay(value) {
-      show = (typeof value) === "boolean" ? value : !show;
-      if (show) {
-        instance.update();
-        instance.inputCnt.style.display = 'block';
-      } else {
-        instance.inputCnt.style.display = 'none';
-      }
-    }
-    this.toggleDisplay = toggleDisplay;
-    properties.onUpdate('userContent', initContent);
-  }
-}
-
-AddInterface = new AddInterface();
-
 class HoverResources {
   constructor (tag) {
     const resourceTemplate = new $t('hover-resource');
@@ -2074,8 +2023,9 @@ class HoverResources {
     const  active = {expl: {}};
     let switches = [];
     let siteId;
+    let explRefs = {};
+    let explIds = [];
     tag = (tag ? tag : 'hover-resource').toLowerCase();
-    const explanations = {};
 
     console.log('HoverResources');
     const box = document.createElement('div');
@@ -2102,7 +2052,7 @@ class HoverResources {
     function onHover(event) {
       if (!properties.get('enabled')) return;
       const elem = event.target;
-      if (elem.tagName.toLowerCase() === tag && explanations[elem.id]) {
+      if (elem.tagName.toLowerCase() === tag) {
         killAt = new Date().getTime() + waitTime;
         positionText(elem);
       } else if (elem.id === box.id || killAt === -1){
@@ -2143,6 +2093,12 @@ class HoverResources {
       document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
     }
 
+    function sortByPopularity(expl1, expl2) {
+      expl1.popularity = Opinion.popularity(expl1);
+      expl2.popularity = Opinion.popularity(expl2);
+      return expl2.popularity - expl1.popularity;
+    }
+
     function updateDefined(index) {
       const hoveredText = active.elem.innerText;
       if (index !== undefined) {
@@ -2150,6 +2106,7 @@ class HoverResources {
         active.expl = active.list[index];
         active.expl.isActive = true;
         active.list = active.list.length > 1 ? active.list : [];
+        active.list.sort(sortByPopularity);
       }
       const loggedIn = User.isLoggedIn();
       const scope = {
@@ -2223,7 +2180,7 @@ class HoverResources {
 
       box.style = css;
       active.elem = elem;
-      active.list = explanations[elem.id];
+      active.list = explRefs[elem.getAttribute('ref')];
       updateContent(obj || 0);
 
       let top = `${rect.top}px`;
@@ -2261,39 +2218,36 @@ class HoverResources {
     }
 
 
-    function wrapText(elem, text, hoverText) {
+    function wrapText(elem, text, ref) {
       const id = getId(count++);
       function replaceRef() {
         const prefix = arguments[1];
         const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
         const suffix = arguments[5];
-        return `${prefix}<${tag} id='${id}'>${text}</${tag}>${suffix}`;
+        return `${prefix}<${tag} ref='${ref}'>${text}</${tag}>${suffix}`;
       }
-      // if (text.indexOf('code') === 0) {
-      //   console.log('here');
-      // }
       if (text) {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
         elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
-        explanations[id] = hoverText;
       }
     }
 
     let wrapList = [];
     let wrapIndex = 0;
     function wrapOne() {
-        if (!properties.get('enabled')) return;
-        for (let index = 0; index < 50; index += 1) {
-          const wrapInfo = wrapList[wrapIndex];
-          if (wrapInfo && wrapInfo.elem.tagName.toLowerCase() !== tag) {
-            wrapText(wrapInfo.elem, wrapInfo.word, wrapInfo.explainations);
-            wrapInfo[wrapIndex++] = undefined;
+        if (!properties.get('enabled') || wrapIndex >= wrapList.length) return;
+        const wrapInfo = wrapList[wrapIndex];
+        const elems = findWord(wrapInfo.word);
+        for (let eIndex = 0; eIndex < elems.length; eIndex += 1) {
+          const elem = elems[eIndex];
+          if (wrapInfo && elem.tagName.toLowerCase() !== tag) {
+            wrapText(elem, wrapInfo.word, wrapInfo.ref);
+            wrapInfo[wrapIndex] = undefined;
           }
         }
-        if (wrapIndex < wrapList.length) {
-          setTimeout(wrapOne, 1);
-        }
+        wrapIndex++;
+        setTimeout(wrapOne, 1);
     }
     this.wrapOne = wrapOne;
 
@@ -2329,27 +2283,36 @@ class HoverResources {
 
     function set(explList) {
       removeAll();
+      explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
-        const explainations = explList[wordList[index]];
-        const uniqWords = uniqueWords(explainations);
+        const ref = wordList[index];
+        const explanations = explList[ref];
+        explanations.forEach((expl) => explIds.push(expl.id));
+        const uniqWords = uniqueWords(explanations).sort(sortByLength);
         for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
           const word = uniqWords[wIndex];
-          const elems = findWord(word);
-          for(let eIndex = 0; eIndex < elems.length; eIndex += 1) {
-            const elem = elems[eIndex];
-            if (excludedTags.indexOf(elem.tagName) === -1) {
-              const depth = getDepth(elem);
-              wrapList.push({ elem, word, explainations, depth });
-            }
-          }
+          wrapList.push({ word, ref });
         }
       }
       wrapList.sort(sortDepth);
       wrapOne();
     }
 
+    function add(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [expl];
+      } else {
+        explRefs[ref].push(expl);
+      }
+      wrapList.push({ word: expl.words, ref });
+      wrapOne();
+      explIds.push(expl.id);
+    }
+
     this.set = set;
+    this.add = add;
 
     document.addEventListener('mouseover', onHover);
     document.addEventListener('click', instance.close);
@@ -2360,6 +2323,7 @@ class HoverResources {
     });
     this.wrapText = wrapText;
     this.positionText = positionText;
+    this.canApply = (expl) => explIds.indexOf(expl.id) === -1;
 
     function enableToggled(enabled) {
       removeAll();
@@ -2371,6 +2335,82 @@ class HoverResources {
 }
 
 HoverResources = new HoverResources();
+
+class AddInterface {
+  constructor () {
+    const instance = this;
+    let content = '';
+    let words = '';
+    this.ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
+    this.ADD_EDITOR_ID = 'ce-add-editor-id';
+    this.ADD_EDITOR_TOGGLE_BTN = 'ce-add-editor-toggle-btn-id';
+    this.SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
+    let updatePending = false;
+
+    function initContent(userContent) {
+      if (content === '' && (typeof userContent) === 'string') {
+        content = userContent;
+        updateDisplay()
+      }
+    }
+
+    function addExplSuccessful(expl) {
+      toggleDisplay(false);
+      HoverResources.add(expl);
+      properties.set('userContent', '', true)
+      content = '';
+    }
+
+    function addExplanation() {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
+    }
+
+    function updateDisplay () {
+      if (instance.inputElem !== undefined) {
+        instance.inputElem.value = content;
+        const ceUi = document.getElementById('ce-ui');
+        HoverResources.positionText(ceUi, {words, content});
+      }
+    }
+
+    this.update = (newWords) => {
+      words = newWords || words;
+      instance.inputElem = document.getElementById(this.ADD_EDITOR_ID);
+      instance.inputCnt = document.getElementById(this.ADD_EDITOR_CNT_ID);
+      instance.toggleButton = document.getElementById(this.ADD_EDITOR_TOGGLE_BTN);
+      instance.addExplBtn = document.getElementById(this.SUBMIT_EXPL_BTN_ID);
+      instance.inputElem.addEventListener('keyup', onChange);
+      instance.inputElem.addEventListener('blur', HoverResources.close);
+      instance.toggleButton.addEventListener('click', toggleDisplay);
+      instance.addExplBtn.addEventListener('click', addExplanation);
+      instance.updateDisplay(content);
+      toggleDisplay(false);
+    }
+    instance.updateDisplay = updateDisplay;
+
+    function onChange(e) {
+      content = (typeof e.target.value) === "string" ? e.target.value : content;
+      properties.set('userContent', content, true)
+      updateDisplay();
+    }
+
+    let show;
+    function toggleDisplay(value) {
+      show = (typeof value) === "boolean" ? value : !show;
+      if (show) {
+        instance.update();
+        instance.inputCnt.style.display = 'block';
+      } else {
+        instance.inputCnt.style.display = 'none';
+      }
+    }
+    this.toggleDisplay = toggleDisplay;
+    properties.onUpdate('userContent', initContent);
+  }
+}
+
+AddInterface = new AddInterface();
 
 class Tab {
   constructor(imageSrc, id, template, show) {
@@ -2444,7 +2484,9 @@ function lookup() {
   function showTab(index) {
     updateTabVisibility();
     const elem = document.getElementsByClassName('ce-tab-list-item ')[index];
+    Tab.tabs.forEach((tab) => tab.showing = false);
     const div = document.getElementById(Tab.tabs[index].id());
+    Tab.tabs[index].showing = true;
     switchTo(elem, div);
   }
 
@@ -2464,19 +2506,6 @@ function lookup() {
       for (let index = 0; index < tabItems.length; index += 1) {
         tabItems[index].onclick = call(showTab, index);
       }
-      // for (let index = 0; index < tabCtns.length; index += 1) {
-      //   const tabCtn = tabCtns[index];
-      //   const childs = tabCtn.children;
-      //   const lis = childs[0].children;
-      //     for (let lIndex = 0; lIndex < lis.length; lIndex += 1) {
-      //       const li = lis[lIndex];
-      //       const div = childs[lIndex + 1];
-      //       li.onclick = updateDisplayFunc(div);
-      //         if (li.className.split(' ').indexOf('active') !== -1) {
-      //             div.style.display = 'block';
-      //         }
-      //     }
-      // }
       showTab(activeIndex);
       CE.showTab = showTab;
   }
@@ -2507,17 +2536,6 @@ class Explanations {
       setExplanation();
     }
 
-    function deselectAll() {
-      forTags((elem) => elem.checked = false);
-      selected = [];
-      setExplanation();
-    }
-
-    function selectAll() {
-      forTags((elem) => {elem.checked = true; selected.push(elem.value)});
-      setExplanation();
-    }
-
     const tagReg = /#[a-zA-Z0-9]*/g;
     function byTags(expl) {
       if (selected.length === 0) return true;
@@ -2527,17 +2545,23 @@ class Explanations {
       return true;
     }
 
+
     function addExpl(e) {
-      const explId = e.target.attributes['expl-id'].value;
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            HoverResources.add(expl);
+            setExplanation();
+        })
+      }
       const url = EPNTS.siteExplanation.add(explId);
       const siteUrl = window.location.href;
-      Request.post(url, {siteUrl, content});
+      Request.post(url, {siteUrl, content}, addExplSuccessful);
     }
 
     function setTagOnclick() {
       forTags((elem) => elem.onclick = selectUpdate);
-      document.getElementById('ce-expl-tag-select-btn').onclick = selectAll;
-      document.getElementById('ce-expl-tag-deselect-btn').onclick = deselectAll;
       const applyBtns = document.getElementsByClassName('ce-apply-expl-btn');
       Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
     }
@@ -2552,7 +2576,9 @@ class Explanations {
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.content.match(tagReg).forEach(function (tag) {
+        expl.canApply = HoverResources.canApply(expl);
+        const tags = expl.content.match(tagReg) || [];
+        tags.forEach(function (tag) {
           tagObj[tag.substr(1)] = true;
         });
       });

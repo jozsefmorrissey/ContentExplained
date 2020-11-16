@@ -4,6 +4,7 @@ class Opinion {
     let siteId, userId;
     const amendments = {};
     const opinions = {};
+    const instance = this;
 
     function voteSuccess(explId, favorable, callback) {
       return function () {
@@ -44,6 +45,11 @@ class Opinion {
     this.votedown = (expl, callback) => {
       const url = EPNTS.opinion.dislike(expl.id, siteId);
       Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
     }
 
     function saveVotes(results) {

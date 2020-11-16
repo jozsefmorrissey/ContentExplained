@@ -101,6 +101,11 @@
   margin: 0 5pt;
 }
 
+.ce-small-text {
+    color: black;
+    font-size: x-small;
+}
+
 .ce-expls-cnt {
   border: solid;
   border-width: 1px;

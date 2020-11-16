@@ -14,8 +14,9 @@ class HoverResources {
     const  active = {expl: {}};
     let switches = [];
     let siteId;
+    let explRefs = {};
+    let explIds = [];
     tag = (tag ? tag : 'hover-resource').toLowerCase();
-    const explanations = {};
 
     console.log('HoverResources');
     const box = document.createElement('div');
@@ -42,7 +43,7 @@ class HoverResources {
     function onHover(event) {
       if (!properties.get('enabled')) return;
       const elem = event.target;
-      if (elem.tagName.toLowerCase() === tag && explanations[elem.id]) {
+      if (elem.tagName.toLowerCase() === tag) {
         killAt = new Date().getTime() + waitTime;
         positionText(elem);
       } else if (elem.id === box.id || killAt === -1){
@@ -83,6 +84,12 @@ class HoverResources {
       document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
     }
 
+    function sortByPopularity(expl1, expl2) {
+      expl1.popularity = Opinion.popularity(expl1);
+      expl2.popularity = Opinion.popularity(expl2);
+      return expl2.popularity - expl1.popularity;
+    }
+
     function updateDefined(index) {
       const hoveredText = active.elem.innerText;
       if (index !== undefined) {
@@ -90,6 +97,7 @@ class HoverResources {
         active.expl = active.list[index];
         active.expl.isActive = true;
         active.list = active.list.length > 1 ? active.list : [];
+        active.list.sort(sortByPopularity);
       }
       const loggedIn = User.isLoggedIn();
       const scope = {
@@ -163,7 +171,7 @@ class HoverResources {
 
       box.style = css;
       active.elem = elem;
-      active.list = explanations[elem.id];
+      active.list = explRefs[elem.getAttribute('ref')];
       updateContent(obj || 0);
 
       let top = `${rect.top}px`;
@@ -201,39 +209,36 @@ class HoverResources {
     }
 
 
-    function wrapText(elem, text, hoverText) {
+    function wrapText(elem, text, ref) {
       const id = getId(count++);
       function replaceRef() {
         const prefix = arguments[1];
         const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
         const suffix = arguments[5];
-        return `${prefix}<${tag} id='${id}'>${text}</${tag}>${suffix}`;
+        return `${prefix}<${tag} ref='${ref}'>${text}</${tag}>${suffix}`;
       }
-      // if (text.indexOf('code') === 0) {
-      //   console.log('here');
-      // }
       if (text) {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
         elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
-        explanations[id] = hoverText;
       }
     }
 
     let wrapList = [];
     let wrapIndex = 0;
     function wrapOne() {
-        if (!properties.get('enabled')) return;
-        for (let index = 0; index < 50; index += 1) {
-          const wrapInfo = wrapList[wrapIndex];
-          if (wrapInfo && wrapInfo.elem.tagName.toLowerCase() !== tag) {
-            wrapText(wrapInfo.elem, wrapInfo.word, wrapInfo.explainations);
-            wrapInfo[wrapIndex++] = undefined;
+        if (!properties.get('enabled') || wrapIndex >= wrapList.length) return;
+        const wrapInfo = wrapList[wrapIndex];
+        const elems = findWord(wrapInfo.word);
+        for (let eIndex = 0; eIndex < elems.length; eIndex += 1) {
+          const elem = elems[eIndex];
+          if (wrapInfo && elem.tagName.toLowerCase() !== tag) {
+            wrapText(elem, wrapInfo.word, wrapInfo.ref);
+            wrapInfo[wrapIndex] = undefined;
           }
         }
-        if (wrapIndex < wrapList.length) {
-          setTimeout(wrapOne, 1);
-        }
+        wrapIndex++;
+        setTimeout(wrapOne, 1);
     }
     this.wrapOne = wrapOne;
 
@@ -269,27 +274,36 @@ class HoverResources {
 
     function set(explList) {
       removeAll();
+      explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
-        const explainations = explList[wordList[index]];
-        const uniqWords = uniqueWords(explainations);
+        const ref = wordList[index];
+        const explanations = explList[ref];
+        explanations.forEach((expl) => explIds.push(expl.id));
+        const uniqWords = uniqueWords(explanations).sort(sortByLength);
         for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
           const word = uniqWords[wIndex];
-          const elems = findWord(word);
-          for(let eIndex = 0; eIndex < elems.length; eIndex += 1) {
-            const elem = elems[eIndex];
-            if (excludedTags.indexOf(elem.tagName) === -1) {
-              const depth = getDepth(elem);
-              wrapList.push({ elem, word, explainations, depth });
-            }
-          }
+          wrapList.push({ word, ref });
         }
       }
       wrapList.sort(sortDepth);
       wrapOne();
     }
 
+    function add(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [expl];
+      } else {
+        explRefs[ref].push(expl);
+      }
+      wrapList.push({ word: expl.words, ref });
+      wrapOne();
+      explIds.push(expl.id);
+    }
+
     this.set = set;
+    this.add = add;
 
     document.addEventListener('mouseover', onHover);
     document.addEventListener('click', instance.close);
@@ -300,6 +314,7 @@ class HoverResources {
     });
     this.wrapText = wrapText;
     this.positionText = positionText;
+    this.canApply = (expl) => explIds.indexOf(expl.id) === -1;
 
     function enableToggled(enabled) {
       removeAll();
