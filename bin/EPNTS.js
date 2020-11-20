@@ -91,6 +91,12 @@ const EPNTS = new Endpoints({
     "json": "/html/endpoints.json",
     "EPNTS": "/EPNTS"
   },
+  "images": {
+    "logo": "/images/icons/logo.png",
+    "wiki": "/images/icons/wikapedia.png",
+    "txt": "/images/icons/txt.png",
+    "merriam": "/images/icons/Merriam-Webster.png"
+  },
   "_secure": [
     "user.update",
     "credential.get",

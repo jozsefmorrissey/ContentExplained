@@ -1,15 +1,10 @@
-hover-resource {
+hover-explanation {
   border-radius: 10pt;
   background-color: rgba(150, 162, 249, 0.56);
 }
 
-hover-resource:hover {
+hover-explanation:hover {
   font-weight: bolder;
-}
-
-.ce-apply-expl-btn:disabled {
-    background-color: grey;
-    border-color: darkgray;
 }
 
 #ce-hover-display-cnt-id {

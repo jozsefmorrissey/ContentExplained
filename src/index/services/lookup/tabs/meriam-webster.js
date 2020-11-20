@@ -1,63 +1,67 @@
 
-class MerriamWebster {
+class MerriamWebster extends Page {
   constructor() {
-    let hideTab = false;
+    super();
     const instance = this;
-
-    function showTab () {
-      return !hideTab;
-    }
-
-    const merriamTab = new Tab(URL_IMAGE_MERRIAM, MERRIAM_WEB_DEF_CNT_ID,
-            'popup-cnt/tab-contents/webster', showTab);
-    const meriamSugTemplate = new $t('popup-cnt/linear-tab');
-
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    let suggestions;
+    let definitions;
+    let selection;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
 
     function openDictionary(word) {
       return function() {
-        CE.lookup(word);
+        properties.set('searchWords', word);
+        instance.update();
       }
     }
 
+    function html() {
+      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+    }
+    this.html = html;
+
     function updateSuggestions(suggestionHtml) {
       const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      sugCnt.innerHTML = suggestionHtml || '';
       const spans = sugCnt.querySelectorAll('span');
       for (let index = 0; index < spans.length; index += 1) {
         spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
       }
     }
+    this.afterOpen = updateSuggestions;
 
-    function callbacks(selection) {
-      function success (data) {
-        const elem = data[0];
-        if (elem.meta && elem.meta.stems) {
-          hideTab = false;
-          CE.updateTabVisibility();
-          data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);;
-          merriamTab.update({data: data, key: selection});
-          updateSuggestions(meriamSugTemplate.render([]))
-        } else {
-          hideTab = true;
-          CE.showTab(0);
-          updateSuggestions(meriamSugTemplate.render(data))
-        }
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
+        key = selection;
+        definitions = data;
+        suggestions = [];
+      } else {
+        key = selection;
+        definitions = undefined;
+        suggestions = data;
       }
-
-      function failure (error) {
-        console.error('Call to Meriam Webster failed');
-        hideTab = true;
-        CE.updateTabVisibility();
-      }
-      return {success, failure};
+      lookupTabs.update();
     }
 
-    this.update = function (selection) {
-      if ((typeof selection) === 'string') {
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newSelection = properties.get('searchWords');
+      if (newSelection !== selection && (typeof newSelection) === 'string') {
+        selection = newSelection;
         const url = `${URL_MERRIAM_REQ}${selection}`;
-        const call = callbacks(selection);
-        Request.get(url, call.success, call.failure);
+        Request.get(url, success, failure);
       }
     }
+
+    this.beforeOpen = this.update;
   }
 }
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);

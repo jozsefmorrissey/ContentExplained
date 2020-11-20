@@ -1,8 +1,5 @@
 let CE = function () {
 const afterLoad = []
-const UI_ID = 'ce-ui';
-const UI = new ShortCutCointainer(UI_ID, ['c', 'e'], '<h1>Hello ContentExplained</h1>');
-
 const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
 const MERRIAM_WEB_SUG_CNT_ID = 'ce-merriam-webster-suggestion-cnt';
 const HISTORY_CNT_ID = 'ce-history-cnt';
@@ -121,6 +118,12 @@ const EPNTS = new Endpoints({
     "json": "/html/endpoints.json",
     "EPNTS": "/EPNTS"
   },
+  "images": {
+    "logo": "/images/icons/logo.png",
+    "wiki": "/images/icons/wikapedia.png",
+    "txt": "/images/icons/txt.png",
+    "merriam": "/images/icons/Merriam-Webster.png"
+  },
   "_secure": [
     "user.update",
     "credential.get",
@@ -218,6 +221,722 @@ Request = {
     put: function () {Request.hasBody('PUT')(...arguments)},
     connect: function () {Request.hasBody('CONNECT')(...arguments)},
 }
+
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  return text.replace(/\n/g, '<br>')
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script>/, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
+
+function search() {
+  // let built = false;
+  // function buildUi(data) {
+  //   built = true;
+  //   UI.id = UI_ID;
+  //   UI.style = `position: fixed;
+  //               width: 100%;
+  //               height: 30%;
+  //               top: 0px;
+  //               left: 0px;
+  //               text-align: center;
+  //               display: none;
+  //               z-index: 999;
+  //               background-color: whitesmoke;
+  //               overflow: auto;
+  //               border-style: outset;
+  //               border-width: 1pt;`;
+  // }
+
+  function goTo(searchWords) {
+    return function() {
+      lookup(searchWords);
+    }
+  }
+
+  function lookup(searchWords) {
+    searchWords = searchWords.trim().toLowerCase();
+    if (searchWords) {
+      lookupHoverResource.show();
+      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
+        properties.set('searchWords', searchWords);
+        lookupTabs.update();
+      }
+    }
+  }
+
+  function onHighlight(e) {
+    const selection = window.getSelection().toString().replace(/&nbsp;/, '');
+    // Google Doc selection.
+    // document.querySelector('.kix-selection-overlay')
+    if (CE.properties.get('enabled') && selection) {
+      lookup(selection);
+      window.getSelection().removeAllRanges();
+      e.stopPropagation();
+    }
+  }
+
+  function enableToggled(enabled) {
+    if (enabled) {
+      if (!built) {
+        buildUi()
+      }
+    }
+  }
+
+  document.onmouseup = onHighlight;
+  CE.lookup = lookup;
+}
+
+afterLoad.push(search);
+
+class HoverResources {
+  constructor (zIncrement) {
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
+    const template = new $t('hover-resources');
+    const instance = this;
+    const defaultStyle = `position: fixed;
+      z-index: ${(zIncrement || 0) + 999999};
+      background-color: white;
+      display: none;
+      max-height: 40%;
+      min-width: 20%;
+      max-width: 40%;
+      overflow: auto;
+      border: 1px solid;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
+    const htmlFuncs = {};
+    let forceOpen = false;
+    let currFuncs, currElem, selectElem;
+    let popupContent, popupCnt;
+    let prevLocation, minLocation;
+    let selectOpen = false;
+    let killAt = -1;
+    let holdOpen = false;
+    let closeFuncs = [];
+    this.close = () => {
+      getPopupElems().cnt.style.display = 'none';
+      killAt = -1;
+      currElem = undefined;
+      closeFuncs.forEach((func) => func());
+      if (minLocation) instance.minimize();
+    }
+
+    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
+    this.forceClose = () => {forceOpen = false; getPopupElems().cnt.style.display = 'none';};
+    this.show = () => setCss({display: 'block'});
+
+    function kill() {
+      if (!selectOpen && !forceOpen && !holdOpen && killAt < new Date().getTime()) {
+        instance.close();
+      }
+    }
+
+    const waitTime = 450;
+    function dontHoldOpen(event) {
+      let currElem = event.target.parentElement;
+      while (currElem) {
+        if (currElem === getPopupElems().cnt) return;
+        currElem = currElem.parentElement
+      }
+
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      const withinX = event.clientX < rect.right && rect.left < event.clientX;
+      const withinY = event.clientY < rect.bottom && rect.top < event.clientY;
+      if (event.target === getPopupElems().cnt && withinX && withinY) {
+        return;
+      }
+      holdOpen = false;
+      exitHover();
+    }
+
+    function getFunctions(elem) {
+      let foundFuncs;
+      const queryStrs = Object.keys(htmlFuncs);
+      queryStrs.forEach((queryStr) => {
+        if (elem.matches(queryStr)) {
+          if (foundFuncs) {
+            throw new Error('Multiple functions being invoked on one hover event');
+          } else {
+            foundFuncs = htmlFuncs[queryStr];
+          }
+        }
+      });
+      return foundFuncs;
+    }
+
+    function offHover(event) {
+      const elem = event.target;
+      const funcs = getFunctions(elem);
+      if (funcs) return;
+      dontHoldOpen(event);
+    }
+
+    function onHover(event) {
+      if (!properties.get('enabled')) return;
+      const elem = event.target;
+
+      if (elem.id === POPUP_CNT_ID){
+        holdOpen = true;
+      }
+
+      const funcs = getFunctions(elem);
+      if (funcs) {
+        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
+          currFuncs = funcs;
+          positionOnElement(elem, funcs);
+          if (funcs && funcs.html) updateContent(funcs.html(elem));
+          if (funcs && funcs.after) funcs.after();
+        }
+        holdOpen = true;
+      }
+    }
+
+    function exitHover() {
+      setTimeout(kill, 500);
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      getPopupElems().cnt.style = defaultStyle;
+      getPopupElems().cnt.style.display = 'block';
+      const tbSpacing = 10;
+      const rect = currElem.getBoundingClientRect();
+      const height = rect.height;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const elemHorizCenter = (rect.right - rect.left) / 2;
+      const popHorizCenter = (popRect.right - popRect.left) / 2;
+      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
+      let left = elemHorizCenter - popHorizCenter + rect.left;
+      left = left < 0 ? 0 : left;
+      const leftOffset = calcWidth - (screenWidth - left);
+      left = leftOffset > 0 ? left - leftOffset : left;
+      left = `${left}px`;
+
+      const maxWidth = `${screenWidth - calcWidth}px`;
+      const minWidth = '20%';
+      let top = `${rect.top}px`;
+      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
+      if (screenHeight / 2 > rect.top) {
+        top = `${rect.top + height}px`;
+      } else {
+        top = `${rect.top - boxHeight}px`;
+      }
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
+              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
+      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
+      exitHover();
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+        selectOpen = true;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      console.log(top, left)
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss(minLocation);
+        prevLocation = minLocation;
+        minLocation = undefined;
+        holdOpen = true;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      return instance;
+    }
+    this.setCss = setCss;
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      getPopupElems().content.innerHTML = html;
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+
+    const tempElem = document.createElement('div');
+    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    document.body.append(tempElem);
+    function getPopupElems() {
+      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
+      if (newPopupContent !== popupContent) {
+        popupCnt = document.getElementById(POPUP_CNT_ID);
+        popupContent = newPopupContent;
+        popupCnt.style = defaultStyle;
+        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+        popupCnt.addEventListener('click', (e) => {
+          holdOpen = true;
+          if (e.target.tagName !== 'A')
+          e.stopPropagation()
+        });
+      }
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    function unSelect() {
+      if (window.getSelection().toString() === '') {
+        selectOpen = false;
+        exitHover();
+      }
+    }
+
+    document.addEventListener('mouseover', onHover);
+    document.addEventListener('mouseout', offHover);
+    document.addEventListener('click', dontHoldOpen);
+    document.addEventListener('mouseup', unSelect);
+    this.container = () => getPopupElems().content;
+
+  }
+}
+
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
+
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
+      }
+    }
+
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
+    };
+
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
+      }
+    }
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
+  }
+}
+
+const properties = new Properties();
+class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        matchingElems[index].style = this.value + matchingElems[index].style;
+      }
+    }
+  }
+}
+
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files.push(this);
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
+    }
+
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
+      }
+    }
+
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
+    }
+  }
+}
+
+CssFile.files = [];
+
+CssFile.apply = function () {
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
+    }
+  }
+}
+
+CssFile.dump = function () {
+  let dumpStr = '';
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  CE.applyCss = CssFile.apply;
+}
+
+try {
+  afterLoad.push(cssAfterLoad);
+} catch (e) {}
+
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+// ./src/index/css.js
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-full {   width: 100%;   height: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 0;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center;   margin: 0 10px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 5pt;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
+    }
+}
+
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
+      }
+    }
+    return recurse(node, 0).node;
+}
+
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
+
+  return recurse(node, 0).node;
+}
+
+function styleUpdate(elem, property, value) {
+  function set(property, value) {
+    elem.style[property] = value;
+  }
+  switch (typeof property) {
+    case 'string':
+      set(property, value);
+      break;
+    case 'object':
+      const keys = Object.keys(property);
+      for (let index = 0; index < keys.length; index += 1) {
+        set(keys[index], property[keys[index]]);
+      }
+      break;
+    default:
+      throw new Error('argument not a string or an object: ' + (typeof property));
+  }
+}
+
+function onEnter(id, func) {
+  const elem = document.getElementById(id);
+  if (elem !== null) {
+    elem.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') func()
+    });
+  }
+}
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 
 let idCount = 0;
 class ExprDef {
@@ -531,712 +1250,9 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  return text.replace(/\n/g, '<br>').replace(/\s/g, space)
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script>/, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
-function search() {
-  const explanations = new Explanations();
-  const merriamWebster = new MerriamWebster()
-  const rawText = new RawText()
-
-  let definitions = {
-    if: "conditional",
-    is: "to be or not to be",
-    the: "come on man"
-  };
-
-  let word;
-
-  function addDefinition(definition) {
-    definitions[word] = definition;
-  }
-
-  function topNodeText(el) {
-    child = el.firstChild,
-    texts = [];
-
-    while (child) {
-      if (child.nodeType == 3) {
-        texts.push(child.data);
-      }
-      child = child.nextSibling;
-    }
-
-    return texts.join("");
-  }
-
-  function findWord(word) {
-    return Array.from(document.querySelectorAll('*'))
-    .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
-  }
-
-  let built = false;
-  function buildUi(data) {
-    built = true;
-    document.onmouseup = onHighlight;
-    UI.id = UI_ID;
-    UI.style = `position: fixed;
-                width: 100%;
-                height: 30%;
-                top: 0px;
-                left: 0px;
-                text-align: center;
-                display: none;
-                z-index: 999;
-                background-color: whitesmoke;
-                overflow: auto;
-                border-style: outset;
-                border-width: 1pt;`;
-  }
-
-  function goTo(word) {
-    return function() {
-      lookup(word);
-    }
-  }
-
-  const historyTemplate = new $t('popup-cnt/linear-tab');
-  let history = [];
-  function setHistory(word) {
-    history = history.filter((value) => value !== word);
-    const sugCnt = document.getElementById(HISTORY_CNT_ID);
-    sugCnt.innerHTML = historyTemplate.render(history.reverse());
-    const spans = sugCnt.querySelectorAll('span');
-    for (let index = 0; index < spans.length; index += 1) {
-      spans[index].addEventListener('click', goTo(spans[index].innerText.trim().substr(0, 20)));
-    }
-    history.reverse();
-    history.push(word);
-  }
-
-  function lookup(word) {
-    setHistory(word);
-    const trimmed = word.trim().toLowerCase();
-    if (trimmed) {
-      explanations.get(trimmed);
-      merriamWebster.update(trimmed);
-    }
-    UI.show();
-  }
-
-  function onHighlight(e) {
-    const selection = window.getSelection().toString()
-    // Google Doc selection.
-    // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
-      lookup(selection);
-      e.stopPropagation();
-    }
-  }
-
-  function enableToggled(enabled) {
-    if (enabled) {
-      if (!built) {
-        buildUi()
-      }
-    }
-  }
-
-  function refresh() {
-    let hoverResources = document.getElementsByTagName('hover-resource');
-    for (let index = 0; index < hoverResources.length; index += 1) {
-      hoverResources[index].outerHTML = hoverResources[index].innerText;
-    }
-
-    new HoverResources(data);
-  }
-
-  CE.properties.onUpdate('enabled', enableToggled);
-  CE.lookup = lookup;
-  CE.refresh = refresh;
-  CE.show = UI.show;
-  CE.hide = UI.hide;
-}
-
-afterLoad.push(search);
-var SHORT_CUT_CONTAINERS;
-
-function ShortCutCointainer(id, keys, html, config) {
-  var SPACER_ID = 'ssc-html-spacer';
-  var OPEN = 'ssc-open';
-  var CLOSE = 'ssc-close';
-  var currentKeys = {};
-  var size = 200;
-  var container;
-  var resizeBar;
-
-  function resizeBarId() {
-    return 'ssc-resizeBar-' + id;
-  }
-  function htmlContainerId() {
-    return 'ssc-html-container-' + id;
-  }
-
-  function getResizeBarCss() {
-    return 'border-top-style: double;' +
-      'border-top-width: 10px;' +
-      'cursor: row-resize;' +
-      'border-color: rgb(22, 44, 166);';
-  }
-
-  function createResizeBar() {
-    resizeBar = document.createElement('div');
-    resizeBar.id = resizeBarId();
-    resizeBar.style.cssText = getResizeBarCss();
-    return resizeBar;
-  }
-
-  function createContainer(html) {
-    container = document.createElement('div');
-    container.id = htmlContainerId();
-    container.innerHTML = html;
-    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
-    return container;
-  }
-
-  function padBottom(height) {
-    var spacer = document.getElementById(SPACER_ID);
-    if (spacer) {
-      spacer.remove();
-    }
-    spacer = document.createElement('div');
-    spacer.id = SPACER_ID;
-    spacer.style = 'height: ' + height;
-    document.querySelector('body').append(spacer);
-  }
-
-  var noHeight = 'display: block;' +
-    'width: 100%;' +
-    'margin: 0;' +
-    'padding: 0;' +
-    'position: fixed;' +
-    'width: 100%;' +
-    'bottom: 0;' +
-    'z-index: 10000;' +
-    'left: 0;' +
-    'background-color: white;';
-
-
-    function resize(event) {
-      if (shouldResize > 0) {
-        var minHeight = 80;
-        var maxHeight = window.innerHeight - 50;
-        let dx = window.innerHeight - event.clientY;
-        dx = dx < minHeight ? minHeight : dx;
-        dx = dx > maxHeight ? maxHeight : dx;
-        var height = dx + 'px;';
-        container.style.cssText = 'overflow: scroll; max-height: ' + height;
-        ssc.style.cssText  = noHeight + 'height: ' + height;
-        padBottom(height);
-      }
-      // return event.target.height;
-    }
-
-  var shouldResize = 0;
-  function mouseup(e) {
-    shouldResize = 0;
-    e.stopPropagation();
-  }
-
-  function mousedown(e) {
-    var barPos = resizeBar.getBoundingClientRect().top;
-    let mPos = e.clientY;
-    if (barPos > mPos - 10 && barPos < mPos + 10) {
-      shouldResize++;
-    }
-  }
-
-  function show() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'block';
-    var height = ce.style.height;
-    padBottom(height);
-    triggerEvent(OPEN, id);
-    isShowing = true;
-  }
-
-  function hide() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'none';
-    padBottom('0px;');
-    triggerEvent(CLOSE, id);
-    isShowing = false;
-  }
-
-  let isShowing = false;
-  function toggleContentEditor() {
-        if (isShowing) {
-          hide();
-        } else {
-          show();
-        }
-  }
-
-  function isOpen() {
-    return isShowing;
-  }
-
-  function keyDownListener(e) {
-      currentKeys[e.key] = true;
-      if (shouldToggle()){
-        toggleContentEditor();
-      }
-  }
-
-  function shouldToggle() {
-    for (let index = 0; index < keys.length; index += 1) {
-      if (!currentKeys[keys[index]]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function onOpen(id) {
-    console.log(id);
-  }
-
-
-  function triggerEvent(name, id) {
-    var event; // The custom event that will be created
-
-    if (document.createEvent) {
-      event = document.createEvent("HTMLEvents");
-      event.initEvent(name, true, true);
-    } else {
-      event = document.createEventObject();
-      event.eventType = name;
-    }
-
-    event.eventName = name;
-
-    if (document.createEvent) {
-      ssc.dispatchEvent(event);
-    } else {
-      ssc.fireEvent("on" + event.eventType, event);
-    }
-  }
-
-  function onLoad() {
-    document.body.append(ssc);
-  }
-
-  function keyUpListener(e) {
-    delete currentKeys[e.key];
-  }
-
-  function innerHtml(html) {
-    if (container) {
-      container.innerHTML = html;
-    }
-  }
-
-  function mouseupOnRandDescendents(e, count) {
-    var mouseupEvent = new MouseEvent('mouseup', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true
-    });
-
-    function click(elem) {
-      return function () {
-        console.log('triggering mouseup event: ', elem)
-        elem.dispatchEvent(mouseupEvent);
-      };
-    }
-    const decendents = e.querySelectorAll('*');
-    for (let c = 0; c < count; c += 1) {
-       const index = Math.floor(Math.random() * decendents.length + 1);
-       if (index === decendents.length) {
-         setTimeout(click(e), 5 * c);
-       } else {
-         setTimeout(click(decendents[index]), 5 * c);
-       }
-    }
-  }
-
-  var ssc = document.createElement('div');
-  ssc.id = id;
-  ssc.append(createResizeBar());
-  ssc.append(createContainer(html));
-  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
-  if (!config || config.open !== true) {
-    ssc.style.display = 'none';
-  }
-  ssc.addEventListener(OPEN, onOpen);
-  ssc.addEventListener('mouseup', mouseup);
-  ssc.addEventListener('mousedown', mousedown);
-  onLoad();
-  retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
-                show, hide, isOpen };
-  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
-  SHORT_CUT_CONTAINERS.push(retObject);
-  window.onmouseup = hide;
-  return retObject;
-}
-
-function callOnAll(func, e) {
-  for (let index = 0; index < SHORT_CUT_CONTAINERS.length; index += 1) {
-    SHORT_CUT_CONTAINERS[index][func](e);
-  }
-}
-
-function resize(e) { callOnAll('resize', e); }
-function keyUpListener(e) { callOnAll('keyUpListener', e); }
-function keyDownListener(e) { callOnAll('keyDownListener', e); }
-
-window.onmousemove = resize;
-window.onkeyup = keyUpListener;
-window.onkeydown = keyDownListener;
-
-function onLoad() {
-  let containers = document.querySelectorAll('short-cut-container');
-  for (let index = 0; index < containers.length; index += 1) {
-    var elem = containers[index];
-    if (elem.getAttribute('keys'))
-    var keys = elem.getAttribute('keys').split(',')
-    id = elem.id || 'ssc-' + index;
-    html = elem.innerHTML;
-    ShortCutCointainer(id, keys, html);
-    elem.parentNode.removeChild(elem);
-  }
-}
-
-afterLoad.push(onLoad);
-
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
-      }
-    }
-
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = values[key];
-        if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
-          instance.set(key, value);
-        }
-      }
-    }
-
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (keys, func) {
-      keyDefinitionCheck(keys);
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      keys.forEach((key) => {
-        if (updateFuncs[key] === undefined) {
-          updateFuncs[key] = [];
-        }
-        updateFuncs[key].push(func);
-        func(properties[key])
-      });
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
-  }
-}
-
-const properties = new Properties();
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
-    this.apply = function () {
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
-      }
-    }
-  }
-}
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  CE.applyCss = CssFile.apply;
-}
-
-try {
-  afterLoad.push(cssAfterLoad);
-} catch (e) {}
-
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-// ./src/index/css.js
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
-
-new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('hover-resource', 'hover-resource {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-resource:hover {   font-weight: bolder; }  .ce-apply-expl-btn:disabled {     background-color: grey;     border-color: darkgray; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tab-list{   display: block;   list-style-type: none;   position: absolute;   width: max-content;   margin: auto;   padding: 0;   margin: 0; }  .ce-tab-list > li {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tab-list > .active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-apply-expl-btn {   position: absolute;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-author {   width: 15%;   overflow: auto;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-author-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .lookup-img {   width: 30pt; }  .ce-merriam-expl-card {   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
-}
-
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_UI_BUILT = new CustomEvent('ce-ui-built');
 
 class $t {
 	constructor(template, id) {
@@ -1474,7 +1490,9 @@ class $t {
 			if ($t.functions[id]) {
 				try {
 					return $t.functions[id](get);
-				} catch (e) {}
+				} catch (e) {
+				  console.error(e);
+				}
 			} else {
 				return eval($t.templates[id])
 			}
@@ -1665,6 +1683,9 @@ try{
 } catch (e) {}
 // ./src/index/services/$t.js
 
+$t.functions['483114051'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("sug")) + `</span>`
+}
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
 }
@@ -1674,23 +1695,14 @@ $t.functions['755294900'] = function (get) {
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
 }
-$t.functions['1172691506'] = function (get) {
-	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `$nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
-}
-$t.functions['1718777020'] = function (get) {
-	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + ` (` + (get("expl").popularity) + `%) </li>`
-}
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
 }
-$t.functions['hover-resource'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-inline ce-center ce-width-full'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("hoveredText")) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> </div> <div class=''> <div id='` + (get("HOVER_DISPLAY_CNT_ID")) + `'>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
-}
-$t.functions['-2095533744'] = function (get) {
-	return `<li class='ce-hover-list` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + ` </li>`
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-author-cnt'> <div class='ce-expl-author'> ` + (get("explanation").shortUsername) + ` <br> Likes / Dislikes <br> ` + (get("explanation").author.likes) + ` / ` + (get("explanation").author.dislikes) + ` </div> <span class='ce-expl'> <div class='ce-apply-expl-btn-cnt'> <button class='ce-apply-expl-btn' expl-id="` + (get("explanation").id) + `" ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <div> <h3>` + (get("explanation").words) + `</h3> ` + (get("explanation").content) + ` </div> </span> </span> </div> `
+	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h3> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h3> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
 }
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
@@ -1698,26 +1710,29 @@ $t.functions['popup-cnt/linear-tab'] = function (get) {
 $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
+$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
+	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
+	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
+}
 $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-expl-card'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> <h3>Merriam Webster '` + (get("key")) + `'</h3> </a> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in data', get)) + ` </div> `
+	return `<div class='ce-merriam-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam Webster '` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
 }
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div class='ce-key-cnt'> <h2 class='ce-key'>` + (get("words")) + `</h2> <button class='ce-btn ce-add-btn' id='` + (get("ADD_EDITOR_TOGGLE_BTN")) + `'>+</button> </div> <div class="ce-add-cnt" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-width-full' rows='15'></textarea> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add To Url</button> </div> <br> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> </div> `
+	return `<div> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> </div> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'>Create Your Own</button> </div> </div> `
 }
 $t.functions['-1828676604'] = function (get) {
 	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
 }
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
-}
-$t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
-	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
 }
 $t.functions['icon-menu/settings'] = function (get) {
 	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
@@ -1731,14 +1746,23 @@ $t.functions['icon-menu/controls'] = function (get) {
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
+}
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
 $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 	return `<h1>favorite lists</h1> `
 }
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
+$t.functions['tabs'] = function (get) {
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> `
+}
+$t.functions['-888280636'] = function (get) {
+	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
+}
+$t.functions['hover-resources'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
 }
 class User {
   constructor() {
@@ -1860,7 +1884,7 @@ class Expl {
     let addedResources = false;
     function createHoverResouces (data) {
       properties.set('siteId', data.siteId);
-      HoverResources.set(data.list);
+      HoverExplanations.set(data.list);
     }
 
     function addHoverResources (enabled) {
@@ -2008,70 +2032,87 @@ class Opinion {
 
 Opinion = new Opinion();
 
-class HoverResources {
-  constructor (tag) {
-    const resourceTemplate = new $t('hover-resource');
-    let running = false;
-    const HOVER_DISPLAY_CNT_ID = 'ce-hover-display-cnt-id';
-    const HOVER_SWITCH_LIST_ID = 'ce-hover-switch-list-id';
-    const HOVER_LOGIN_BTN_ID = 'ce-hover-login-btn-id';
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id'
+class HoverExplanations {
+  constructor () {
+    const template = new $t('hover-explanation');
     const instance = this;
-    running = true;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
-    let count = Math.floor(Math.random() * 10000000000000000);
     const  active = {expl: {}};
+    const hoverResource = new HoverResources();
     let switches = [];
-    let siteId;
+    let disabled = false;
     let explRefs = {};
+    let left;
     let explIds = [];
-    tag = (tag ? tag : 'hover-resource').toLowerCase();
+    let currIndex, currRef;
+    const tag = 'hover-explanation';
+    const HOVER_LOGIN_BTN_ID = 'ce-hover-login-btn-id';
+    const HOVER_SWITCH_LIST_ID = 'ce-hover-switch-list-id';
 
-    console.log('HoverResources');
-    const box = document.createElement('div');
-    box.id = POPUP_CNT_ID;
-    box.style = 'display: none;';
-    document.body.append(box);
+    this.close = () => hoverResource.close();
+    this.disable = () => {disabled = true; instance.close()};
+    this.enable = () => disabled = false;;
+    this.keepOpen = () => hoverResource.forceOpen();
+    this.letClose = () => hoverResource.forceClose();
 
-    let killAt = -1;
-    let holdOpen = false;
-    this.close = () => {
-      box.style.display = 'none';
-      killAt = -1;
-    }
-
-    function kill() {
-      if (!holdOpen && killAt < new Date().getTime()) {
-        instance.close();
+    function getHtml(elemExplORef, index) {
+      let ref;
+      if (elemExplORef instanceof HTMLElement) {
+        ref = elemExplORef.getAttribute('ref');
+      } else if ((typeof elemExplORef) === 'string') {
+        ref = elemExplORef;
       }
-    }
 
-    const waitTime = 750;
-    function dontHoldOpen(elem) {holdOpen = false; killAt = new Date().getTime() + waitTime;}
-
-    function onHover(event) {
-      if (!properties.get('enabled')) return;
-      const elem = event.target;
-      if (elem.tagName.toLowerCase() === tag) {
-        killAt = new Date().getTime() + waitTime;
-        positionText(elem);
-      } else if (elem.id === box.id || killAt === -1){
-        holdOpen = true;
-      } else if (killAt < new Date().getTime()) {
-        box.style.display = 'none';
-        killAt = -1;
+      if (ref === undefined) {
+        if (elemExplORef !== undefined) {
+          active.list = [elemExplORef];
+          currRef = undefined;
+        } else {
+          active.list = explRefs[currRef];
+          currIndex = index === undefined ? currIndex || 0 : index;
+        }
+      } else {
+        if (ref !== currRef) currIndex = index || 0;
+        currRef = ref;
+        active.list = explRefs[currRef];
       }
-    }
 
-    function exitHover() {
-      setTimeout(kill, 1000);
+      active.expl.isActive = false;
+      active.expl = active.list[currIndex];
+      active.expl.isActive = true;
+      active.list = active.list.length > 1 ? active.list : [];
+      active.list.sort(sortByPopularity);
+
+      const loggedIn = User.isLoggedIn();
+      const scope = {
+        HOVER_LOGIN_BTN_ID, HOVER_SWITCH_LIST_ID,
+        active, loggedIn,
+        content: textToHtml(active.expl.content),
+        likes: Opinion.likes(active.expl),
+        dislikes: Opinion.dislikes(active.expl),
+        canLike: Opinion.canLike(active.expl),
+        canDislike: Opinion.canDislike(active.expl)
+      };
+      return template.render(scope);
+    }
+    this.getHtml = getHtml;
+
+    function updateContent() {
+      const position = hoverResource.updateContent(getHtml());
+      return position;
     }
 
     function switchFunc (index) {
       return () => {
-        updateContent(index);
+        hoverResource.updateContent(getHtml(undefined, index));
       };
     }
+
+    function display(expl, elem) {
+      hoverResource.updateContent(getHtml(expl));
+      return hoverResource.elem(elem);
+    }
+    this.display = display;
 
     function openLogin() {
       const tabId = properties.get("SETTINGS_TAB_ID")
@@ -2099,101 +2140,6 @@ class HoverResources {
       return expl2.popularity - expl1.popularity;
     }
 
-    function updateDefined(index) {
-      const hoveredText = active.elem.innerText;
-      if (index !== undefined) {
-        active.expl.isActive = false;
-        active.expl = active.list[index];
-        active.expl.isActive = true;
-        active.list = active.list.length > 1 ? active.list : [];
-        active.list.sort(sortByPopularity);
-      }
-      const loggedIn = User.isLoggedIn();
-      const scope = {
-        HOVER_LOGIN_BTN_ID, HOVER_DISPLAY_CNT_ID, HOVER_SWITCH_LIST_ID,
-        active, hoveredText, loggedIn,
-        content: textToHtml(active.expl.content),
-        likes: Opinion.likes(active.expl),
-        dislikes: Opinion.dislikes(active.expl),
-        canLike: Opinion.canLike(active.expl),
-        canDislike: Opinion.canDislike(active.expl)
-      };
-      box.innerHTML = resourceTemplate.render(scope);
-      setSwitches();
-    }
-
-    function exampleUpdate(obj) {
-      const hoveredText = obj.words;
-      active.expl.isActive = false;
-      active.expl = obj;
-      active.expl.isActive = true;
-      active.list = [];
-
-      const loggedIn = User.isLoggedIn();
-      const scope = {
-        HOVER_LOGIN_BTN_ID, HOVER_DISPLAY_CNT_ID, HOVER_SWITCH_LIST_ID,
-        active, hoveredText, loggedIn,
-        content: textToHtml(active.expl.content),
-        likes: 700000,
-        dislikes: -70000,
-        canLike: true,
-        canDislike: true
-      };
-      box.innerHTML = resourceTemplate.render(scope);
-    }
-
-    function updateContent(value) {
-      if(Number.isInteger(value) || value === undefined) {
-        updateDefined(value);
-      } else {
-        exampleUpdate(value);
-      }
-    }
-
-    function positionText(elem, obj) {
-      const tbSpacing = 10;
-      const rect = elem.getBoundingClientRect();
-      const height = rect.height;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const calcWidth = rect.left + 10 < screenWidth / 2 ? rect.left + 10 : screenWidth / 2;
-      const left = `${calcWidth}px`;
-
-      const maxWidth = `${screenWidth - calcWidth - 10}px`;
-      const minWidth = '20%';
-      const css = `
-        cursor: pointer;
-        position: fixed;
-        z-index: 999999;
-        background-color: white;
-        display: block;
-        left: ${left};
-        max-height: 40%;
-        min-width: ${minWidth};
-        max-width: ${maxWidth};
-        overflow: auto;
-        border: 1px solid;
-        border-radius: 5pt;
-        padding: 10px;
-        box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;
-        `;
-
-      box.style = css;
-      active.elem = elem;
-      active.list = explRefs[elem.getAttribute('ref')];
-      updateContent(obj || 0);
-
-      let top = `${rect.top}px`;
-      const boxHeight = box.getBoundingClientRect().height;
-      if (screenHeight / 2 > rect.top && obj === undefined) {
-        top = `${rect.top + height}px`;
-      } else {
-        top = `${rect.top - boxHeight}px`;
-      }
-      box.style = `${css}top: ${top};`;
-    }
-
-
     function topNodeText(el) {
         let child = el.firstChild;
         const explanations = [];
@@ -2213,13 +2159,8 @@ class HoverResources {
           .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
     }
 
-    function getId(id) {
-      return `${tag}-${id}`;
-    }
-
 
     function wrapText(elem, text, ref) {
-      const id = getId(count++);
       function replaceRef() {
         const prefix = arguments[1];
         const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
@@ -2251,25 +2192,12 @@ class HoverResources {
     }
     this.wrapOne = wrapOne;
 
-    function getDepth(elem){
-    	var depth = 0
-    	while(null!==elem.parentElement){
-    		elem = elem.parentElement
-    		depth++
-    	}
-    	return depth
-    }
-
-    function sortDepth(info1, info2) {
-      return info2.depth - info1.depth;
-    }
-
     function removeAll() {
-      let resources = document.getElementsByTagName('hover-resource');
+      let resources = document.getElementsByTagName(tag);
       while (resources.length > 0) {
         Array.from(resources)
         .forEach((elem) => elem.outerHTML = elem.innerHTML);
-        resources = document.getElementsByTagName('hover-resource');
+        resources = document.getElementsByTagName(tag);
       }
     }
 
@@ -2295,7 +2223,6 @@ class HoverResources {
           wrapList.push({ word, ref });
         }
       }
-      wrapList.sort(sortDepth);
       wrapOne();
     }
 
@@ -2314,103 +2241,116 @@ class HoverResources {
     this.set = set;
     this.add = add;
 
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('click', instance.close);
-    document.getElementById(POPUP_CNT_ID).addEventListener('mouseout', dontHoldOpen);
-    document.getElementById(POPUP_CNT_ID).addEventListener('click', (e) => {
-      if (e.target.tagName !== 'A')
-        e.stopPropagation()
-    });
     this.wrapText = wrapText;
-    this.positionText = positionText;
     this.canApply = (expl) => explIds.indexOf(expl.id) === -1;
 
     function enableToggled(enabled) {
       removeAll();
-      instance.wrapOne();
+      if (enabled) {
+        instance.wrapOne();
+      }
     }
 
+    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
     properties.onUpdate('enabled', enableToggled);
   }
 }
 
-HoverResources = new HoverResources();
+HoverExplanations = new HoverExplanations();
 
-class AddInterface {
-  constructor () {
+const lookupHoverResource = new HoverResources(1);
+
+class Tabs {
+  constructor(updateHtml, props) {
+    props = props || {};
+    const template = new $t('tabs');
+    const CSS_CLASS = props.class || 'ce-tabs-list-item';
+    const ACTIVE_CSS_CLASS = `${CSS_CLASS} ${props.activeClass || 'ce-tabs-active'}`;
+    const LIST_CLASS = props.listClass || 'ce-tabs-list';
+    const CNT_ID = props.containerId || 'ce-tabs-cnt-id';
+    const LIST_ID = 'ce-tabs-list-id-' + Math.floor(Math.random() * 100000);
+    const TAB_CNT_ID = 'ce-tab-cnt-id';
     const instance = this;
-    let content = '';
-    let words = '';
-    this.ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
-    this.ADD_EDITOR_ID = 'ce-add-editor-id';
-    this.ADD_EDITOR_TOGGLE_BTN = 'ce-add-editor-toggle-btn-id';
-    this.SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
-    let updatePending = false;
+    const pages = [];
+    const positions = {};
+    let currIndex;
+    let activePage;
+    lookupHoverResource.forceOpen();
 
-    function initContent(userContent) {
-      if (content === '' && (typeof userContent) === 'string') {
-        content = userContent;
-        updateDisplay()
+    function switchFunc(index) {return function () { switchTo(index);}}
+
+    this.open = function (page) {
+      if (!(page instanceof Page)) throw new Error('argument must be of type page');
+      for (let index = 0; index < pages.length; index += 1) {
+        if (page === pages[index]) {
+          switchTo(index);
+          return;
+        }
+      }
+      throw new Error(page.label() + 'does not exist');
+    }
+
+    function setOnclickMethods() {
+      document.getElementById(TAB_CNT_ID).onmouseup = (e) => {
+          e.stopPropagation()
+        };
+      const listItems = document.getElementById(LIST_ID).children;
+      for (let index = 0; index < listItems.length; index += 1) {
+        listItems[index].onclick = switchFunc(index);
       }
     }
 
-    function addExplSuccessful(expl) {
-      toggleDisplay(false);
-      HoverResources.add(expl);
-      properties.set('userContent', '', true)
-      content = '';
+    function switchTo(index) {
+      HoverExplanations.disable();
+      currIndex = index === undefined ? currIndex || 0 : index;
+      activePage = pages[currIndex];
+      activePage.beforeOpen();
+      lookupHoverResource.updateContent(template.render(getScope()));
+      lookupHoverResource.select();
+      setOnclickMethods();
+      activePage.afterOpen();
     }
 
-    function addExplanation() {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
-    }
-
-    function updateDisplay () {
-      if (instance.inputElem !== undefined) {
-        instance.inputElem.value = content;
-        const ceUi = document.getElementById('ce-ui');
-        HoverResources.positionText(ceUi, {words, content});
+    function getScope() {
+      const content = activePage !== undefined ? activePage.html() : '';
+      return {
+        CSS_CLASS, ACTIVE_CSS_CLASS, LIST_CLASS, LIST_ID,  CNT_ID, TAB_CNT_ID,
+        activePage, content, pages
       }
     }
 
-    this.update = (newWords) => {
-      words = newWords || words;
-      instance.inputElem = document.getElementById(this.ADD_EDITOR_ID);
-      instance.inputCnt = document.getElementById(this.ADD_EDITOR_CNT_ID);
-      instance.toggleButton = document.getElementById(this.ADD_EDITOR_TOGGLE_BTN);
-      instance.addExplBtn = document.getElementById(this.SUBMIT_EXPL_BTN_ID);
-      instance.inputElem.addEventListener('keyup', onChange);
-      instance.inputElem.addEventListener('blur', HoverResources.close);
-      instance.toggleButton.addEventListener('click', toggleDisplay);
-      instance.addExplBtn.addEventListener('click', addExplanation);
-      instance.updateDisplay(content);
-      toggleDisplay(false);
-    }
-    instance.updateDisplay = updateDisplay;
-
-    function onChange(e) {
-      content = (typeof e.target.value) === "string" ? e.target.value : content;
-      properties.set('userContent', content, true)
-      updateDisplay();
+    function sortByPosition(page1, page2) {
+      return positions[page1.label()] - positions[page2.label()];
     }
 
-    let show;
-    function toggleDisplay(value) {
-      show = (typeof value) === "boolean" ? value : !show;
-      if (show) {
-        instance.update();
-        instance.inputCnt.style.display = 'block';
+    function add(page, position) {
+      if (!(page instanceof Page)) throw new Error('argument must be of type page');
+      let index = pages.indexOf(page);
+      if (index === -1) {
+        index = pages.length;
+        pages.push(page);
+        positions[page.label()] = position !== undefined ? position : Number.MAX_SAFE_INTEGER;
+        pages.sort(sortByPosition);
       } else {
-        instance.inputCnt.style.display = 'none';
+        console.warn('page has already been added');
       }
     }
-    this.toggleDisplay = toggleDisplay;
-    properties.onUpdate('userContent', initContent);
+
+    function update(elem) {
+      switchTo(undefined);
+    }
+
+    lookupHoverResource.onClose(() => {
+      HoverExplanations.enable();
+      HoverExplanations.letClose();
+    });
+
+    this.add = add;
+    this.update = update;
   }
 }
 
-AddInterface = new AddInterface();
+const lookupTabs = new Tabs(lookupHoverResource.updateContent);
 
 class Tab {
   constructor(imageSrc, id, template, show) {
@@ -2435,199 +2375,6 @@ Tab.updateAll = function () {
     Tab.tabs[index].update();
   }
 }
-
-function lookup() {
-  let lookupTemplate = new $t('popup-cnt/lookup');
-  let activeIndex = 0;
-
-  function buildLookupHtml() {
-    UI.innerHtml(lookupTemplate.render({
-      MERRIAM_WEB_SUG_CNT_ID, HISTORY_CNT_ID,
-      list: Tab.tabs,
-      openTab: 0
-    }));
-    Tab.updateAll();
-  }
-
-  function switchTo(elem, div) {
-      const lis = elem.parentElement.children;
-      const childs = elem.parentElement.parentElement.querySelector('.ce-lookup-cnt').children;
-      for (let index = 0; index < lis.length; index += 1) {
-          lis[index].className = lis[index].className.replace(/(^| )active($| )/g, ' ');
-          childs[index].style.display = 'none';
-      }
-      elem.className = elem.className + ' active';
-      div.style.display = 'block';
-  }
-
-  function call(func) {
-    const args = [];
-    for (let i = 1; i < arguments.length; i++) args.push(arguments[i]);
-    return function () {
-      func.apply(null, args);
-    }
-  }
-
-  function updateTabVisibility() {
-    const elems = document.getElementsByClassName('ce-tab-list-item ');
-    for (let index = 0; index < elems.length; index += 1) {
-      const elem = elems[index];
-      if (Tab.tabs[index].show()) {
-        elem.style.display = 'block';
-      } else {
-        elem.style.display = 'none';
-      }
-    }
-  }
-  CE.updateTabVisibility = updateTabVisibility;
-
-  function showTab(index) {
-    updateTabVisibility();
-    const elem = document.getElementsByClassName('ce-tab-list-item ')[index];
-    Tab.tabs.forEach((tab) => tab.showing = false);
-    const div = document.getElementById(Tab.tabs[index].id());
-    Tab.tabs[index].showing = true;
-    switchTo(elem, div);
-  }
-
-  function updateDisplayFunc(div) {
-    console.log('lookup');
-    return function (event) {
-      const elem = event.target.closest('.ce-tab-list-item');
-      switchTo(elem, div);
-    }
-  }
-
-  function initTabs() {
-    buildLookupHtml();
-      const tabCtns = document.getElementsByClassName('ce-tab-ctn');
-      const tabItems = document.getElementsByClassName('ce-tab-ctn')[0]
-                      .querySelectorAll('li');
-      for (let index = 0; index < tabItems.length; index += 1) {
-        tabItems[index].onclick = call(showTab, index);
-      }
-      showTab(activeIndex);
-      CE.showTab = showTab;
-  }
-  initTabs();
-}
-
-afterLoad.push(lookup);
-class Explanations {
-  constructor(list) {
-    const tab = new Tab(URL_IMAGE_LOGO, CONTEXT_EXPLANATION_CNT_ID,
-            'popup-cnt/tab-contents/explanation-cnt');
-    let selected = [];
-    let explanations;
-    let searchWords;
-    this.list = list ? list : [];
-    this.add = function (expl) {
-      this.list.push(expl);
-    }
-
-    function forTags(func) {
-      const tags = document.getElementsByClassName('ce-expl-tag');
-      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
-    }
-
-    function selectUpdate() {
-      selected = [];
-      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
-      setExplanation();
-    }
-
-    const tagReg = /#[a-zA-Z0-9]*/g;
-    function byTags(expl) {
-      if (selected.length === 0) return true;
-      for (let index = 0; index < selected.length; index += 1) {
-        if (expl.content.match(tagReg).indexOf(`#${selected[index]}`) === -1) return false;
-      }
-      return true;
-    }
-
-
-    function addExpl(e) {
-      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
-      function addExplSuccessful() {
-        explanations.forEach((expl) => {
-          if(expl.id === explId)
-            HoverResources.add(expl);
-            setExplanation();
-        })
-      }
-      const url = EPNTS.siteExplanation.add(explId);
-      const siteUrl = window.location.href;
-      Request.post(url, {siteUrl, content}, addExplSuccessful);
-    }
-
-    function setTagOnclick() {
-      forTags((elem) => elem.onclick = selectUpdate);
-      const applyBtns = document.getElementsByClassName('ce-apply-expl-btn');
-      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
-    }
-
-    function setExplanation(expls) {
-      const scope = {};
-      const tagObj = {}
-      if (expls !== undefined) {
-        explanations = expls;
-      }
-      scope.explanations = explanations.filter(byTags);
-      scope.explanations.forEach(function (expl) {
-        const username = expl.author.username;
-        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = HoverResources.canApply(expl);
-        const tags = expl.content.match(tagReg) || [];
-        tags.forEach(function (tag) {
-          tagObj[tag.substr(1)] = true;
-        });
-      });
-
-      scope.allTags = Object.keys(tagObj);
-      scope.words = searchWords;
-      scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
-      scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
-      scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
-      scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
-      scope.selected = selected;
-      tab.update(scope);
-      setTagOnclick();
-      AddInterface.update(searchWords);
-    }
-
-    function setAddition() {
-        const scope = {};
-        scope.words = searchWords;
-        scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
-        scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
-        scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
-        scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
-        scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
-        tab.update(scope);
-        AddInterface.update(searchWords);
-        AddInterface.toggleDisplay(true);
-    }
-
-    this.get = function (words, success, failure) {
-      const url = EPNTS.explanation.get(words);
-      searchWords = words;
-      Request.get(url, setExplanation, setAddition);
-    }
-
-    this.like = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `${URL_CE_LIKE}${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
-    }
-    this.dislike = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `${URL_CE_DISLIKE}${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
-    }
-  }
-}
-
-console.log("HERE!!!!! ", chrome.runtime.getURL('./html/text-to-html.html'));
 
 class RawText {
   constructor () {
@@ -2672,68 +2419,274 @@ class RawText {
   }
 }
 
-class MerriamWebster {
-  constructor() {
-    let hideTab = false;
+class AddInterface extends Page {
+  constructor () {
+    super();
+    const template = new $t('popup-cnt/tab-contents/add-explanation');
     const instance = this;
+    let content = '';
+    let words = '';
+    const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
+    const ADD_EDITOR_ID = 'ce-add-editor-id';
+    const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
+    let updatePending = false;
 
-    function showTab () {
-      return !hideTab;
-    }
-
-    const merriamTab = new Tab(URL_IMAGE_MERRIAM, MERRIAM_WEB_DEF_CNT_ID,
-            'popup-cnt/tab-contents/webster', showTab);
-    const meriamSugTemplate = new $t('popup-cnt/linear-tab');
-
-
-    function openDictionary(word) {
-      return function() {
-        CE.lookup(word);
+    function getScope() {
+      return {
+        ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
+        words: properties.get('searchWords')
       }
     }
 
+    this.hide = () => true;
+    this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
+    this.html = () => template.render(getScope());
+
+    function initContent(userContent) {
+      if (content === '' && (typeof userContent) === 'string') {
+        content = userContent;
+        updateDisplay()
+      }
+    }
+
+    function addExplSuccessful(expl) {
+      HoverExplanations.add(expl);
+      properties.set('userContent', '', true)
+      content = '';
+    }
+
+    function addExplanation() {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
+    }
+
+    function updateDisplay () {
+      if (instance.inputElem !== undefined) {
+        instance.inputElem.value = content;
+        lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
+        lookupHoverResource.center().bottom();
+        HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
+        HoverExplanations.keepOpen();
+      }
+    }
+
+    this.afterOpen = (newWords) => {
+      words = properties.get('searchWords');
+      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
+      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
+      instance.inputElem.addEventListener('keyup', onChange);
+      // instance.inputElem.addEventListener('blur', HoverExplanations.close);
+      instance.addExplBtn.addEventListener('click', addExplanation);
+      HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
+      instance.updateDisplay();
+    }
+    instance.updateDisplay = updateDisplay;
+
+    function onChange(e) {
+      content = (typeof e.target.value) === "string" ? e.target.value : content;
+      properties.set('userContent', content, true)
+      updateDisplay();
+    }
+
+    properties.onUpdate('userContent', initContent);
+  }
+}
+
+AddInterface = new AddInterface();
+lookupTabs.add(AddInterface, 2);
+
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    let suggestions;
+    let definitions;
+    let selection;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+
+    function openDictionary(word) {
+      return function() {
+        properties.set('searchWords', word);
+        instance.update();
+      }
+    }
+
+    function html() {
+      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+    }
+    this.html = html;
+
     function updateSuggestions(suggestionHtml) {
       const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      sugCnt.innerHTML = suggestionHtml || '';
       const spans = sugCnt.querySelectorAll('span');
       for (let index = 0; index < spans.length; index += 1) {
         spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
       }
     }
+    this.afterOpen = updateSuggestions;
 
-    function callbacks(selection) {
-      function success (data) {
-        const elem = data[0];
-        if (elem.meta && elem.meta.stems) {
-          hideTab = false;
-          CE.updateTabVisibility();
-          data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);;
-          merriamTab.update({data: data, key: selection});
-          updateSuggestions(meriamSugTemplate.render([]))
-        } else {
-          hideTab = true;
-          CE.showTab(0);
-          updateSuggestions(meriamSugTemplate.render(data))
-        }
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
+        key = selection;
+        definitions = data;
+        suggestions = [];
+      } else {
+        key = selection;
+        definitions = undefined;
+        suggestions = data;
       }
-
-      function failure (error) {
-        console.error('Call to Meriam Webster failed');
-        hideTab = true;
-        CE.updateTabVisibility();
-      }
-      return {success, failure};
+      lookupTabs.update();
     }
 
-    this.update = function (selection) {
-      if ((typeof selection) === 'string') {
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newSelection = properties.get('searchWords');
+      if (newSelection !== selection && (typeof newSelection) === 'string') {
+        selection = newSelection;
         const url = `${URL_MERRIAM_REQ}${selection}`;
-        const call = callbacks(selection);
-        Request.get(url, call.success, call.failure);
+        Request.get(url, success, failure);
+      }
+    }
+
+    this.beforeOpen = this.update;
+  }
+}
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
+class Explanations extends Page {
+  constructor(list) {
+    super();
+    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
+    let selected = [];
+    const instance = this;
+    let explanations = [];
+    let searchWords;
+    this.list = list ? list : [];
+    this.add = function (expl) {
+      this.list.push(expl);
+    }
+
+    function openAddPage() {
+      lookupTabs.open(AddInterface);
+    }
+
+    function forTags(func) {
+      const tags = document.getElementsByClassName('ce-expl-tag');
+      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
+    }
+
+    function selectUpdate() {
+      selected = [];
+      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
+      setExplanation();
+    }
+
+    const tagReg = /#[a-zA-Z0-9]*/g;
+    function byTags(expl) {
+      if (selected.length === 0) return true;
+      for (let index = 0; index < selected.length; index += 1) {
+        if (expl.content.match(tagReg).indexOf(`#${selected[index]}`) === -1) return false;
+      }
+      return true;
+    }
+
+
+    function addExpl(e) {
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            HoverExplanations.add(expl);
+            setExplanation();
+        })
+      }
+      const url = EPNTS.siteExplanation.add(explId);
+      const siteUrl = window.location.href;
+      Request.post(url, {siteUrl}, addExplSuccessful);
+    }
+
+    function setTagOnclick() {
+      forTags((elem) => elem.onclick = selectUpdate);
+      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
+      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
+
+      const searchBtn = document.getElementById(SEARCH_BTN_ID);
+      searchBtn.onclick = () => {
+        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
+        words = words.toLowerCase().trim();
+        properties.set('searchWords', words);
+        instance.get();
+      };
+      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+
+      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
+      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+    }
+
+    function setExplanation(expls) {
+      if (expls !== undefined) {
+        explanations = expls;
+      }
+      lookupTabs.update();
+    }
+
+    function html () {
+      const scope = {};
+      const tagObj = {}
+      scope.explanations = explanations.filter(byTags);
+      scope.explanations.forEach(function (expl) {
+        const username = expl.author.username;
+        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
+        expl.canApply = HoverExplanations.canApply(expl);
+        expl.rendered = textToHtml(expl.content);
+        const author = expl.author;
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
+        const tags = expl.content.match(tagReg) || [];
+        tags.forEach(function (tag) {
+          tagObj[tag.substr(1)] = true;
+        });
+      });
+
+      scope.allTags = Object.keys(tagObj);
+      scope.words = searchWords;
+      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
+      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
+      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.selected = selected;
+      return template.render(scope);
+    }
+
+    this.html = html;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
+    this.afterOpen = setTagOnclick;
+    this.beforeOpen = () => instance.get();
+
+    this.get = function () {
+      const newSearchWords = properties.get('searchWords');
+      if (newSearchWords !== searchWords) {
+        selected = [];
+        searchWords = newSearchWords;
+        const url = EPNTS.explanation.get(searchWords);
+        Request.get(url, setExplanation, () => setExplanation([]));
       }
     }
   }
 }
+
+Explanations = new Explanations();
+lookupTabs.add(Explanations, 0);
 
 return {afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }

@@ -4,7 +4,7 @@ class Expl {
     let addedResources = false;
     function createHoverResouces (data) {
       properties.set('siteId', data.siteId);
-      HoverResources.set(data.list);
+      HoverExplanations.set(data.list);
     }
 
     function addHoverResources (enabled) {

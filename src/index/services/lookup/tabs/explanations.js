@@ -1,13 +1,21 @@
-class Explanations {
+class Explanations extends Page {
   constructor(list) {
-    const tab = new Tab(URL_IMAGE_LOGO, CONTEXT_EXPLANATION_CNT_ID,
-            'popup-cnt/tab-contents/explanation-cnt');
+    super();
+    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
-    let explanations;
+    const instance = this;
+    let explanations = [];
     let searchWords;
     this.list = list ? list : [];
     this.add = function (expl) {
       this.list.push(expl);
+    }
+
+    function openAddPage() {
+      lookupTabs.open(AddInterface);
     }
 
     function forTags(func) {
@@ -36,32 +44,51 @@ class Explanations {
       function addExplSuccessful() {
         explanations.forEach((expl) => {
           if(expl.id === explId)
-            HoverResources.add(expl);
+            HoverExplanations.add(expl);
             setExplanation();
         })
       }
       const url = EPNTS.siteExplanation.add(explId);
       const siteUrl = window.location.href;
-      Request.post(url, {siteUrl, content}, addExplSuccessful);
+      Request.post(url, {siteUrl}, addExplSuccessful);
     }
 
     function setTagOnclick() {
       forTags((elem) => elem.onclick = selectUpdate);
-      const applyBtns = document.getElementsByClassName('ce-apply-expl-btn');
+      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
       Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
+
+      const searchBtn = document.getElementById(SEARCH_BTN_ID);
+      searchBtn.onclick = () => {
+        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
+        words = words.toLowerCase().trim();
+        properties.set('searchWords', words);
+        instance.get();
+      };
+      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+
+      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
+      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
     }
 
     function setExplanation(expls) {
-      const scope = {};
-      const tagObj = {}
       if (expls !== undefined) {
         explanations = expls;
       }
+      lookupTabs.update();
+    }
+
+    function html () {
+      const scope = {};
+      const tagObj = {}
       scope.explanations = explanations.filter(byTags);
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = HoverResources.canApply(expl);
+        expl.canApply = HoverExplanations.canApply(expl);
+        expl.rendered = textToHtml(expl.content);
+        const author = expl.author;
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
         const tags = expl.content.match(tagReg) || [];
         tags.forEach(function (tag) {
           tagObj[tag.substr(1)] = true;
@@ -70,46 +97,29 @@ class Explanations {
 
       scope.allTags = Object.keys(tagObj);
       scope.words = searchWords;
-      scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
-      scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
-      scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
-      scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
+      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
+      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
+      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
       scope.selected = selected;
-      tab.update(scope);
-      setTagOnclick();
-      AddInterface.update(searchWords);
+      return template.render(scope);
     }
 
-    function setAddition() {
-        const scope = {};
-        scope.words = searchWords;
-        scope.ADD_EDITOR_ID = ADD_EDITOR_ID;
-        scope.ADD_EDITOR_ID = AddInterface.ADD_EDITOR_ID;
-        scope.ADD_EDITOR_CNT_ID = AddInterface.ADD_EDITOR_CNT_ID;
-        scope.ADD_EDITOR_TOGGLE_BTN = AddInterface.ADD_EDITOR_TOGGLE_BTN;
-        scope.SUBMIT_EXPL_BTN_ID = AddInterface.SUBMIT_EXPL_BTN_ID;
-        tab.update(scope);
-        AddInterface.update(searchWords);
-        AddInterface.toggleDisplay(true);
-    }
+    this.html = html;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
+    this.afterOpen = setTagOnclick;
+    this.beforeOpen = () => instance.get();
 
-    this.get = function (words, success, failure) {
-      const url = EPNTS.explanation.get(words);
-      searchWords = words;
-      Request.get(url, setExplanation, setAddition);
-    }
-
-    this.like = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `${URL_CE_LIKE}${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
-    }
-    this.dislike = function (words, index, success, failure) {
-      const currUrl = window.location.href;
-      const callUrl = `${URL_CE_DISLIKE}${words}/${index}?url=${currUrl}`;
-      Request.get(callUrl, successfullOpinion, failedOpinion);
+    this.get = function () {
+      const newSearchWords = properties.get('searchWords');
+      if (newSearchWords !== searchWords) {
+        selected = [];
+        searchWords = newSearchWords;
+        const url = EPNTS.explanation.get(searchWords);
+        Request.get(url, setExplanation, () => setExplanation([]));
+      }
     }
   }
 }
 
-console.log("HERE!!!!! ", chrome.runtime.getURL('./html/text-to-html.html'));
+Explanations = new Explanations();
+lookupTabs.add(Explanations, 0);

@@ -1,13 +1,10 @@
 <div>
   <div class='ce-key-cnt'>
-    <h2 class='ce-key'>{{words}}</h2>
-    <button class='ce-btn ce-add-btn' id='{{ADD_EDITOR_TOGGLE_BTN}}'>+</button>
+    <input type='text' style='font-size: x-large;margin: 0;' value='{{words}}'
+          id='{{EXPL_SEARCH_INPUT_ID}}'>
+    <button class='ce-words-search-btn' id='{{SEARCH_BTN_ID}}'>Search</button>
   </div>
-  <div class="ce-add-cnt" id='{{ADD_EDITOR_CNT_ID}}'>
-    <textarea id='{{ADD_EDITOR_ID}}' class='ce-width-full' rows='15'></textarea>
-    <button id='{{SUBMIT_EXPL_BTN_ID}}'>Add To Url</button>
-  </div>
-  <br>
+  <h2 {{explanations.length > 0 ? 'hidden' : ''}}>No Explanations Found</h2>
   <div class='ce-expls-cnt'{{explanations.length > 0 ? '' : ' hidden'}}>
     <div class='ce-expl-tag-cnt'>
       <span:t repeat='tag in allTags'>
@@ -20,5 +17,8 @@
       <div:t repeat='explanation in explanations'
               $t-id='popup-cnt/explanation'></div:t>
     </div>
+  </div>
+  <div class='ce-center'>
+    <button id='{{CREATE_YOUR_OWN_BTN_ID}}'>Create Your Own</button>
   </div>
 </div>

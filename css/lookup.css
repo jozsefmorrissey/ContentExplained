@@ -10,17 +10,16 @@
   padding-left: 50pt;
 }
 
-.ce-tab-list{
+.ce-tabs-list {
   display: block;
   list-style-type: none;
-  position: absolute;
   width: max-content;
   margin: auto;
   padding: 0;
-  margin: 0;
+  margin-right: 5pt;
 }
 
-.ce-tab-list > li {
+.ce-tabs-list-item {
   padding: 4pt;
   border-style: solid;
   border-width: 1px;
@@ -31,7 +30,7 @@
   box-shadow: 1px 1px 2px black;
   }
 
-.ce-tab-list > .active {
+.ce-tabs-active {
     background-color: gainsboro;
     box-shadow: 0 0 0 black;
   }
@@ -67,25 +66,44 @@
   width: 0;
   height: 0;
   border-color: transparent;
-  border-right: 20px solid transparent;
-  border-left: 20px solid transparent;
-  border-bottom: 20px solid #3dd23d;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  border-bottom: 10px solid #3dd23d;
   background-color: transparent;
   border-radius: 0;
   margin: 0;
   padding: 0;
 }
 #ce-expl-voteup-btn:disabled {
-  border-bottom: 20px solid grey;
+  border-bottom: 10px solid grey;
+}
+
+.ce-upper-right-btn {
+  position: absolute;
+  right: 0;
+  padding: 0 5px;
+  border-radius: 3px;
+  margin: 1px;
+  background-color: transparent;
+  color: black;
+  border-color: gray;
+  border-width: .5px;
+  z-index: 2147483647;
+}
+
+.ce-hover-expl-title-cnt {
+  display: inline-flex;
+  width: 100%;
+  text-align: center;
 }
 
 #ce-expl-votedown-btn {
   width: 0;
   height: 0;
   border-color: transparent;
-  border-right: 20px solid transparent;
-  border-left: 20px solid transparent;
-  border-top: 20px solid #f74848;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  border-top: 10px solid #f74848;
   background-color: transparent;
   border-radius: 0;
   margin: 0;
@@ -93,7 +111,7 @@
 }
 
 #ce-expl-votedown-btn:disabled {
-  border-top: 20px solid grey;
+  border-top: 10px solid grey;
 }
 
 .ce-expl-tag-cnt > span {
@@ -104,6 +122,25 @@
 .ce-small-text {
     color: black;
     font-size: x-small;
+}
+
+.ce-add-editor-cnt {
+  width: 100%;
+  display: inline-flex;
+}
+
+#ce-add-editor-id {
+  width: 99%;
+  height: 85%;
+}
+
+#ce-add-editor-add-expl-btn-id {
+  margin: 0 0 0 7pt;
+  padding: 0 4pt;
+  font-size: x-small;
+  position: relative;
+  top: 50%;
+  transform: translate(0, -50%);
 }
 
 .ce-expls-cnt {
@@ -121,22 +158,27 @@
   width: 5%;
 }
 
-.ce-apply-expl-btn {
-  position: absolute;
+.ce-expl-apply-btn {
+  position: relative;
   top: 50%;
   transform: translate(0, -50%);
 }
 
-.ce-expl-author {
-  width: 15%;
-  overflow: auto;
+.ce-expl-apply-btn:disabled {
+    background-color: grey;
+    border-color: darkgray;
+}
+
+.ce-expl-apply-cnt {
+  position: relative;
+  padding: 5px;
   text-align: center;
   border-right: black;
   border-style: solid;
   border-width: 0 1px 0 0;
 }
 
-.ce-expl-author-cnt {
+.ce-expl-cnt {
   float: right;
   padding: 0;
   width: 100%;
@@ -192,11 +234,32 @@
     box-shadow: 1px 1px 1px green;
 }
 
+.ce-words-search-input {
+  font-size: x-large !important;
+}
+
+.ce-words-search-btn {
+  padding: 0 8px;
+  margin: 0 20pt;
+}
+
 .lookup-img {
   width: 30pt;
 }
 
+.ce-merriam-cnt {
+  text-align: center;
+  position: relative;
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  margin: auto;
+  border-color: grey;
+  box-shadow: 1px 1px 1px grey;
+}
+
 .ce-merriam-expl-card {
+  padding: 0 10px;
   position: relative;
   border: solid;
   border-width: 1px;

@@ -1,22 +1,18 @@
 <div class='ce-expl-card'>
-  <span class='ce-expl-author-cnt'>
-    <div class='ce-expl-author'>
-      {{explanation.shortUsername}}
-      <br>
-      Likes / Dislikes
-      <br>
-      {{explanation.author.likes}} / {{explanation.author.dislikes}}
+  <span class='ce-expl-cnt'>
+    <div class='ce-expl-apply-cnt'>
+      <button expl-id="{{explanation.id}}" class='ce-expl-apply-btn'
+      {{explanation.canApply ? '' : 'disabled'}}>
+      Apply
+    </button>
     </div>
   <span class='ce-expl'>
-    <div class='ce-apply-expl-btn-cnt'>
-      <button class='ce-apply-expl-btn' expl-id="{{explanation.id}}"
-            {{explanation.canApply ? '' : 'disabled'}}>
-        Apply
-      </button>
-    </div>
     <div>
-      <h3>{{explanation.words}}</h3>
-      {{explanation.content}}
+      <h3>
+        {{explanation.author.percent}}%
+        {{explanation.words}} - {{explanation.shortUsername}}
+      </h3>
+      {{explanation.rendered}}
     </div>
   </span>
   </span>

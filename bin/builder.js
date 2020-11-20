@@ -547,7 +547,9 @@ class $t {
 			if ($t.functions[id]) {
 				try {
 					return $t.functions[id](get);
-				} catch (e) {}
+				} catch (e) {
+				  console.error(e);
+				}
 			} else {
 				return eval($t.templates[id])
 			}

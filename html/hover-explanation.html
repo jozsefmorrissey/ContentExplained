@@ -9,21 +9,22 @@
       </ul>
     </div>
     <div class='ce-width-full'>
-      <div class='ce-inline ce-center ce-width-full'>
+      <div class='ce-hover-expl-title-cnt'>
         <div class='ce-center'>
           <button id='ce-expl-voteup-btn'{{canLike ? '' : ' disabled'}}></button>
           <br>
           {{likes}}
         </div>
-        <h3>{{hoveredText}}</h3>
+        <h3>{{active.expl.words}}</h3>
         <div class='ce-center'>
           {{dislikes}}
           <br>
           <button id='ce-expl-votedown-btn'{{canDislike ? '' : ' disabled'}}></button>
         </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;
       </div>
       <div class=''>
-        <div id='{{HOVER_DISPLAY_CNT_ID}}'>{{content}}</div>
+        <div>{{content}}</div>
       </div>
     </div>
   </div>

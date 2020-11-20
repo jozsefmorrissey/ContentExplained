@@ -1,6 +1,3 @@
-const UI_ID = 'ce-ui';
-const UI = new ShortCutCointainer(UI_ID, ['c', 'e'], '<h1>Hello ContentExplained</h1>');
-
 const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
 const MERRIAM_WEB_SUG_CNT_ID = 'ce-merriam-webster-suggestion-cnt';
 const HISTORY_CNT_ID = 'ce-history-cnt';
