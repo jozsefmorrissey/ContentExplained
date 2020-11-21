@@ -43,6 +43,7 @@ class AddInterface extends Page {
     function updateDisplay () {
       if (instance.inputElem !== undefined) {
         instance.inputElem.value = content;
+        lookupHoverResource.minimize();
         lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
         lookupHoverResource.center().bottom();
         HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();

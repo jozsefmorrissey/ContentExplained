@@ -16,7 +16,7 @@ class Tabs {
     const positions = {};
     let currIndex;
     let activePage;
-    lookupHoverResource.forceOpen();
+    // lookupHoverResource.forceOpen();
 
     function switchFunc(index) {return function () { switchTo(index);}}
 
@@ -47,6 +47,7 @@ class Tabs {
       activePage = pages[currIndex];
       activePage.beforeOpen();
       lookupHoverResource.updateContent(template.render(getScope()));
+      lookupHoverResource.minimize();
       lookupHoverResource.select();
       setOnclickMethods();
       activePage.afterOpen();

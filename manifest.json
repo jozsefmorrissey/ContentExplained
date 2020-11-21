@@ -16,7 +16,8 @@
   },
 
   "web_accessible_resources": [
-    "/html/icon-menu/settings.html"
+    "/html/icon-menu/settings.html",
+    "/html/icon-menu/controls.html"
   ],
 
   "browser_action": {
@@ -39,7 +40,6 @@
   "background": {
     "scripts": ["./src/manual/background.js"]
   },
-
   "permissions": [
   "<all_urls>",
   "tabs",

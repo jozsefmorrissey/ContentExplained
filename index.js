@@ -7,171 +7,16 @@ const ADD_EDITOR_ID = 'ce-add-editor-id';
 const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
 const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
-
-const CE_HOST = 'https://localhost:3001/content-explained';
-
-const URL_MERRIAM_REQ = `${CE_HOST}/merriam/webster/`;
-
-const URL_USER_LOGIN = `${CE_HOST}/user/login/`;
-const URL_USER_ADD = `${CE_HOST}/user/add/`;
-const URL_USER_GET = `${CE_HOST}/user/`;
-const URL_USER_SYNC = `${CE_HOST}/user/sync/`;
-
-const URL_IMAGE_LOGO = `${CE_HOST}/images/icons/logo.png`;
-const URL_IMAGE_MERRIAM = `${CE_HOST}/images/icons/Merriam-Webster.png`;
-const URL_IMAGE_WIKI = `${CE_HOST}/images/icons/wikapedia.png`;
-const URL_IMAGE_TXT = `${CE_HOST}/images/icons/txt.png`;
-
-const URL_CE_GET = `${CE_HOST}/`;
-const URL_CE_LIKE = `${CE_HOST}/like/`;
-const URL_CE_DISLIKE = `${CE_HOST}/dislike/`;
-
-class Endpoints {
-  constructor(object, host) {
-    host = host || '';
-    const endPointFuncs = {}
-    this.getFuncObj = function () {return endPointFuncs;};
-
-    function build(str) {
-      const pieces = str.split(/:[a-zA-Z0-9]*/g);
-      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
-      return function () {
-        let values = [];
-        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
-          values = arguments;
-        } else {
-          const obj = arguments[0];
-          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
-        }
-        let endpoint = '';
-        for (let index = 0; index < pieces.length; index += 1) {
-          const arg = values[index];
-          let value = '';
-          if (index < pieces.length - 1) {
-            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
-          }
-          endpoint += pieces[index] + value;
-        }
-        return `${host}${endpoint}`;
-      }
-    }
-
-    function objectRecurse(currObject, currFunc) {
-      const keys = Object.keys(currObject);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        if (key.indexOf('_') !== 0) {
-          const value = currObject[key];
-          if (value instanceof Object) {
-            currFunc[key] = {};
-            objectRecurse(value, currFunc[key]);
-          } else {
-            currFunc[key] = build(value);
-          }
-        }
-      }
-    }
-
-    objectRecurse(object, endPointFuncs);
-  }
-}
-
-try {
-  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
-} catch (e) {}
-
-const EPNTS = new Endpoints({
-  "user": {
-    "add": "/user",
-    "get": "/user/:idsOemail",
-    "login": "/user/login",
-    "update": "/user/update/:updateSecret",
-    "requestUpdate": "/user/update/request"
-  },
-  "credential": {
-    "add": "/credential/add/:userId",
-    "activate": "/credential/activate/:userId/:activationSecret",
-    "delete": "/credential/:idOauthorization",
-    "get": "/credential/:userId",
-    "status": "/credential/status/:authorization"
-  },
-  "site": {
-    "add": "/site",
-    "get": "/site/get"
-  },
-  "explanation": {
-    "add": "/explanation",
-    "author": "/explanation/author/:authorId",
-    "get": "/explanation/:words",
-    "update": "/explanation"
-  },
-  "siteExplanation": {
-    "add": "/site/explanation/:explanationId",
-    "get": "/site/explanation"
-  },
-  "opinion": {
-    "like": "/like/:explanationId/:siteId",
-    "dislike": "/dislike/:explanationId/:siteId",
-    "bySite": "/opinion/:siteId/:userId"
-  },
-  "endpoints": {
-    "json": "/html/endpoints.json",
-    "EPNTS": "/EPNTS"
-  },
-  "images": {
-    "logo": "/images/icons/logo.png",
-    "wiki": "/images/icons/wikapedia.png",
-    "txt": "/images/icons/txt.png",
-    "merriam": "/images/icons/Merriam-Webster.png"
-  },
-  "_secure": [
-    "user.update",
-    "credential.get",
-    "credential.delete",
-    "site.add",
-    "explanation.add",
-    "explanation.update",
-    "siteExplanation.add",
-    "opinion.like",
-    "opinion.dislike"
-  ]
-}
-, 'https://localhost:3001/content-explained').getFuncObj();
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /content-explained/EPNTS</pre>
+</body>
+</html>
 
 Request = {
     onStateChange: function (success, failure) {
@@ -220,354 +65,6 @@ Request = {
     head: function () {Request.hasBody('HEAD')(...arguments)},
     put: function () {Request.hasBody('PUT')(...arguments)},
     connect: function () {Request.hasBody('CONNECT')(...arguments)},
-}
-
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script>/, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
-function search() {
-  // let built = false;
-  // function buildUi(data) {
-  //   built = true;
-  //   UI.id = UI_ID;
-  //   UI.style = `position: fixed;
-  //               width: 100%;
-  //               height: 30%;
-  //               top: 0px;
-  //               left: 0px;
-  //               text-align: center;
-  //               display: none;
-  //               z-index: 999;
-  //               background-color: whitesmoke;
-  //               overflow: auto;
-  //               border-style: outset;
-  //               border-width: 1pt;`;
-  // }
-
-  function goTo(searchWords) {
-    return function() {
-      lookup(searchWords);
-    }
-  }
-
-  function lookup(searchWords) {
-    searchWords = searchWords.trim().toLowerCase();
-    if (searchWords) {
-      lookupHoverResource.show();
-      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
-        properties.set('searchWords', searchWords);
-        lookupTabs.update();
-      }
-    }
-  }
-
-  function onHighlight(e) {
-    const selection = window.getSelection().toString().replace(/&nbsp;/, '');
-    // Google Doc selection.
-    // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
-      lookup(selection);
-      window.getSelection().removeAllRanges();
-      e.stopPropagation();
-    }
-  }
-
-  function enableToggled(enabled) {
-    if (enabled) {
-      if (!built) {
-        buildUi()
-      }
-    }
-  }
-
-  document.onmouseup = onHighlight;
-  CE.lookup = lookup;
-}
-
-afterLoad.push(search);
-
-class HoverResources {
-  constructor (zIncrement) {
-    const id = Math.floor(Math.random() * 1000000);
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
-    const template = new $t('hover-resources');
-    const instance = this;
-    const defaultStyle = `position: fixed;
-      z-index: ${(zIncrement || 0) + 999999};
-      background-color: white;
-      display: none;
-      max-height: 40%;
-      min-width: 20%;
-      max-width: 40%;
-      overflow: auto;
-      border: 1px solid;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-    const htmlFuncs = {};
-    let forceOpen = false;
-    let currFuncs, currElem, selectElem;
-    let popupContent, popupCnt;
-    let prevLocation, minLocation;
-    let selectOpen = false;
-    let killAt = -1;
-    let holdOpen = false;
-    let closeFuncs = [];
-    this.close = () => {
-      getPopupElems().cnt.style.display = 'none';
-      killAt = -1;
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
-    }
-
-    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
-    this.forceClose = () => {forceOpen = false; getPopupElems().cnt.style.display = 'none';};
-    this.show = () => setCss({display: 'block'});
-
-    function kill() {
-      if (!selectOpen && !forceOpen && !holdOpen && killAt < new Date().getTime()) {
-        instance.close();
-      }
-    }
-
-    const waitTime = 450;
-    function dontHoldOpen(event) {
-      let currElem = event.target.parentElement;
-      while (currElem) {
-        if (currElem === getPopupElems().cnt) return;
-        currElem = currElem.parentElement
-      }
-
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      const withinX = event.clientX < rect.right && rect.left < event.clientX;
-      const withinY = event.clientY < rect.bottom && rect.top < event.clientY;
-      if (event.target === getPopupElems().cnt && withinX && withinY) {
-        return;
-      }
-      holdOpen = false;
-      exitHover();
-    }
-
-    function getFunctions(elem) {
-      let foundFuncs;
-      const queryStrs = Object.keys(htmlFuncs);
-      queryStrs.forEach((queryStr) => {
-        if (elem.matches(queryStr)) {
-          if (foundFuncs) {
-            throw new Error('Multiple functions being invoked on one hover event');
-          } else {
-            foundFuncs = htmlFuncs[queryStr];
-          }
-        }
-      });
-      return foundFuncs;
-    }
-
-    function offHover(event) {
-      const elem = event.target;
-      const funcs = getFunctions(elem);
-      if (funcs) return;
-      dontHoldOpen(event);
-    }
-
-    function onHover(event) {
-      if (!properties.get('enabled')) return;
-      const elem = event.target;
-
-      if (elem.id === POPUP_CNT_ID){
-        holdOpen = true;
-      }
-
-      const funcs = getFunctions(elem);
-      if (funcs) {
-        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
-          currFuncs = funcs;
-          positionOnElement(elem, funcs);
-          if (funcs && funcs.html) updateContent(funcs.html(elem));
-          if (funcs && funcs.after) funcs.after();
-        }
-        holdOpen = true;
-      }
-    }
-
-    function exitHover() {
-      setTimeout(kill, 500);
-    }
-
-    this.back = () => setCss(prevLocation);
-
-    function positionOnElement(elem) {
-      currElem = elem || currElem;
-      getPopupElems().cnt.style = defaultStyle;
-      getPopupElems().cnt.style.display = 'block';
-      const tbSpacing = 10;
-      const rect = currElem.getBoundingClientRect();
-      const height = rect.height;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const elemHorizCenter = (rect.right - rect.left) / 2;
-      const popHorizCenter = (popRect.right - popRect.left) / 2;
-      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
-      let left = elemHorizCenter - popHorizCenter + rect.left;
-      left = left < 0 ? 0 : left;
-      const leftOffset = calcWidth - (screenWidth - left);
-      left = leftOffset > 0 ? left - leftOffset : left;
-      left = `${left}px`;
-
-      const maxWidth = `${screenWidth - calcWidth}px`;
-      const minWidth = '20%';
-      let top = `${rect.top}px`;
-      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
-      if (screenHeight / 2 > rect.top) {
-        top = `${rect.top + height}px`;
-      } else {
-        top = `${rect.top - boxHeight}px`;
-      }
-      const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
-              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
-      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
-      exitHover();
-      return position;
-    }
-
-    this.elem = positionOnElement;
-    this.select = () => {
-      if (window.getSelection().toString().trim()) {
-        selectElem = window.getSelection().getRangeAt(0);
-        currElem = selectElem;
-        selectOpen = true;
-      }
-      positionOnElement(selectElem);
-    };
-    this.top = () => setCss({top:0,bottom:''});
-    this.left = () => setCss({right:'',left:0});
-    this.bottom = () => setCss({top:'',bottom:0});
-    this.right = () => setCss({right:0,left:''});
-
-    this.center = function () {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
-      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      console.log(top, left)
-      setCss({top,left, right: '', bottom: ''});
-      return instance;
-    }
-
-    this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
-      minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
-    }
-
-    this.minimize = function () {
-      if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
-        setCss(minLocation);
-        prevLocation = minLocation;
-        minLocation = undefined;
-        holdOpen = true;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
-      }
-    }
-
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      return instance;
-    }
-    this.setCss = setCss;
-
-    function on(queryStr, funcObj) {
-      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
-      htmlFuncs[queryStr] = funcObj;
-    }
-    this.on = on;
-
-    this.onClose = (func) => closeFuncs.push(func);
-
-    function updateContent(html) {
-      getPopupElems().content.innerHTML = html;
-      if (currFuncs && currFuncs.after) currFuncs.after();
-      return instance;
-    }
-    this.updateContent = updateContent;
-
-    function isMaximized() {
-      return minLocation !== undefined;
-    }
-
-    const tempElem = document.createElement('div');
-    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
-    document.body.append(tempElem);
-    function getPopupElems() {
-      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
-      if (newPopupContent !== popupContent) {
-        popupCnt = document.getElementById(POPUP_CNT_ID);
-        popupContent = newPopupContent;
-        popupCnt.style = defaultStyle;
-        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.addEventListener('click', (e) => {
-          holdOpen = true;
-          if (e.target.tagName !== 'A')
-          e.stopPropagation()
-        });
-      }
-      return {cnt: popupCnt, content: popupContent};
-    }
-
-    function unSelect() {
-      if (window.getSelection().toString() === '') {
-        selectOpen = false;
-        exitHover();
-      }
-    }
-
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', offHover);
-    document.addEventListener('click', dontHoldOpen);
-    document.addEventListener('mouseup', unSelect);
-    this.container = () => getPopupElems().content;
-
-  }
-}
-
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
-  }
 }
 
 class Properties {
@@ -721,41 +218,17 @@ try{
 // ./src/index/css.js
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
 new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
 
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
 
 new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
 
 new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-full {   width: 100%;   height: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 0;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center;   margin: 0 10px; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-bottom: 20px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 20px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 20px solid transparent;   border-left: 20px solid transparent;   border-top: 20px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 20px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 5pt;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 function up(selector, node) {
     if (node.matches(selector)) {
@@ -841,102 +314,6 @@ function onEnter(id, func) {
     });
   }
 }
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
 
 let idCount = 0;
 class ExprDef {
@@ -1250,9 +627,529 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
+class CustomEvent {
+  constructor(name) {
+    const watchers = {};
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        if (watchers[name] === undefined) {
+          watchers[name] = [];
+        }
+        watchers[name].push(func);
+      } else {
+        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
+
+class HoverResources {
+  constructor (zIncrement) {
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
+    const template = new $t('hover-resources');
+    const instance = this;
+    const defaultStyle = `position: fixed;
+      z-index: ${(zIncrement || 0) + 999999};
+      background-color: white;
+      display: none;
+      max-height: 40%;
+      min-width: 20%;
+      max-width: 40%;
+      overflow: auto;
+      border: 1px solid;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
+    const htmlFuncs = {};
+    let forceOpen = false;
+    let currFuncs, currElem, selectElem;
+    let popupContent, popupCnt;
+    let prevLocation, minLocation;
+    let selectOpen = false;
+    let holdOpen = false;
+    let lastMoveEvent;
+    let closeFuncs = [];
+
+    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
+
+    this.close = () => {
+      getPopupElems().cnt.style.display = 'none';
+      currElem = undefined;
+      closeFuncs.forEach((func) => func());
+      if (minLocation) instance.minimize();
+    }
+
+    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
+    this.forceClose = () => {forceOpen = false; exitHover();};
+    this.show = () => setCss({display: 'block'});
+
+    function kill() {
+      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
+        instance.close();
+      }
+    }
+
+    function isOpen() {
+      return getPopupElems().cnt.style.display === 'block';
+    }
+
+    function withinPopup() {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
+      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
+      return withinX && withinY;
+      }
+
+    function dontHoldOpen(event) {
+      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
+      if (isOpen() && !withinPopup()) {
+        holdOpen = false;
+        exitHover();
+      }
+    }
+
+    function getFunctions(elem) {
+      let foundFuncs;
+      const queryStrs = Object.keys(htmlFuncs);
+      queryStrs.forEach((queryStr) => {
+        if (elem.matches(queryStr)) {
+          if (foundFuncs) {
+            throw new Error('Multiple functions being invoked on one hover event');
+          } else {
+            foundFuncs = htmlFuncs[queryStr];
+          }
+        }
+      });
+      return foundFuncs;
+    }
+
+    function offHover(event) {
+      const elem = event.target;
+      const funcs = getFunctions(elem);
+      if (funcs) return;
+      dontHoldOpen(event);
+    }
+
+    function onHover(event) {
+      if (!properties.get('enabled')) return;
+      const elem = event.target;
+
+      if (elem.id === POPUP_CNT_ID){
+        holdOpen = true;
+
+      }
+
+      const funcs = getFunctions(elem);
+      if (funcs) {
+        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
+          currFuncs = funcs;
+          positionOnElement(elem, funcs);
+          if (funcs && funcs.html) updateContent(funcs.html(elem));
+          if (funcs && funcs.after) funcs.after();
+        }
+        holdOpen = true;
+      }
+    }
+
+    function exitHover() {
+      setTimeout(kill, 500);
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      getPopupElems().cnt.style = defaultStyle;
+      getPopupElems().cnt.style.display = 'block';
+      const tbSpacing = 10;
+      const rect = currElem.getBoundingClientRect();
+      const height = rect.height;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const elemHorizCenter = (rect.right - rect.left) / 2;
+      const popHorizCenter = (popRect.right - popRect.left) / 2;
+      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
+      let left = elemHorizCenter - popHorizCenter + rect.left;
+      left = left < 0 ? 0 : left;
+      const leftOffset = calcWidth - (screenWidth - left);
+      left = leftOffset > 0 ? left - leftOffset : left;
+      left = `${left}px`;
+
+      const maxWidth = `${screenWidth - calcWidth}px`;
+      const minWidth = '20%';
+      let top = `${rect.top}px`;
+      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
+      if (screenHeight / 2 > rect.top) {
+        top = `${rect.top + height}px`;
+      } else {
+        top = `${rect.top - boxHeight}px`;
+      }
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
+              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
+      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
+      exitHover();
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+        selectOpen = new Date().getTime() + 3000;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      console.log(top, left)
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss(minLocation);
+        prevLocation = minLocation;
+        minLocation = undefined;
+        holdOpen = true;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+      return this;
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      return instance;
+    }
+    this.setCss = setCss;
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      getPopupElems().content.innerHTML = html;
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+    this.isMaximized = isMaximized;
+
+    const tempElem = document.createElement('div');
+    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    tempElem.children[0].style = defaultStyle;
+    document.body.append(tempElem);
+    function getPopupElems() {
+      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
+      if (newPopupContent !== popupContent) {
+        popupCnt = document.getElementById(POPUP_CNT_ID);
+        popupContent = newPopupContent;
+        popupCnt.style = defaultStyle;
+        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+        popupCnt.addEventListener('click', (e) => {
+          holdOpen = true;
+          if (e.target.tagName !== 'A')
+          e.stopPropagation()
+        });
+      }
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    document.addEventListener('mouseover', onHover);
+    document.addEventListener('mouseout', offHover);
+    document.addEventListener('click', dontHoldOpen);
+    this.container = () => getPopupElems().content;
+
+  }
+}
+
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  return text.replace(/\n/g, '<br>')
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script>/, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
+
+function search() {
+  // let built = false;
+  // function buildUi(data) {
+  //   built = true;
+  //   UI.id = UI_ID;
+  //   UI.style = `position: fixed;
+  //               width: 100%;
+  //               height: 30%;
+  //               top: 0px;
+  //               left: 0px;
+  //               text-align: center;
+  //               display: none;
+  //               z-index: 999;
+  //               background-color: whitesmoke;
+  //               overflow: auto;
+  //               border-style: outset;
+  //               border-width: 1pt;`;
+  // }
+
+  function goTo(searchWords) {
+    return function() {
+      lookup(searchWords);
+    }
+  }
+
+  function lookup(searchWords) {
+    searchWords = searchWords.trim().toLowerCase();
+    if (searchWords) {
+      lookupHoverResource.show();
+      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
+        properties.set('searchWords', searchWords);
+        lookupTabs.update();
+      }
+    }
+  }
+
+  function onHighlight(e) {
+    const selection = window.getSelection().toString().replace(/&nbsp;/, '');
+    // Google Doc selection.
+    // document.querySelector('.kix-selection-overlay')
+    if (CE.properties.get('enabled') && selection) {
+      lookup(selection);
+      window.getSelection().removeAllRanges();
+      e.stopPropagation();
+    }
+  }
+
+  function enableToggled(enabled) {
+    if (enabled) {
+      if (!built) {
+        buildUi()
+      }
+    }
+  }
+
+  document.onmouseup = onHighlight;
+  CE.lookup = lookup;
+}
+
+afterLoad.push(search);
+
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            CE.Request.get(url, success, fail);
+          } else {
+            CE.Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
 
 class $t {
 	constructor(template, id) {
@@ -1707,11 +1604,11 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
 	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
@@ -1734,20 +1631,23 @@ $t.functions['-1828676604'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
+$t.functions['hover-resources'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
+}
 $t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'><h1>Hello World</h1></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
 }
 $t.functions['icon-menu/menu'] = function (get) {
 	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+}
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
 }
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
-}
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
 }
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
@@ -1761,9 +1661,46 @@ $t.functions['tabs'] = function (get) {
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 }
-$t.functions['hover-resources'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
+class Expl {
+  constructor () {
+    let addedResources = false;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
+
+    function addHoverResources (enabled) {
+      if (enabled && !addedResources) {
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate('enabled', addHoverResources);
+  }
 }
+
+Expl = new Expl();
+
 class User {
   constructor() {
     let user;
@@ -1879,158 +1816,9 @@ class User {
 
 User = new User();
 
-class Expl {
-  constructor () {
-    let addedResources = false;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources (enabled) {
-      if (enabled && !addedResources) {
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate('enabled', addHoverResources);
-  }
-}
-
-Expl = new Expl();
-
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            CE.Request.get(url, success, fail);
-          } else {
-            CE.Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-
-class Opinion {
-  constructor() {
-    let siteId, userId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr];
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
 
 class HoverExplanations {
   constructor () {
@@ -2258,6 +2046,77 @@ class HoverExplanations {
 
 HoverExplanations = new HoverExplanations();
 
+class Opinion {
+  constructor() {
+    let siteId, userId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
+
 const lookupHoverResource = new HoverResources(1);
 
 class Tabs {
@@ -2275,7 +2134,7 @@ class Tabs {
     const positions = {};
     let currIndex;
     let activePage;
-    lookupHoverResource.forceOpen();
+    // lookupHoverResource.forceOpen();
 
     function switchFunc(index) {return function () { switchTo(index);}}
 
@@ -2306,6 +2165,7 @@ class Tabs {
       activePage = pages[currIndex];
       activePage.beforeOpen();
       lookupHoverResource.updateContent(template.render(getScope()));
+      lookupHoverResource.minimize();
       lookupHoverResource.select();
       setOnclickMethods();
       activePage.afterOpen();
@@ -2351,217 +2211,6 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs(lookupHoverResource.updateContent);
-
-class Tab {
-  constructor(imageSrc, id, template, show) {
-    const t = new $t(template);
-    show = show || function () {return true;};
-
-    this.imageSrc = function () {return imageSrc};
-    this.id = function () {return id;}
-    this.template = function () {return template;}
-    this.show = show;
-    this.update = function (scope) {
-      document.getElementById(id).innerHTML = t.render(scope);
-    }
-
-    Tab.tabs.push(this);
-  }
-}
-
-Tab.tabs = [];
-Tab.updateAll = function () {
-  for (let index = 0; index < Tab.tabs.length; index += 1) {
-    Tab.tabs[index].update();
-  }
-}
-
-class RawText {
-  constructor () {
-    // TODO: implement only show when on proper edit page.
-    function show() {return true;}
-    let text = '';
-
-
-
-    const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
-            'popup-cnt/tab-contents/raw-text-input', show);
-
-    function writeChanges() {
-      const container = document.getElementById('ce-raw-text-input-cnt-id')
-      container.innerHTML = textToHtml(text);
-    }
-
-    function onKeyup (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-      }
-    }
-    function onChange (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-        CE.refresh();
-      }
-    }
-
-    function settingsPageChange (settingsPage) {
-      if (settingsPage === 'RawTextTool') {
-        writeChanges();
-      }
-    }
-
-    CE.properties.onUpdate('settingsPage', settingsPageChange);
-    document.addEventListener('keyup', onKeyup);
-    document.addEventListener('paste', onKeyup);
-    document.addEventListener('change', onChange);
-  }
-}
-
-class AddInterface extends Page {
-  constructor () {
-    super();
-    const template = new $t('popup-cnt/tab-contents/add-explanation');
-    const instance = this;
-    let content = '';
-    let words = '';
-    const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
-    const ADD_EDITOR_ID = 'ce-add-editor-id';
-    const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
-    let updatePending = false;
-
-    function getScope() {
-      return {
-        ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
-        words: properties.get('searchWords')
-      }
-    }
-
-    this.hide = () => true;
-    this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
-    this.html = () => template.render(getScope());
-
-    function initContent(userContent) {
-      if (content === '' && (typeof userContent) === 'string') {
-        content = userContent;
-        updateDisplay()
-      }
-    }
-
-    function addExplSuccessful(expl) {
-      HoverExplanations.add(expl);
-      properties.set('userContent', '', true)
-      content = '';
-    }
-
-    function addExplanation() {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
-    }
-
-    function updateDisplay () {
-      if (instance.inputElem !== undefined) {
-        instance.inputElem.value = content;
-        lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
-        lookupHoverResource.center().bottom();
-        HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-        HoverExplanations.keepOpen();
-      }
-    }
-
-    this.afterOpen = (newWords) => {
-      words = properties.get('searchWords');
-      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
-      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
-      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
-      instance.inputElem.addEventListener('keyup', onChange);
-      // instance.inputElem.addEventListener('blur', HoverExplanations.close);
-      instance.addExplBtn.addEventListener('click', addExplanation);
-      HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-      instance.updateDisplay();
-    }
-    instance.updateDisplay = updateDisplay;
-
-    function onChange(e) {
-      content = (typeof e.target.value) === "string" ? e.target.value : content;
-      properties.set('userContent', content, true)
-      updateDisplay();
-    }
-
-    properties.onUpdate('userContent', initContent);
-  }
-}
-
-AddInterface = new AddInterface();
-lookupTabs.add(AddInterface, 2);
-
-class MerriamWebster extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    let suggestions;
-    let definitions;
-    let selection;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
-
-    function openDictionary(word) {
-      return function() {
-        properties.set('searchWords', word);
-        instance.update();
-      }
-    }
-
-    function html() {
-      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
-    }
-    this.html = html;
-
-    function updateSuggestions(suggestionHtml) {
-      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      const spans = sugCnt.querySelectorAll('span');
-      for (let index = 0; index < spans.length; index += 1) {
-        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      }
-    }
-    this.afterOpen = updateSuggestions;
-
-    function success (data) {
-      const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
-        key = selection;
-        definitions = data;
-        suggestions = [];
-      } else {
-        key = selection;
-        definitions = undefined;
-        suggestions = data;
-      }
-      lookupTabs.update();
-    }
-
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
-    }
-
-    this.update = function () {
-      const newSelection = properties.get('searchWords');
-      if (newSelection !== selection && (typeof newSelection) === 'string') {
-        selection = newSelection;
-        const url = `${URL_MERRIAM_REQ}${selection}`;
-        Request.get(url, success, failure);
-      }
-    }
-
-    this.beforeOpen = this.update;
-  }
-}
-
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
 class Explanations extends Page {
   constructor(list) {
     super();
@@ -2687,6 +2336,194 @@ class Explanations extends Page {
 
 Explanations = new Explanations();
 lookupTabs.add(Explanations, 0);
+
+class RawText {
+  constructor () {
+    // TODO: implement only show when on proper edit page.
+    function show() {return true;}
+    let text = '';
+
+
+
+    const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
+            'popup-cnt/tab-contents/raw-text-input', show);
+
+    function writeChanges() {
+      const container = document.getElementById('ce-raw-text-input-cnt-id')
+      container.innerHTML = textToHtml(text);
+    }
+
+    function onKeyup (event) {
+      if (event.target.id === 'ce-raw-text-input-id') {
+        text = event.target.value;
+        writeChanges();
+      }
+    }
+    function onChange (event) {
+      if (event.target.id === 'ce-raw-text-input-id') {
+        text = event.target.value;
+        writeChanges();
+        CE.refresh();
+      }
+    }
+
+    function settingsPageChange (settingsPage) {
+      if (settingsPage === 'RawTextTool') {
+        writeChanges();
+      }
+    }
+
+    CE.properties.onUpdate('settingsPage', settingsPageChange);
+    document.addEventListener('keyup', onKeyup);
+    document.addEventListener('paste', onKeyup);
+    document.addEventListener('change', onChange);
+  }
+}
+
+class AddInterface extends Page {
+  constructor () {
+    super();
+    const template = new $t('popup-cnt/tab-contents/add-explanation');
+    const instance = this;
+    let content = '';
+    let words = '';
+    const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
+    const ADD_EDITOR_ID = 'ce-add-editor-id';
+    const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
+    let updatePending = false;
+
+    function getScope() {
+      return {
+        ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
+        words: properties.get('searchWords')
+      }
+    }
+
+    this.hide = () => true;
+    this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
+    this.html = () => template.render(getScope());
+
+    function initContent(userContent) {
+      if (content === '' && (typeof userContent) === 'string') {
+        content = userContent;
+        updateDisplay()
+      }
+    }
+
+    function addExplSuccessful(expl) {
+      HoverExplanations.add(expl);
+      properties.set('userContent', '', true)
+      content = '';
+    }
+
+    function addExplanation() {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
+    }
+
+    function updateDisplay () {
+      if (instance.inputElem !== undefined) {
+        instance.inputElem.value = content;
+        lookupHoverResource.minimize();
+        lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
+        lookupHoverResource.center().bottom();
+        HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
+        HoverExplanations.keepOpen();
+      }
+    }
+
+    this.afterOpen = (newWords) => {
+      words = properties.get('searchWords');
+      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
+      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
+      instance.inputElem.addEventListener('keyup', onChange);
+      // instance.inputElem.addEventListener('blur', HoverExplanations.close);
+      instance.addExplBtn.addEventListener('click', addExplanation);
+      HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
+      instance.updateDisplay();
+    }
+    instance.updateDisplay = updateDisplay;
+
+    function onChange(e) {
+      content = (typeof e.target.value) === "string" ? e.target.value : content;
+      properties.set('userContent', content, true)
+      updateDisplay();
+    }
+
+    properties.onUpdate('userContent', initContent);
+  }
+}
+
+AddInterface = new AddInterface();
+lookupTabs.add(AddInterface, 2);
+
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    let suggestions;
+    let definitions;
+    let selection;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+
+    function openDictionary(word) {
+      return function() {
+        properties.set('searchWords', word);
+        instance.update();
+      }
+    }
+
+    function html() {
+      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+    }
+    this.html = html;
+
+    function updateSuggestions(suggestionHtml) {
+      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
+      const spans = sugCnt.querySelectorAll('span');
+      for (let index = 0; index < spans.length; index += 1) {
+        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      }
+    }
+    this.afterOpen = updateSuggestions;
+
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
+        key = selection;
+        definitions = data;
+        suggestions = [];
+      } else {
+        key = selection;
+        definitions = undefined;
+        suggestions = data;
+      }
+      lookupTabs.update();
+    }
+
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newSelection = properties.get('searchWords');
+      if (newSelection !== selection && (typeof newSelection) === 'string') {
+        selection = newSelection;
+        const url = `${URL_MERRIAM_REQ}${selection}`;
+        Request.get(url, success, failure);
+      }
+    }
+
+    this.beforeOpen = this.update;
+  }
+}
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
 
 return {afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }

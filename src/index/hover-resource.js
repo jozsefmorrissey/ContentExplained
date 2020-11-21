@@ -25,43 +25,46 @@ class HoverResources {
     let popupContent, popupCnt;
     let prevLocation, minLocation;
     let selectOpen = false;
-    let killAt = -1;
     let holdOpen = false;
+    let lastMoveEvent;
     let closeFuncs = [];
+
+    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
+
     this.close = () => {
       getPopupElems().cnt.style.display = 'none';
-      killAt = -1;
       currElem = undefined;
       closeFuncs.forEach((func) => func());
       if (minLocation) instance.minimize();
     }
 
     this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
-    this.forceClose = () => {forceOpen = false; getPopupElems().cnt.style.display = 'none';};
+    this.forceClose = () => {forceOpen = false; exitHover();};
     this.show = () => setCss({display: 'block'});
 
     function kill() {
-      if (!selectOpen && !forceOpen && !holdOpen && killAt < new Date().getTime()) {
+      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
         instance.close();
       }
     }
 
-    const waitTime = 450;
-    function dontHoldOpen(event) {
-      let currElem = event.target.parentElement;
-      while (currElem) {
-        if (currElem === getPopupElems().cnt) return;
-        currElem = currElem.parentElement
+    function isOpen() {
+      return getPopupElems().cnt.style.display === 'block';
+    }
+
+    function withinPopup() {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
+      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
+      return withinX && withinY;
       }
 
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      const withinX = event.clientX < rect.right && rect.left < event.clientX;
-      const withinY = event.clientY < rect.bottom && rect.top < event.clientY;
-      if (event.target === getPopupElems().cnt && withinX && withinY) {
-        return;
+    function dontHoldOpen(event) {
+      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
+      if (isOpen() && !withinPopup()) {
+        holdOpen = false;
+        exitHover();
       }
-      holdOpen = false;
-      exitHover();
     }
 
     function getFunctions(elem) {
@@ -92,6 +95,7 @@ class HoverResources {
 
       if (elem.id === POPUP_CNT_ID){
         holdOpen = true;
+
       }
 
       const funcs = getFunctions(elem);
@@ -147,6 +151,8 @@ class HoverResources {
       position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
       position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
               top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
       setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
       exitHover();
       return position;
@@ -157,7 +163,7 @@ class HoverResources {
       if (window.getSelection().toString().trim()) {
         selectElem = window.getSelection().getRangeAt(0);
         currElem = selectElem;
-        selectOpen = true;
+        selectOpen = new Date().getTime() + 3000;
       }
       positionOnElement(selectElem);
     };
@@ -180,6 +186,7 @@ class HoverResources {
       minLocation = prevLocation;
       document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
       document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
     }
 
     this.minimize = function () {
@@ -192,6 +199,7 @@ class HoverResources {
         document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
         document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
       }
+      return this;
     }
 
     function setCss(rect) {
@@ -228,10 +236,12 @@ class HoverResources {
     function isMaximized() {
       return minLocation !== undefined;
     }
+    this.isMaximized = isMaximized;
 
     const tempElem = document.createElement('div');
     tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    tempElem.children[0].style = defaultStyle;
     document.body.append(tempElem);
     function getPopupElems() {
       const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
@@ -250,17 +260,9 @@ class HoverResources {
       return {cnt: popupCnt, content: popupContent};
     }
 
-    function unSelect() {
-      if (window.getSelection().toString() === '') {
-        selectOpen = false;
-        exitHover();
-      }
-    }
-
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', offHover);
     document.addEventListener('click', dontHoldOpen);
-    document.addEventListener('mouseup', unSelect);
     this.container = () => getPopupElems().content;
 
   }
