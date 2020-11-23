@@ -7,313 +7,445 @@ const ADD_EDITOR_ID = 'ce-add-editor-id';
 const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
 const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Error</title>
-</head>
-<body>
-<pre>Cannot GET /content-explained/EPNTS</pre>
-</body>
-</html>
 
-Request = {
-    onStateChange: function (success, failure) {
+class Endpoints {
+  constructor(config, host) {
+    host = host || '';
+    this.setHost = (newHost) => {
+      if (newHost !== null && newHost !== undefined) {
+        host = config._envs[newHost] || newHost;
+      }
+    };
+    this.setHost(host);
+    this.getHost = () => host;
+
+    const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
+    this.getFuncObj = function () {return endPointFuncs;};
+
+
+    function build(str) {
+      const pieces = str.split(/:[a-zA-Z0-9]*/g);
+      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
       return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            var resp = this.responseText;
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){}
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            failure(this);
-          }
+        let values = [];
+        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
+          values = arguments;
+        } else {
+          const obj = arguments[0];
+          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
         }
-      }
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
-      }
-    },
-
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
-}
-
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
+        let endpoint = '';
+        for (let index = 0; index < pieces.length; index += 1) {
+          const arg = values[index];
+          let value = '';
+          if (index < pieces.length - 1) {
+            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
+          }
+          endpoint += pieces[index] + value;
+        }
+        return `${host}${endpoint}`;
       }
     }
 
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
+    function configRecurse(currConfig, currFunc) {
+      const keys = Object.keys(currConfig);
       for (let index = 0; index < keys.length; index += 1) {
         const key = keys[index];
-        const value = values[key];
-        if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
+        const value = currConfig[key];
+        if (key.indexOf('_') !== 0) {
+          if (value instanceof Object) {
+            currFunc[key] = {};
+            configRecurse(value, currFunc[key]);
+          } else {
+            currFunc[key] = build(value);
+          }
         } else {
-          instance.set(key, value);
+          currFunc[key] = value;
         }
       }
     }
 
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (keys, func) {
-      keyDefinitionCheck(keys);
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      keys.forEach((key) => {
-        if (updateFuncs[key] === undefined) {
-          updateFuncs[key] = [];
-        }
-        updateFuncs[key].push(func);
-        func(properties[key])
-      });
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
+    configRecurse(config, endPointFuncs);
   }
-}
-
-const properties = new Properties();
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
-    this.apply = function () {
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
-      }
-    }
-  }
-}
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  CE.applyCss = CssFile.apply;
 }
 
 try {
-  afterLoad.push(cssAfterLoad);
+  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
 } catch (e) {}
 
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-// ./src/index/css.js
-new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
-
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-full {   width: 100%;   height: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
+const EPNTS = new Endpoints({
+  "_envs": {
+    "local": "https://localhost:3001/content-explained",
+    "dev": "https://dev.jozsefmorrissey.com/context-explained",
+    "prod": "https://node.jozsefmorrissey.com/context-explained"
+  },
+  "user": {
+    "add": "/user",
+    "get": "/user/:idsOemail",
+    "login": "/user/login",
+    "update": "/user/update/:updateSecret",
+    "requestUpdate": "/user/update/request"
+  },
+  "credential": {
+    "add": "/credential/add/:userId",
+    "activate": "/credential/activate/:userId/:activationSecret",
+    "delete": "/credential/:idOauthorization",
+    "get": "/credential/:userId",
+    "status": "/credential/status/:authorization"
+  },
+  "site": {
+    "add": "/site",
+    "get": "/site/get"
+  },
+  "explanation": {
+    "add": "/explanation",
+    "author": "/explanation/author/:authorId",
+    "get": "/explanation/:words",
+    "update": "/explanation"
+  },
+  "siteExplanation": {
+    "add": "/site/explanation/:explanationId",
+    "get": "/site/explanation"
+  },
+  "opinion": {
+    "like": "/like/:explanationId/:siteId",
+    "dislike": "/dislike/:explanationId/:siteId",
+    "bySite": "/opinion/:siteId/:userId"
+  },
+  "endpoints": {
+    "json": "/html/endpoints.json",
+    "EPNTS": "/EPNTS/:env"
+  },
+  "images": {
+    "logo": "/images/icons/logo.png",
+    "wiki": "/images/icons/wikapedia.png",
+    "txt": "/images/icons/txt.png",
+    "merriam": "/images/icons/Merriam-Webster.png"
+  },
+  "_secure": [
+    "user.update",
+    "credential.get",
+    "credential.delete",
+    "site.add",
+    "explanation.add",
+    "explanation.update",
+    "siteExplanation.add",
+    "opinion.like",
+    "opinion.dislike"
+  ]
 }
+, 'local').getFuncObj();
+class HoverResources {
+  constructor (zIncrement) {
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
+    const template = new $t('hover-resources');
+    const instance = this;
+    const defaultStyle = `position: fixed;
+      z-index: ${(zIncrement || 0) + 999999};
+      background-color: white;
+      display: none;
+      max-height: 40%;
+      min-width: 20%;
+      max-width: 40%;
+      overflow: auto;
+      border: 1px solid;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
+    const htmlFuncs = {};
+    let forceOpen = false;
+    let currFuncs, currElem, selectElem;
+    let popupContent, popupCnt;
+    let prevLocation, minLocation;
+    let selectOpen = false;
+    let holdOpen = false;
+    let lastMoveEvent;
+    let closeFuncs = [];
 
+    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
 
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
+    this.close = () => {
+      getPopupElems().cnt.style.display = 'none';
+      currElem = undefined;
+      closeFuncs.forEach((func) => func());
+      if (minLocation) instance.minimize();
+    }
+
+    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
+    this.forceClose = () => {forceOpen = false; exitHover();};
+    this.show = () => setCss({display: 'block'});
+
+    function kill() {
+      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
+        instance.close();
+      }
+    }
+
+    function isOpen() {
+      return getPopupElems().cnt.style.display === 'block';
+    }
+
+    function withinPopup() {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
+      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
+      return withinX && withinY;
+      }
+
+    function dontHoldOpen(event) {
+      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
+      if (isOpen() && !withinPopup()) {
+        holdOpen = false;
+        exitHover();
+      }
+    }
+
+    function getFunctions(elem) {
+      let foundFuncs;
+      const queryStrs = Object.keys(htmlFuncs);
+      queryStrs.forEach((queryStr) => {
+        if (elem.matches(queryStr)) {
+          if (foundFuncs) {
+            throw new Error('Multiple functions being invoked on one hover event');
+          } else {
+            foundFuncs = htmlFuncs[queryStr];
+          }
+        }
+      });
+      return foundFuncs;
+    }
+
+    function offHover(event) {
+      const elem = event.target;
+      const funcs = getFunctions(elem);
+      if (funcs) return;
+      dontHoldOpen(event);
+    }
+
+    function onHover(event) {
+      if (!properties.get('enabled')) return;
+      const elem = event.target;
+
+      if (elem.id === POPUP_CNT_ID){
+        holdOpen = true;
+
+      }
+
+      const funcs = getFunctions(elem);
+      if (funcs) {
+        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
+          currFuncs = funcs;
+          positionOnElement(elem, funcs);
+          if (funcs && funcs.html) updateContent(funcs.html(elem));
+          if (funcs && funcs.after) funcs.after();
+        }
+        holdOpen = true;
+      }
+    }
+
+    function exitHover() {
+      setTimeout(kill, 500);
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      getPopupElems().cnt.style = defaultStyle;
+      getPopupElems().cnt.style.display = 'block';
+      const tbSpacing = 10;
+      const rect = currElem.getBoundingClientRect();
+      const height = rect.height;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const elemHorizCenter = (rect.right - rect.left) / 2;
+      const popHorizCenter = (popRect.right - popRect.left) / 2;
+      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
+      let left = elemHorizCenter - popHorizCenter + rect.left;
+      left = left < 0 ? 0 : left;
+      const leftOffset = calcWidth - (screenWidth - left);
+      left = leftOffset > 0 ? left - leftOffset : left;
+      left = `${left}px`;
+
+      const maxWidth = `${screenWidth - calcWidth}px`;
+      const minWidth = '20%';
+      let top = `${rect.top}px`;
+      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
+      if (screenHeight / 2 > rect.top) {
+        top = `${rect.top + height}px`;
       } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
+        top = `${rect.top - boxHeight}px`;
+      }
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
+              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
+      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
+      exitHover();
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+        selectOpen = new Date().getTime() + 3000;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      console.log(top, left)
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss(minLocation);
+        prevLocation = minLocation;
+        minLocation = undefined;
+        holdOpen = true;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+      return this;
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      return instance;
+    }
+    this.setCss = setCss;
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      getPopupElems().content.innerHTML = html;
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+    this.isMaximized = isMaximized;
+
+    const tempElem = document.createElement('div');
+    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    tempElem.children[0].style = defaultStyle;
+    document.body.append(tempElem);
+    function getPopupElems() {
+      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
+      if (newPopupContent !== popupContent) {
+        popupCnt = document.getElementById(POPUP_CNT_ID);
+        popupContent = newPopupContent;
+        popupCnt.style = defaultStyle;
+        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+        popupCnt.addEventListener('click', (e) => {
+          holdOpen = true;
+          if (e.target.tagName !== 'A')
+          e.stopPropagation()
+        });
+      }
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    document.addEventListener('mouseover', onHover);
+    document.addEventListener('mouseout', offHover);
+    document.addEventListener('click', dontHoldOpen);
+    this.container = () => getPopupElems().content;
+
+  }
+}
+
+const jsAttrReg = /(onafterprint|onbeforeprint|onbeforeunload|onerror|onhashchange|onload|onmessage|onoffline|ononline|onpagehide|onpageshow|onpopstate|onresize|onstorage|onunload|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclick|ondblclick|onmousedown|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onwheel|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|onscroll|oncopy|oncut|onpaste|onabort|oncanplay|oncanplaythrough|oncuechange|ondurationchange|onemptied|onended|onerror|onloadeddata|onloadedmetadata|onloadstart|onpause|onplay|onplaying|onprogress|onratechange|onseeked|onseeking|onstalled|onsuspend|ontimeupdate|onvolumechange|onwaiting|ontoggle)\s*=/g
+
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  return text.replace(/\n/g, '<br>')
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script[^<]*?>/, '')
+              .replace(jsAttrReg, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
+
+function search() {
+  function lookup(searchWords) {
+    searchWords = searchWords.trim().toLowerCase();
+    if (searchWords) {
+      lookupHoverResource.show();
+      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
+        properties.set('searchWords', searchWords);
+        lookupTabs.update();
       }
     }
-    return recurse(node, 0).node;
-}
+  }
 
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
+  function onHighlight(e) {
+    const selection = window.getSelection().toString().replace(/&nbsp;/, '');
+    // Google Doc selection.
+    // document.querySelector('.kix-selection-overlay')
+    if (CE.properties.get('enabled') && selection) {
+      lookup(selection);
+      window.getSelection().removeAllRanges();
+      e.stopPropagation();
     }
   }
 
-  return recurse(node, 0).node;
+  document.onmouseup = onHighlight;
+  CE.lookup = lookup;
+  CE.properties.onUpdate('env', EPNTS.setHost);
 }
 
-function styleUpdate(elem, property, value) {
-  function set(property, value) {
-    elem.style[property] = value;
-  }
-  switch (typeof property) {
-    case 'string':
-      set(property, value);
-      break;
-    case 'object':
-      const keys = Object.keys(property);
-      for (let index = 0; index < keys.length; index += 1) {
-        set(keys[index], property[keys[index]]);
-      }
-      break;
-    default:
-      throw new Error('argument not a string or an object: ' + (typeof property));
-  }
-}
-
-function onEnter(id, func) {
-  const elem = document.getElementById(id);
-  if (elem !== null) {
-    elem.addEventListener('keypress', (e) => {
-      if(e.key === 'Enter') func()
-    });
-  }
-}
+afterLoad.push(search);
 
 let idCount = 0;
 class ExprDef {
@@ -627,40 +759,59 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
+Request = {
+    onStateChange: function (success, failure) {
+      let savedServerId;
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            savedServerId = savedServerId || properties.get('ceServerId');
+            const currServerId = this.headers['ce-server-id'];
+            if (savedServerId && currServerId !== savedServerId) {
+              CE_SERVER_UPDATE.trigger();
+            }
+            var resp = this.responseText;
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){}
+            if (success) {
+              success(resp);
+            }
+          } else if (failure) {
+            failure(this);
+          }
         }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
       }
-    }
+    },
 
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
+      xhr.send();
+      return xhr;
+    },
+
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
       }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
+    },
+
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
 }
 class RegArr {
   constructor(string, array) {
@@ -758,346 +909,206 @@ class RegArr {
 try{
 	exports.RegArr = RegArr;
 } catch (e) {}
+class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        matchingElems[index].style = this.value + matchingElems[index].style;
+      }
+    }
+  }
+}
 
-class HoverResources {
-  constructor (zIncrement) {
-    const id = Math.floor(Math.random() * 1000000);
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
-    const template = new $t('hover-resources');
-    const instance = this;
-    const defaultStyle = `position: fixed;
-      z-index: ${(zIncrement || 0) + 999999};
-      background-color: white;
-      display: none;
-      max-height: 40%;
-      min-width: 20%;
-      max-width: 40%;
-      overflow: auto;
-      border: 1px solid;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-    const htmlFuncs = {};
-    let forceOpen = false;
-    let currFuncs, currElem, selectElem;
-    let popupContent, popupCnt;
-    let prevLocation, minLocation;
-    let selectOpen = false;
-    let holdOpen = false;
-    let lastMoveEvent;
-    let closeFuncs = [];
-
-    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
-
-    this.close = () => {
-      getPopupElems().cnt.style.display = 'none';
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files.push(this);
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
     }
 
-    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
-    this.forceClose = () => {forceOpen = false; exitHover();};
-    this.show = () => setCss({display: 'block'});
-
-    function kill() {
-      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
-        instance.close();
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
       }
     }
 
-    function isOpen() {
-      return getPopupElems().cnt.style.display === 'block';
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
     }
+  }
+}
 
-    function withinPopup() {
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
-      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
-      return withinX && withinY;
-      }
+CssFile.files = [];
 
-    function dontHoldOpen(event) {
-      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
-      if (isOpen() && !withinPopup()) {
-        holdOpen = false;
-        exitHover();
-      }
+CssFile.apply = function () {
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
     }
+  }
+}
 
-    function getFunctions(elem) {
-      let foundFuncs;
-      const queryStrs = Object.keys(htmlFuncs);
-      queryStrs.forEach((queryStr) => {
-        if (elem.matches(queryStr)) {
-          if (foundFuncs) {
-            throw new Error('Multiple functions being invoked on one hover event');
-          } else {
-            foundFuncs = htmlFuncs[queryStr];
-          }
+CssFile.dump = function () {
+  let dumpStr = '';
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  CE.applyCss = CssFile.apply;
+}
+
+try {
+  afterLoad.push(cssAfterLoad);
+} catch (e) {}
+
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+// ./src/index/css.js
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-full {   width: 100%;   height: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+
+class CustomEvent {
+  constructor(name) {
+    const watchers = {};
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        if (watchers[name] === undefined) {
+          watchers[name] = [];
         }
-      });
-      return foundFuncs;
-    }
-
-    function offHover(event) {
-      const elem = event.target;
-      const funcs = getFunctions(elem);
-      if (funcs) return;
-      dontHoldOpen(event);
-    }
-
-    function onHover(event) {
-      if (!properties.get('enabled')) return;
-      const elem = event.target;
-
-      if (elem.id === POPUP_CNT_ID){
-        holdOpen = true;
-
-      }
-
-      const funcs = getFunctions(elem);
-      if (funcs) {
-        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
-          currFuncs = funcs;
-          positionOnElement(elem, funcs);
-          if (funcs && funcs.html) updateContent(funcs.html(elem));
-          if (funcs && funcs.after) funcs.after();
-        }
-        holdOpen = true;
-      }
-    }
-
-    function exitHover() {
-      setTimeout(kill, 500);
-    }
-
-    this.back = () => setCss(prevLocation);
-
-    function positionOnElement(elem) {
-      currElem = elem || currElem;
-      getPopupElems().cnt.style = defaultStyle;
-      getPopupElems().cnt.style.display = 'block';
-      const tbSpacing = 10;
-      const rect = currElem.getBoundingClientRect();
-      const height = rect.height;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const elemHorizCenter = (rect.right - rect.left) / 2;
-      const popHorizCenter = (popRect.right - popRect.left) / 2;
-      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
-      let left = elemHorizCenter - popHorizCenter + rect.left;
-      left = left < 0 ? 0 : left;
-      const leftOffset = calcWidth - (screenWidth - left);
-      left = leftOffset > 0 ? left - leftOffset : left;
-      left = `${left}px`;
-
-      const maxWidth = `${screenWidth - calcWidth}px`;
-      const minWidth = '20%';
-      let top = `${rect.top}px`;
-      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
-      if (screenHeight / 2 > rect.top) {
-        top = `${rect.top + height}px`;
+        watchers[name].push(func);
       } else {
-        top = `${rect.top - boxHeight}px`;
+        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
       }
-      const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
-              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
-      position.maximize = instance.maximize.bind(position);
-      position.minimize = instance.minimize.bind(position);
-      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
-      exitHover();
-      return position;
     }
 
-    this.elem = positionOnElement;
-    this.select = () => {
-      if (window.getSelection().toString().trim()) {
-        selectElem = window.getSelection().getRangeAt(0);
-        currElem = selectElem;
-        selectOpen = new Date().getTime() + 3000;
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
       }
-      positionOnElement(selectElem);
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
+
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
+      }
+    }
+
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
     };
-    this.top = () => setCss({top:0,bottom:''});
-    this.left = () => setCss({right:'',left:0});
-    this.bottom = () => setCss({top:'',bottom:0});
-    this.right = () => setCss({right:0,left:''});
 
-    this.center = function () {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
-      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      console.log(top, left)
-      setCss({top,left, right: '', bottom: ''});
-      return instance;
-    }
-
-    this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
-      minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
-      return this;
-    }
-
-    this.minimize = function () {
-      if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
-        setCss(minLocation);
-        prevLocation = minLocation;
-        minLocation = undefined;
-        holdOpen = true;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
       }
-      return this;
-    }
-
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      return instance;
-    }
-    this.setCss = setCss;
-
-    function on(queryStr, funcObj) {
-      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
-      htmlFuncs[queryStr] = funcObj;
-    }
-    this.on = on;
-
-    this.onClose = (func) => closeFuncs.push(func);
-
-    function updateContent(html) {
-      getPopupElems().content.innerHTML = html;
-      if (currFuncs && currFuncs.after) currFuncs.after();
-      return instance;
-    }
-    this.updateContent = updateContent;
-
-    function isMaximized() {
-      return minLocation !== undefined;
-    }
-    this.isMaximized = isMaximized;
-
-    const tempElem = document.createElement('div');
-    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
-    tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
-    function getPopupElems() {
-      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
-      if (newPopupContent !== popupContent) {
-        popupCnt = document.getElementById(POPUP_CNT_ID);
-        popupContent = newPopupContent;
-        popupCnt.style = defaultStyle;
-        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.addEventListener('click', (e) => {
-          holdOpen = true;
-          if (e.target.tagName !== 'A')
-          e.stopPropagation()
-        });
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
       }
-      return {cnt: popupCnt, content: popupContent};
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
+      }
     }
 
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', offHover);
-    document.addEventListener('click', dontHoldOpen);
-    this.container = () => getPopupElems().content;
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
 
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
   }
 }
 
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script>/, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
-function search() {
-  // let built = false;
-  // function buildUi(data) {
-  //   built = true;
-  //   UI.id = UI_ID;
-  //   UI.style = `position: fixed;
-  //               width: 100%;
-  //               height: 30%;
-  //               top: 0px;
-  //               left: 0px;
-  //               text-align: center;
-  //               display: none;
-  //               z-index: 999;
-  //               background-color: whitesmoke;
-  //               overflow: auto;
-  //               border-style: outset;
-  //               border-width: 1pt;`;
-  // }
-
-  function goTo(searchWords) {
-    return function() {
-      lookup(searchWords);
-    }
-  }
-
-  function lookup(searchWords) {
-    searchWords = searchWords.trim().toLowerCase();
-    if (searchWords) {
-      lookupHoverResource.show();
-      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
-        properties.set('searchWords', searchWords);
-        lookupTabs.update();
-      }
-    }
-  }
-
-  function onHighlight(e) {
-    const selection = window.getSelection().toString().replace(/&nbsp;/, '');
-    // Google Doc selection.
-    // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
-      lookup(selection);
-      window.getSelection().removeAllRanges();
-      e.stopPropagation();
-    }
-  }
-
-  function enableToggled(enabled) {
-    if (enabled) {
-      if (!built) {
-        buildUi()
-      }
-    }
-  }
-
-  document.onmouseup = onHighlight;
-  CE.lookup = lookup;
-}
-
-afterLoad.push(search);
+const properties = new Properties();
 
 class Page {
   constructor() {
@@ -1108,6 +1119,281 @@ class Page {
     this.hide = function() {return false;}
   }
 }
+function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
+    }
+}
+
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
+      }
+    }
+    return recurse(node, 0).node;
+}
+
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
+
+  return recurse(node, 0).node;
+}
+
+function styleUpdate(elem, property, value) {
+  function set(property, value) {
+    elem.style[property] = value;
+  }
+  switch (typeof property) {
+    case 'string':
+      set(property, value);
+      break;
+    case 'object':
+      const keys = Object.keys(property);
+      for (let index = 0; index < keys.length; index += 1) {
+        set(keys[index], property[keys[index]]);
+      }
+      break;
+    default:
+      throw new Error('argument not a string or an object: ' + (typeof property));
+  }
+}
+
+function onEnter(id, func) {
+  const elem = document.getElementById(id);
+  if (elem !== null) {
+    elem.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') func()
+    });
+  }
+}
+
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      CE.properties.set('loggedIn', true, true);
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = CE.EPNTS.user.get(email);
+        CE.Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    this.logout = function (soft) {
+      user = undefined;
+      status = 'expired';
+      if (soft !== true) {
+        const cred = CE.properties.get('credential');
+        CE.properties.set('credential', null, true);
+        CE.properties.set('loggedIn', false, true);
+        dispatchUpdate();
+        if(cred !== null) {
+          if (status === 'active') {
+            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+            CE.Request.delete(deleteCredUrl, undefined, instance.update);
+          }
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          CE.properties.set('credential', credential, true);
+        } else {
+          CE.properties.set('credential', null, true);
+          credential = null;
+        }
+      } else {
+        credential = CE.properties.get('credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = CE.EPNTS.credential.status(credential);
+        CE.Request.get(url, updateStatus);
+        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        CE.Request.get(url, setUser);
+      } else if (credential === null) {
+        this.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = CE.EPNTS.credential.add(user.id);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = CE.EPNTS.credential.add(uId);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    }
+
+    this.register = function (email, username) {
+      const url = CE.EPNTS.user.add();
+      const body = {email, username};
+      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    }
+    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
+  }
+}
+
+User = new User();
+
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+
+class Opinion {
+  constructor() {
+    let siteId, userId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
 
 class Form {
   constructor() {
@@ -1595,11 +1881,32 @@ $t.functions['863427587'] = function (get) {
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
 }
-$t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+$t.functions['icon-menu/controls'] = function (get) {
+	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
 }
-$t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h3> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h3> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+}
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
+}
+$t.functions['icon-menu/links/developer'] = function (get) {
+	return `<label>Environment</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> `
+}
+$t.functions['-67159008'] = function (get) {
+	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['icon-menu/links/login'] = function (get) {
+	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
+}
+$t.functions['icon-menu/links/profile'] = function (get) {
+	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
+}
+$t.functions['icon-menu/settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/key-short-cut.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
 }
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
@@ -1607,20 +1914,8 @@ $t.functions['popup-cnt/linear-tab'] = function (get) {
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
 	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
-}
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
-$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam Webster '` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
-}
-$t.functions['-1925646037'] = function (get) {
-	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> </div> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'>Create Your Own</button> </div> </div> `
@@ -1631,29 +1926,23 @@ $t.functions['-1828676604'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
+	return `<div class='ce-merriam-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam Webster '` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
+}
+$t.functions['-1925646037'] = function (get) {
+	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
+}
+$t.functions['popup-cnt/explanation'] = function (get) {
+	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h3> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h3> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
 $t.functions['hover-resources'] = function (get) {
 	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
-}
-$t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
-}
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
-}
-$t.functions['icon-menu/controls'] = function (get) {
-	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
-}
-$t.functions['icon-menu/links/login'] = function (get) {
-	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
-}
-$t.functions['icon-menu/links/profile'] = function (get) {
-	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
-}
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
 }
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> `
@@ -1661,164 +1950,9 @@ $t.functions['tabs'] = function (get) {
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 }
-class Expl {
-  constructor () {
-    let addedResources = false;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources (enabled) {
-      if (enabled && !addedResources) {
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate('enabled', addHoverResources);
-  }
-}
-
-Expl = new Expl();
-
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      CE.properties.set('loggedIn', true, true);
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = CE.EPNTS.user.get(email);
-        CE.Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    this.logout = function (soft) {
-      user = undefined;
-      status = 'expired';
-      if (soft !== true) {
-        const cred = CE.properties.get('credential');
-        CE.properties.set('credential', null, true);
-        CE.properties.set('loggedIn', false, true);
-        dispatchUpdate();
-        if(cred !== null) {
-          if (status === 'active') {
-            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-            CE.Request.delete(deleteCredUrl, undefined, instance.update);
-          }
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          CE.properties.set('credential', credential, true);
-        } else {
-          CE.properties.set('credential', null, true);
-          credential = null;
-        }
-      } else {
-        credential = CE.properties.get('credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = CE.EPNTS.credential.status(credential);
-        CE.Request.get(url, updateStatus);
-        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        CE.Request.get(url, setUser);
-      } else if (credential === null) {
-        this.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = CE.EPNTS.credential.add(user.id);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = CE.EPNTS.credential.add(uId);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    }
-
-    this.register = function (email, username) {
-      const url = CE.EPNTS.user.add();
-      const body = {email, username};
-      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    }
-    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
-  }
-}
-
-User = new User();
-
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+}// ./bin/$templates.js
 
 class HoverExplanations {
   constructor () {
@@ -1844,6 +1978,7 @@ class HoverExplanations {
     this.letClose = () => hoverResource.forceClose();
 
     function getHtml(elemExplORef, index) {
+      currIndex = index || currIndex;
       let ref;
       if (elemExplORef instanceof HTMLElement) {
         ref = elemExplORef.getAttribute('ref');
@@ -2046,76 +2181,45 @@ class HoverExplanations {
 
 HoverExplanations = new HoverExplanations();
 
-class Opinion {
-  constructor() {
-    let siteId, userId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
+class Expl {
+  constructor () {
+    let addedResources = false;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
 
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
+    function addHoverResources (enabled) {
+      if (enabled && !addedResources) {
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
       }
     }
 
-    function canVote (expl, favorable)  {
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
     };
 
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr];
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value;
-    }
+    this.siteList = function (success, fail) {
+    };
 
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
 
 
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+    properties.onUpdate('enabled', addHoverResources);
   }
 }
 
-Opinion = new Opinion();
+Expl = new Expl();
 
 const lookupHoverResource = new HoverResources(1);
 
@@ -2211,6 +2315,73 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs(lookupHoverResource.updateContent);
+
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    let suggestions;
+    let definitions;
+    let selection;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+
+    function openDictionary(word) {
+      return function() {
+        properties.set('searchWords', word);
+        instance.update();
+      }
+    }
+
+    function html() {
+      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+    }
+    this.html = html;
+
+    function updateSuggestions(suggestionHtml) {
+      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
+      const spans = sugCnt.querySelectorAll('span');
+      for (let index = 0; index < spans.length; index += 1) {
+        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      }
+    }
+    this.afterOpen = updateSuggestions;
+
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
+        key = selection;
+        definitions = data;
+        suggestions = [];
+      } else {
+        key = selection;
+        definitions = undefined;
+        suggestions = data;
+      }
+      lookupTabs.update();
+    }
+
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newSelection = properties.get('searchWords');
+      if (newSelection !== selection && (typeof newSelection) === 'string') {
+        selection = newSelection;
+        const url = `${URL_MERRIAM_REQ}${selection}`;
+        Request.get(url, success, failure);
+      }
+    }
+
+    this.beforeOpen = this.update;
+  }
+}
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
 class Explanations extends Page {
   constructor(list) {
     super();
@@ -2337,49 +2508,6 @@ class Explanations extends Page {
 Explanations = new Explanations();
 lookupTabs.add(Explanations, 0);
 
-class RawText {
-  constructor () {
-    // TODO: implement only show when on proper edit page.
-    function show() {return true;}
-    let text = '';
-
-
-
-    const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
-            'popup-cnt/tab-contents/raw-text-input', show);
-
-    function writeChanges() {
-      const container = document.getElementById('ce-raw-text-input-cnt-id')
-      container.innerHTML = textToHtml(text);
-    }
-
-    function onKeyup (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-      }
-    }
-    function onChange (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-        CE.refresh();
-      }
-    }
-
-    function settingsPageChange (settingsPage) {
-      if (settingsPage === 'RawTextTool') {
-        writeChanges();
-      }
-    }
-
-    CE.properties.onUpdate('settingsPage', settingsPageChange);
-    document.addEventListener('keyup', onKeyup);
-    document.addEventListener('paste', onKeyup);
-    document.addEventListener('change', onChange);
-  }
-}
-
 class AddInterface extends Page {
   constructor () {
     super();
@@ -2458,72 +2586,48 @@ class AddInterface extends Page {
 AddInterface = new AddInterface();
 lookupTabs.add(AddInterface, 2);
 
-class MerriamWebster extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    let suggestions;
-    let definitions;
-    let selection;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+class RawText {
+  constructor () {
+    // TODO: implement only show when on proper edit page.
+    function show() {return true;}
+    let text = '';
 
-    function openDictionary(word) {
-      return function() {
-        properties.set('searchWords', word);
-        instance.update();
+
+
+    const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
+            'popup-cnt/tab-contents/raw-text-input', show);
+
+    function writeChanges() {
+      const container = document.getElementById('ce-raw-text-input-cnt-id')
+      container.innerHTML = textToHtml(text);
+    }
+
+    function onKeyup (event) {
+      if (event.target.id === 'ce-raw-text-input-id') {
+        text = event.target.value;
+        writeChanges();
+      }
+    }
+    function onChange (event) {
+      if (event.target.id === 'ce-raw-text-input-id') {
+        text = event.target.value;
+        writeChanges();
+        CE.refresh();
       }
     }
 
-    function html() {
-      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
-    }
-    this.html = html;
-
-    function updateSuggestions(suggestionHtml) {
-      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      const spans = sugCnt.querySelectorAll('span');
-      for (let index = 0; index < spans.length; index += 1) {
-        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      }
-    }
-    this.afterOpen = updateSuggestions;
-
-    function success (data) {
-      const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
-        key = selection;
-        definitions = data;
-        suggestions = [];
-      } else {
-        key = selection;
-        definitions = undefined;
-        suggestions = data;
-      }
-      lookupTabs.update();
-    }
-
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
-    }
-
-    this.update = function () {
-      const newSelection = properties.get('searchWords');
-      if (newSelection !== selection && (typeof newSelection) === 'string') {
-        selection = newSelection;
-        const url = `${URL_MERRIAM_REQ}${selection}`;
-        Request.get(url, success, failure);
+    function settingsPageChange (settingsPage) {
+      if (settingsPage === 'RawTextTool') {
+        writeChanges();
       }
     }
 
-    this.beforeOpen = this.update;
+    CE.properties.onUpdate('settingsPage', settingsPageChange);
+    document.addEventListener('keyup', onKeyup);
+    document.addEventListener('paste', onKeyup);
+    document.addEventListener('change', onChange);
   }
 }
-
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
 
 return {afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }

@@ -1,8 +1,10 @@
 const fs = require('fs');
 const shell = require('shelljs');
 
+const env = process.argv[2];
+
 shell.exec('cat ./src/index/ExprDef.js ./src/index/services/\\$t.js > ./bin/builder.js')
-shell.exec("curl -X GET --insecure 'https://localhost:3001/content-explained/EPNTS' > ./bin/EPNTS.js");
+shell.exec(`curl -X GET --insecure 'https://localhost:3001/content-explained/EPNTS/${env}' > ./bin/EPNTS.js`, {silent: true});
 
 const $t = require('./bin/builder.js').$t;
 const CssFile = require('./src/index/css.js').CssFile;
@@ -18,10 +20,9 @@ class Watcher {
       function read(err, contents) {
         if (err) {
           console.error(err);
-        } else {
-          console.log('ran file: ', `${filename}`)
-          func(filename, contents);
         }
+        console.log('ran file: ', `${filename}`)
+        func(filename, contents);
       }
       fs.readFile(filename, 'utf8', read);
     }
@@ -79,6 +80,7 @@ class Watcher {
 }
 
 const jsFiles = {};
+const afterFiles = {};
 const allJsFiles = {};
 let position = 0;
 const refRegex = /(class|function)\s{1}([\$a-zA-Z][a-zA-Z0-9\$]*)/g;
@@ -88,25 +90,23 @@ class JsFile {
     const instance = this;
     this.filename = filename;
     this.contents = contents;
-    this.children = [];
-    const firstLine = contents.split('\n')[0];
-    const after = firstLine.replace(/^\s*\/\/\s*(.*)\s*$/, '$1');
-    console.log('after: ', after);
     this.position = position++;
-    if (after && after !== firstLine) {
-        if (!jsFiles[after]) {
-          jsFiles[instance.filename] = instance;
-          console.log(JSON.stringify(Object.keys(jsFiles), null, 2));
-          console.error('Invalid file indicated: ' + after);
-        } else {
-          console.log("Add Child", jsFiles[after].filename);
-          console.log("children", JSON.stringify(Object.keys(jsFiles[after].children), null, 2));
-          jsFiles[after].addChild(instance);
-        }
-    } else {
-      jsFiles[this.filename] = this;
+    let after;
+    function updateAfter () {
+      let firstLine = instance.contents.split('\n')[0];
+      if (after) {
+        afterFiles[after] = [after].splice(afterFiles[after].indexOf(instance), 1);
+      }
+      after = firstLine.replace(/^\s*\/\/\s*(.*)\s*$/, '$1');
+      if (after && after !== firstLine) {
+          if (afterFiles[after] === undefined) afterFiles[after] = [];
+          afterFiles[after].push(instance);
+          delete jsFiles[instance.filename];
+      } else {
+        after = undefined;
+        jsFiles[instance.filename] = instance;
+      }
     }
-    // console.log('position: ', position);
     this.updateContents = function (cont) {
       this.contents = cont;
       const newRefs = {};
@@ -116,41 +116,49 @@ class JsFile {
         matches.map(function (elem) {
           const name = elem.replace(refRegex, '$2');
           newRefs[name] = true;
-      });
-    }
+        });
+      }
+      updateAfter();
       this.references = newRefs;
-    }
-    this.addChild = function (jsFile) {
-      this.children.push(jsFile);
     }
     this.replace = function () {
       this.overwrite = true;
     }
     this.updateContents(contents);
-    // console.log(this)
   }
 }
+
+function fileExistes(filename) {
+  return shell.exec(`[ -f '${filename}' ] && echo true`, {silent: true}).stdout.trim() === 'true';
+}
+
 function dummy() {};
 function jsBundler(filename, contents) {
-  console.log(JSON.stringify(Object.keys(jsFiles)));
-  if (allJsFiles[filename]) {
-    console.log('updating', filename);
+  let bundle = 'let CE = function () {\nconst afterLoad = []\n';
+  if (!fileExistes(filename)) {
+    delete jsFiles[filename];
+    delete allJsFiles[filename];
+    delete afterFiles[filename];
+  } else if (allJsFiles[filename]) {
     allJsFiles[filename].updateContents(contents);
   } else {
-    console.log('new one', filename);
     new JsFile(filename, contents);
   }
-  let bundle = 'let CE = function () {\nconst afterLoad = []\n';
 
+  function addAfterFiles(filename) {
+    if (afterFiles[filename]) {
+      afterFiles[filename].forEach((child, i) => {
+        bundle += child.contents;
+        addAfterFiles(child.filename);
+      });
+    }
+  }
   Object.values(jsFiles).sort(function (jsF1, jsF2) {
-    return jsF1.filename.replace(/[^\/]/g, '').length -
-          jsF2.filename.replace(/[^\/]/g, '').length;
+    return jsF1.filename.match(/[^.]{2,}?\//g).length -
+          jsF2.filename.match(/[^.]{2,}?\//g).length;
   }).forEach((item, i) => {
     bundle += item.contents;
-    item.children.forEach((child, i) => {
-      console.log('child name', child.filename)
-      bundle += child.contents;
-    });
+    addAfterFiles(item.filename);
   });
   const exposed = '{afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
   bundle += `\nreturn ${exposed};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});`;

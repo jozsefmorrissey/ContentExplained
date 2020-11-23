@@ -175,30 +175,6 @@ function ShortCutCointainer(id, keys, html, config) {
     }
   }
 
-  function mouseupOnRandDescendents(e, count) {
-    var mouseupEvent = new MouseEvent('mouseup', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true
-    });
-
-    function click(elem) {
-      return function () {
-        console.log('triggering mouseup event: ', elem)
-        elem.dispatchEvent(mouseupEvent);
-      };
-    }
-    const decendents = e.querySelectorAll('*');
-    for (let c = 0; c < count; c += 1) {
-       const index = Math.floor(Math.random() * decendents.length + 1);
-       if (index === decendents.length) {
-         setTimeout(click(e), 5 * c);
-       } else {
-         setTimeout(click(decendents[index]), 5 * c);
-       }
-    }
-  }
-
   var ssc = document.createElement('div');
   ssc.id = id;
   ssc.append(createResizeBar());

@@ -306,3 +306,29 @@ class RawTextTool extends Page {
   }
 }
 new Settings(new RawTextTool());
+
+class Developer extends Page {
+  constructor() {
+    super();
+    const ENV_SELECT_ID = 'ce-env-select-id';
+    let show = false;
+    this.label = function () {return 'Developer';};
+    this.hide = function () {return !show;}
+    this.scope = () => {
+      const envs = Object.keys(CE.EPNTS._envs);
+      const currEnv = CE.properties.get('env');
+      return {ENV_SELECT_ID, envs, currEnv};
+    };
+    this.template = function() {return 'icon-menu/links/developer';}
+    function envUpdate() {
+      const newEnv = document.getElementById(ENV_SELECT_ID).value;
+      CE.properties.set('env', newEnv, true);
+    }
+    this.onOpen = () => {
+      document.getElementById(ENV_SELECT_ID).onchange = envUpdate;
+    }
+
+    new KeyShortCut(['d', 'b'], () => {show = !show; Settings.updateMenus();});
+  }
+}
+new Settings(new Developer());

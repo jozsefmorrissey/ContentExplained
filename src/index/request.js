@@ -1,9 +1,15 @@
 
 Request = {
     onStateChange: function (success, failure) {
+      let savedServerId;
       return function () {
         if (this.readyState == 4) {
           if (this.status == 200) {
+            savedServerId = savedServerId || properties.get('ceServerId');
+            const currServerId = this.headers['ce-server-id'];
+            if (savedServerId && currServerId !== savedServerId) {
+              CE_SERVER_UPDATE.trigger();
+            }
             var resp = this.responseText;
             try {
               resp = JSON.parse(this.responseText);

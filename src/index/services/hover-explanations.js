@@ -1,3 +1,4 @@
+// ./bin/$templates.js
 
 class HoverExplanations {
   constructor () {
@@ -23,6 +24,7 @@ class HoverExplanations {
     this.letClose = () => hoverResource.forceClose();
 
     function getHtml(elemExplORef, index) {
+      currIndex = index || currIndex;
       let ref;
       if (elemExplORef instanceof HTMLElement) {
         ref = elemExplORef.getAttribute('ref');

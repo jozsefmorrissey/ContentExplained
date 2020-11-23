@@ -1,0 +1,7 @@
+<label>Environment</label>
+<select id='{{ENV_SELECT_ID}}'>
+  <option:t repeat='env in envs' value="{{env}}"
+        {{env === currEnv ? 'selected' : ''}}>
+    {{env}}
+  </option:t>
+</select>
