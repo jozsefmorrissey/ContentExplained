@@ -17,27 +17,43 @@ function search() {
     searchWords = searchWords.trim().toLowerCase();
     if (searchWords) {
       lookupHoverResource.show();
-      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
+      if (searchWords !== properties.get('searchWords') && searchWords.length < 64) {
         properties.set('searchWords', searchWords);
         lookupTabs.update();
       }
     }
   }
 
-  function onHighlight(e) {
+  function checkHighlight(e) {
     const selection = window.getSelection().toString().replace(/&nbsp;/, '');
     // Google Doc selection.
     // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
+    if (properties.get('enabled') && selection) {
       lookup(selection);
       window.getSelection().removeAllRanges();
       e.stopPropagation();
+      e.preventDefault();
     }
   }
 
-  document.onmouseup = onHighlight;
+  document.addEventListener( "contextmenu", checkHighlight);
   CE.lookup = lookup;
-  CE.properties.onUpdate('env', EPNTS.setHost);
+  properties.onUpdate('env', EPNTS.setHost);
 }
+
+
+properties.onUpdate(['debug', 'debugGuiHost'], () => {
+  const debug = properties.get('debug');
+  const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
+  if (debug) {
+    const root = 'context-explained-ui';
+    const id = 'timmys';
+    const cookieExists = document.cookie.match(/DebugGui=/);
+    CE.dg.softUpdate({debug, root, id, host});
+    if (!cookieExists) window.location.reload();
+  } else if (CE.dg) {
+    CE.dg.updateConfig({debug});
+  }
+});
 
 afterLoad.push(search);

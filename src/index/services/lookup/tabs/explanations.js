@@ -2,7 +2,9 @@ class Explanations extends Page {
   constructor(list) {
     super();
     const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
@@ -69,6 +71,7 @@ class Explanations extends Page {
 
       document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
       document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
     }
 
     function setExplanation(expls) {
@@ -78,7 +81,7 @@ class Explanations extends Page {
       lookupTabs.update();
     }
 
-    function html () {
+    function getScope() {
       const scope = {};
       const tagObj = {}
       scope.explanations = explanations.filter(byTags);
@@ -97,14 +100,21 @@ class Explanations extends Page {
 
       scope.allTags = Object.keys(tagObj);
       scope.words = searchWords;
+      scope.loggedIn = User.isLoggedIn();
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
+      return scope;
+    }
+
+    function html () {
       return template.render(scope);
     }
 
-    this.html = html;
+    this.html = () => template.render(getScope());
+    this.header= () => headerTemplate.render(getScope());
     this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
     this.afterOpen = setTagOnclick;
     this.beforeOpen = () => instance.get();

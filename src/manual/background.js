@@ -14,3 +14,7 @@ const SETTINGS_TAB_ID = 'ce-settings-tab-id';
 chrome.storage.local.set({settingsPage, SETTINGS_TAB_ID});
 
 // chrome.tabs.create({ url: "/html/icon-menu/settings.html" });
+
+chrome.tabs.executeScript({
+  code: 'console.log("here");'
+});

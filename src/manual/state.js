@@ -7,24 +7,11 @@ function stateOnLoad() {
     function toggleEnable(onOff) {
       return function () {
         CE.properties.set('enabled', onOff, true);
-        document.getElementById('control-ctn').innerHTML = menuTemplate.render({ enabled: onOff });
-
-        document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
-        document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
-        document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html#Login"));
-        chrome.tabs.executeScript({
-          code: 'console.log("here", '+ eventCount++ +');'
-        });
       }
-      chrome.tabs.executeScript({
-        code: 'console.log("here", '+ eventCount++ +');'
-      });    }
+    }
 
     function openPage(page) {
       return function() {
-        chrome.tabs.executeScript({
-          code: 'console.log("here", '+ eventCount++ +');'
-        });
         window.open(chrome.extension.getURL(page), SETTINGS_TAB_ID);
       }
     }
@@ -37,7 +24,7 @@ function stateOnLoad() {
     }
 
     CE.properties.set('SETTINGS_TAB_ID', SETTINGS_TAB_ID);
-    displayMenu(CE.properties.get('enabled'));
+    CE.properties.onUpdate('enabled', displayMenu);
   });
 }
 

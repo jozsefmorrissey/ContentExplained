@@ -82,3 +82,21 @@ function onEnter(id, func) {
     });
   }
 }
+
+function elemSpacer(elem) {
+  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
+  const spacerId = elem.getAttribute('spacer-id');
+  elem.style.position = '';
+  elem.style.margin = '';
+  const elemRect = elem.getBoundingClientRect();
+  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
+  spacer.id = spacerId;
+  spacer.style.width = elem.scrollWidth + 'px';
+  spacer.style.height = elem.scrollHeight + 'px';
+  elem.style.width = elem.scrollWidth + 'px';
+  elem.style.height = elem.scrollHeight + 'px';
+  elem.style.margin = 0;
+  elem.style.zIndex = 1;
+  elem.after(spacer);
+  elem.style.position = elem.getAttribute("position");
+}

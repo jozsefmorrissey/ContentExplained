@@ -5,6 +5,7 @@ const env = process.argv[2];
 
 shell.exec('cat ./src/index/ExprDef.js ./src/index/services/\\$t.js > ./bin/builder.js')
 shell.exec(`curl -X GET --insecure 'https://localhost:3001/content-explained/EPNTS/${env}' > ./bin/EPNTS.js`, {silent: true});
+shell.exec(`curl -X GET --insecure 'https://localhost:3001/debug-gui/js/debug-gui-client.js' > ./bin/DebugGui.js`, {silent: true});
 
 const $t = require('./bin/builder.js').$t;
 const CssFile = require('./src/index/css.js').CssFile;
@@ -129,6 +130,7 @@ class JsFile {
 }
 
 function fileExistes(filename) {
+  if (!allJsFiles[filename]) return true;
   return shell.exec(`[ -f '${filename}' ] && echo true`, {silent: true}).stdout.trim() === 'true';
 }
 
@@ -160,7 +162,7 @@ function jsBundler(filename, contents) {
     bundle += item.contents;
     addAfterFiles(item.filename);
   });
-  const exposed = '{afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
+  const exposed = '{dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
   bundle += `\nreturn ${exposed};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});`;
   fs.writeFile('./index.js', bundle, dummy);
 }
@@ -186,6 +188,7 @@ function compCss(filename, contents) {
 new Watcher(compHtml).add('./html');
 new Watcher(compCss).add('./css/');
 new Watcher(jsBundler).add('./constants/global.js')
+                      .add('./bin/DebugGui.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js')

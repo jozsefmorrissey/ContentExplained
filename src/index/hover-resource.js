@@ -24,26 +24,32 @@ class HoverResources {
     let currFuncs, currElem, selectElem;
     let popupContent, popupCnt;
     let prevLocation, minLocation;
-    let selectOpen = false;
-    let holdOpen = false;
+    let canClose = false;
+    let mouseDown = false;
     let lastMoveEvent;
     let closeFuncs = [];
 
-    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
-
     this.close = () => {
-      getPopupElems().cnt.style.display = 'none';
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
+      if (isOpen() && !withinPopup(-10)) {
+        canClose = false;
+        getPopupElems().cnt.style.display = 'none';
+        // HoverResources.eventCatcher.style.display = 'none';
+        currElem = undefined;
+        closeFuncs.forEach((func) => func());
+        if (minLocation) instance.minimize();
+      }
     }
 
-    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
+    this.forceOpen = () => {forceOpen = true; instance.show();};
     this.forceClose = () => {forceOpen = false; exitHover();};
-    this.show = () => setCss({display: 'block'});
+    this.show = () => {
+      setCss({display: 'block'})
+      // HoverResources.eventCatcher.style.display = 'block';
+
+    };
 
     function kill() {
-      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
+      if (!forceOpen && canClose && !withinPopup(-10)) {
         instance.close();
       }
     }
@@ -52,17 +58,19 @@ class HoverResources {
       return getPopupElems().cnt.style.display === 'block';
     }
 
-    function withinPopup() {
+    function withinPopup(offset) {
       const rect = getPopupElems().cnt.getBoundingClientRect();
-      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
-      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
-      return withinX && withinY;
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
+        return withinX && withinY;
       }
+      return true;
+    }
 
     function dontHoldOpen(event) {
-      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
-      if (isOpen() && !withinPopup()) {
-        holdOpen = false;
+      if (!canClose) withinPopup(10) && (canClose = true);
+      if (canClose) {
         exitHover();
       }
     }
@@ -92,21 +100,16 @@ class HoverResources {
     function onHover(event) {
       if (!properties.get('enabled')) return;
       const elem = event.target;
-
-      if (elem.id === POPUP_CNT_ID){
-        holdOpen = true;
-
-      }
+      if (!canClose) withinPopup(10) && (canClose = true);
 
       const funcs = getFunctions(elem);
-      if (funcs) {
+      if (funcs && !mouseDown) {
         if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
           currFuncs = funcs;
           positionOnElement(elem, funcs);
           if (funcs && funcs.html) updateContent(funcs.html(elem));
           if (funcs && funcs.after) funcs.after();
         }
-        holdOpen = true;
       }
     }
 
@@ -119,7 +122,7 @@ class HoverResources {
     function positionOnElement(elem) {
       currElem = elem || currElem;
       getPopupElems().cnt.style = defaultStyle;
-      getPopupElems().cnt.style.display = 'block';
+      instance.show();
       const tbSpacing = 10;
       const rect = currElem.getBoundingClientRect();
       const height = rect.height;
@@ -153,7 +156,7 @@ class HoverResources {
               top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
       position.maximize = instance.maximize.bind(position);
       position.minimize = instance.minimize.bind(position);
-      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
+      setCss({left, minWidth, maxWidth, top, back: instance.back});
       exitHover();
       return position;
     }
@@ -163,7 +166,6 @@ class HoverResources {
       if (window.getSelection().toString().trim()) {
         selectElem = window.getSelection().getRangeAt(0);
         currElem = selectElem;
-        selectOpen = new Date().getTime() + 3000;
       }
       positionOnElement(selectElem);
     };
@@ -193,9 +195,9 @@ class HoverResources {
       if (minLocation) {
         setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
         setCss(minLocation);
+        canClose = false;
         prevLocation = minLocation;
         minLocation = undefined;
-        holdOpen = true;
         document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
         document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
       }
@@ -252,7 +254,6 @@ class HoverResources {
         document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
         document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
         popupCnt.addEventListener('click', (e) => {
-          holdOpen = true;
           if (e.target.tagName !== 'A')
           e.stopPropagation()
         });
@@ -260,10 +261,35 @@ class HoverResources {
       return {cnt: popupCnt, content: popupContent};
     }
 
+    // function catchAndRelease(e) {
+    //   HoverResources.eventCatcher.style.display = 'none';
+    //   let newEvent;
+    //   if (e instanceof MouseEvent) newEvent = new MouseEvent(e.type, e);
+    //   else newEvent = new Event(e.type, e);
+    //   document.elementFromPoint(e.clientX,e.clientY).dispatchEvent(newEvent);
+    //   HoverResources.eventCatcher.style.display = 'block';
+    //   console.log(e);
+    //   console.log(newEvent);
+    //   lastMoveEvent = e;
+    //   kill();
+    // }
+    //
+    // const allEvents = ['abort','afterprint','beforeprint','beforeunload','blur','canplay','canplaythrough','change','click','contextmenu','copy','cuechange','cut','dblclick','DOMContentLoaded','drag','dragend','dragenter','dragleave','dragover','dragstart','drop','durationchange','emptied','ended','error','focus','focusin','focusout','formchange','forminput','hashchange','input','invalid','keydown','keypress','keyup','load','loadeddata','loadedmetadata','loadstart','message','mousedown','mouseenter','mouseleave','mousemove','mouseout','mouseover','mouseup','mousewheel','offline','online','pagehide','pageshow','paste','pause','play','playing','popstate','progress','ratechange','readystatechange','redo','reset','resize','scroll','seeked','seeking','select','show','stalled','storage','submit','suspend','timeupdate','undo','unload','volumechange','waiting'];
+    //
+    // allEvents.forEach((evt) => HoverResources.eventCatcher.addEventListener(evt, catchAndRelease, {passive: true, capture: false}));
+    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; kill();});
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', offHover);
-    document.addEventListener('click', dontHoldOpen);
+    document.addEventListener('mousedown', () => mouseDown = true);
+    document.addEventListener('mouseup', () => mouseDown = false);
+    // HoverResources.eventCatcher.addEventListener('click', this.close);
+    document.addEventListener('click', this.close);
     this.container = () => getPopupElems().content;
 
   }
 }
+
+// HoverResources.eventCatcher = document.createElement('div');
+// HoverResources.eventCatcher.id = 'event-catcher-id';
+// HoverResources.eventCatcher.style.display = 'none';
+// document.body.append(HoverResources.eventCatcher);

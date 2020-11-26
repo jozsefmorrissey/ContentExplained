@@ -4,9 +4,9 @@ class MerriamWebster extends Page {
     super();
     const instance = this;
     const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
     let suggestions;
     let definitions;
-    let selection;
     let key;
     this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
 
@@ -17,10 +17,8 @@ class MerriamWebster extends Page {
       }
     }
 
-    function html() {
-      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
-    }
-    this.html = html;
+    this.html = () => meriamTemplate.render({definitions});
+    this.header = () => meriamHeader.render({key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
 
     function updateSuggestions(suggestionHtml) {
       const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
@@ -34,12 +32,10 @@ class MerriamWebster extends Page {
     function success (data) {
       const elem = data[0];
       if (elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
-        key = selection;
+        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
         definitions = data;
         suggestions = [];
       } else {
-        key = selection;
         definitions = undefined;
         suggestions = data;
       }
@@ -51,10 +47,12 @@ class MerriamWebster extends Page {
     }
 
     this.update = function () {
-      const newSelection = properties.get('searchWords');
-      if (newSelection !== selection && (typeof newSelection) === 'string') {
-        selection = newSelection;
-        const url = `${URL_MERRIAM_REQ}${selection}`;
+      const newKey = properties.get('searchWords');
+      if (newKey !== key && (typeof newKey) === 'string') {
+        definitions = undefined;
+        suggestions = undefined;
+        key = newKey.replace(/\s/g, '&nbsp;');
+        const url = EPNTS.merriam.search(key);
         Request.get(url, success, failure);
       }
     }

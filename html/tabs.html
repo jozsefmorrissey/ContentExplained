@@ -1,13 +1,21 @@
 <div class='ce-inline ce-full' id='{{TAB_CNT_ID}}'>
   <div>
-    <ul class='ce-width-full {{LIST_CLASS}}' id='{{LIST_ID}}'>
-      <li:t repeat='page in pages' {{page.hide() ? 'hidden' : ''}}
-        class='{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}'>
-        {{page.label()}}
-      </li:t>
-    </ul>
+    <div position='fixed' id='{{NAV_CNT_ID}}'>
+      <ul class='ce-width-full {{LIST_CLASS}}' id='{{LIST_ID}}'>
+        <li:t repeat='page in pages' {{page.hide() ? 'hidden' : ''}}
+          class='{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}'>
+          {{page.label()}}
+        </li:t>
+      </ul>
+    </div>
+    <div id='{{NAV_SPACER_ID}}'></div>
   </div>
-  <div class='ce-full' id='{{CNT_ID}}'>
-    {{content}}
+  <div class='ce-width-full'>
+    <div position='fixed' id='{{HEADER_CNT_ID}}'>
+      {{header}}
+    </div>
+    <div class='ce-full-width' id='{{CNT_ID}}'>
+      {{content}}
+    </div>
   </div>
 </div>

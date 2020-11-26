@@ -4,14 +4,19 @@ const lookupHoverResource = new HoverResources(1);
 class Tabs {
   constructor(updateHtml, props) {
     props = props || {};
+    const uniqId = Math.floor(Math.random() * 100000);
     const template = new $t('tabs');
     const CSS_CLASS = props.class || 'ce-tabs-list-item';
     const ACTIVE_CSS_CLASS = `${CSS_CLASS} ${props.activeClass || 'ce-tabs-active'}`;
     const LIST_CLASS = props.listClass || 'ce-tabs-list';
-    const CNT_ID = props.containerId || 'ce-tabs-cnt-id';
-    const LIST_ID = 'ce-tabs-list-id-' + Math.floor(Math.random() * 100000);
-    const TAB_CNT_ID = 'ce-tab-cnt-id';
+    const CNT_ID = props.containerId || 'ce-tabs-cnt-id-' + uniqId;
+    const LIST_ID = 'ce-tabs-list-id-' + uniqId;
+    const TAB_CNT_ID = 'ce-tab-cnt-id-' + uniqId;
+    const NAV_CNT_ID = 'ce-tab-nav-cnt-id-' + uniqId;
+    const NAV_SPACER_ID = 'ce-tab-nav-spacer-id-' + uniqId;
+    const HEADER_CNT_ID = 'ce-tab-header-cnt-id-' + uniqId;
     const instance = this;
+    let firstRender = true;
     const pages = [];
     const positions = {};
     let currIndex;
@@ -43,21 +48,40 @@ class Tabs {
 
     function switchTo(index) {
       HoverExplanations.disable();
+      if (index !== undefined && index !== currIndex) firstRender = true;
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
       activePage.beforeOpen();
       lookupHoverResource.updateContent(template.render(getScope()));
+      setDems();
+      setTimeout(setDems, 400);
       lookupHoverResource.minimize();
       lookupHoverResource.select();
       setOnclickMethods();
       activePage.afterOpen();
     }
 
+    function setDems() {
+      const headerElem = document.getElementById(HEADER_CNT_ID);
+      const navElem = document.getElementById(NAV_CNT_ID);
+      if (navElem && headerElem) {
+        elemSpacer(headerElem);
+        elemSpacer(navElem);
+        if (firstRender) {
+          setTimeout(switchTo, 1000);
+          firstRender = false;
+        }
+      }
+   }
+
     function getScope() {
+
       const content = activePage !== undefined ? activePage.html() : '';
+      const header = activePage !== undefined ? activePage.header() : '';
       return {
         CSS_CLASS, ACTIVE_CSS_CLASS, LIST_CLASS, LIST_ID,  CNT_ID, TAB_CNT_ID,
-        activePage, content, pages
+        NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID,
+        activePage, content, pages, header
       }
     }
 

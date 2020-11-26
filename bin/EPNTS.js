@@ -3,12 +3,12 @@ class Endpoints {
   constructor(config, host) {
     host = host || '';
     this.setHost = (newHost) => {
-      if (newHost !== null && newHost !== undefined) {
+      if ((typeof newHost) === 'string') {
         host = config._envs[newHost] || newHost;
       }
     };
     this.setHost(host);
-    this.getHost = () => host;
+    this.getHost = (env) => env === undefined ? host : config._envs[env];
 
     const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
     this.getFuncObj = function () {return endPointFuncs;};
@@ -112,6 +112,9 @@ const EPNTS = new Endpoints({
     "wiki": "/images/icons/wikapedia.png",
     "txt": "/images/icons/txt.png",
     "merriam": "/images/icons/Merriam-Webster.png"
+  },
+  "merriam": {
+    "search": "/merriam/webster/:searchText"
   },
   "_secure": [
     "user.update",

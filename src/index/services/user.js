@@ -101,13 +101,20 @@ class User {
         const url = CE.EPNTS.credential.add(uId);
         CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
       }
-    }
+    };
 
     this.register = function (email, username) {
       const url = CE.EPNTS.user.add();
       const body = {email, username};
       CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    }
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
     afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
   }
 }

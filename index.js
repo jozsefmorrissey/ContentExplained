@@ -12,12 +12,12 @@ class Endpoints {
   constructor(config, host) {
     host = host || '';
     this.setHost = (newHost) => {
-      if (newHost !== null && newHost !== undefined) {
+      if ((typeof newHost) === 'string') {
         host = config._envs[newHost] || newHost;
       }
     };
     this.setHost(host);
-    this.getHost = () => host;
+    this.getHost = (env) => env === undefined ? host : config._envs[env];
 
     const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
     this.getFuncObj = function () {return endPointFuncs;};
@@ -122,6 +122,9 @@ const EPNTS = new Endpoints({
     "txt": "/images/icons/txt.png",
     "merriam": "/images/icons/Merriam-Webster.png"
   },
+  "merriam": {
+    "search": "/merriam/webster/:searchText"
+  },
   "_secure": [
     "user.update",
     "credential.get",
@@ -134,7 +137,897 @@ const EPNTS = new Endpoints({
     "opinion.dislike"
   ]
 }
-, 'local').getFuncObj();
+, 'local').getFuncObj();function DebugGuiClient(config, root, debug) {
+  config = config || {};
+  var instance = this;
+  var host = config.host;
+  var httpHost = config.httpHost;
+  var httpsHost = config.httpsHost;
+  var id = config.id;
+  var logWindow = config.logWindow || 25;
+
+  debug = debug || config.debug || config.debug === 'true' || false;
+
+  this.getId = function () {return id;}
+  this.setId = function (value) {id = value; createCookie();}
+  this.setHost = function (value) {host = value; createCookie();}
+
+  function secure() {host = httpsHost;}
+  function insecure() {host = httpHost;}
+  function getHost() {return host;}
+  function setRoot(r) {root = r;}
+  function getRoot() {return root;}
+
+  function path(str) {
+    if (str) {
+      return str + "/";
+    }
+    return "";
+  }
+
+  function prefixRoot(group) {
+    return root + "." + group;
+  }
+
+  function softUpdate(config) {
+    config.id = id || config.id;
+    config.host = host || config.host;
+    config.httpHost = httpHost || config.httpHost;
+    config.httpsHost = httpsHost || config.httpsHost;
+    updateConfig(config);
+  }
+
+  function updateConfig(config) {
+    id = config.id !== undefined ? config.id : id;
+    httpHost = config.httpHost || httpHost;
+    httpsHost = config.httpsHost || httpsHost;
+    config.debug = String(config.debug);
+    debug = config.debug.trim().match(/^(true|false)$/) ? config.debug : debug;
+    debug = debug === true || debug === 'true';
+    host = config.host !== undefined ? config.host : host;
+    if (host !== undefined) host = host.replace(/^(.*?)\/$/, "$1");
+    logWindow = logWindow != 25 ? logWindow : config.logWindow;
+    if (host && isDebugging() && DebugGuiClient.inBrowser) {
+      var script;
+      if (!document.head.innerHTML.match(/ src=('|")[^'^"]*\/js\/debug-gui-client.js('|")/)) {
+        script = document.createElement("script");
+        script.src = `${getHost()}/js/debug-gui-client.js`;
+        document.head.appendChild(script);
+      } else if (!document.head.innerHTML.match(/ src=('|")[^'^"]*\/js\/debug-gui.js('|")/)) {
+          script = document.createElement("script");
+          script.src = `${getHost()}/js/debug-gui.js`;
+          document.head.appendChild(script);
+      }
+    }
+    createCookie();
+  }
+
+  function getUrl(host, ext, id, group) {
+    host = path(host);
+    ext = path(ext);
+    id = path(id);
+    group = group ? group.replace(/\//g, '%2F').replace(/\s/g, '%20') : undefined;
+    group = path(group);
+
+    var url = host + ext + id + group;
+    return url.substr(0, url.length - 1);
+  }
+
+  function exception(group, exception, soft) {
+    const exObj = {id: id, msg: exception.toString(), stacktrace: exception.stack}
+    var xhr = new DebugGuiClient.xmlhr();
+    xhr.open("POST", getUrl(host, 'exception', id, prefixRoot(group)), true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    if (soft !== true) {
+      console.error(group + ' - threw the following exception\n\t' + exception);
+    }
+    xhr.send(JSON.stringify(exObj));
+  }
+
+  function data(onSuccess) {
+    var xhr = new DebugGuiClient.xmlhr();
+    xhr.onreadystatechange = function () {
+        if (this.readyState != 4) return;
+
+        console.error('dg resp', this.responseText);
+        if (this.status == 200) {
+            var data = JSON.parse(this.responseText);
+            if (onSuccess) {
+              onSuccess(data);
+            }
+        }
+    };
+
+    xhr.open('GET', getUrl(host, id), true);
+    xhr.send();
+  }
+
+  function link(group, label, url) {
+    if (debug) {
+      var xhr = new DebugGuiClient.xmlhr();
+      xhr.open("POST", getUrl(host, "link", id, prefixRoot(group)), true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({label, url}));
+    }
+    return instance;
+  }
+
+  function value(group, key, value) {
+    if (debug) {
+      var xhr = new DebugGuiClient.xmlhr();
+      xhr.open("POST", getUrl(host, "value", id, prefixRoot(group)), true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      if ((typeof value) === 'object') value = JSON.stringify(value, null, 2);
+      xhr.send(JSON.stringify({key, value}));
+    }
+    return instance;
+  }
+
+
+  function logs() {
+    if (debug) {
+      var log = '';
+      for (let i = 0; i < arguments.length; i++) {
+        if ((typeof arguments[i]) === 'object') {
+          log += JSON.stringify(arguments[i], null, 6);
+        } else {
+          log += arguments[i];
+        }
+      }
+      var xhr = new DebugGuiClient.xmlhr();
+      var url = getUrl(host, "log", id);
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({log}));
+    }
+    return instance;
+  }
+
+  function log(log) {
+    logs([log]);
+  }
+
+  function isDebugging() {
+    return debug;
+  }
+
+  this.toString = function () {
+    var id = instance.getId() || '';
+    var host = instance.getHost() || '';
+    noProtocol=host.replace(/^(http|https):\/\//, "")
+    var portReg = /([^:]*?:[0-9]{4})(\/.*)$/;
+    var httpHost;
+    var httpsHost;
+    var portMatch = noProtocol.match(portReg);
+    if (portMatch) {
+      // localhost
+      var rootValue = portMatch[1].substr(0, portMatch[1].length - 1);
+      httpHost = "http://" + rootValue + 0 + portMatch[2];
+      httpsHost = "https://" + rootValue + 1 + portMatch[2];
+    } else {
+      // production
+      httpHost = host.replace(/https/, 'http');
+      httpsHost = host.replace(/http/, 'https');
+    }
+    var cookie = "id=" + id;
+    return cookie + "|host=" +
+        host + "|httpHost="  + httpHost + "|httpsHost=" + httpsHost + "|debug=" + isDebugging();
+  }
+
+  this.addHeaderXhr = function (xhr) {
+    xhr.setRequestHeader('debug-gui', instance.toString());
+  }
+
+  function createCookie() {
+    if (!instance.getId() || !instance.getHost()) return;
+    if (DebugGuiClient.inBrowser) {
+      var cookie;
+      if (instance.isDebugging()) {
+        cookie = 'DebugGui=' + instance.toString() + "; SameSite=None;";
+      } else {
+        cookie = 'DebugGui=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      }
+      document.cookie = cookie;
+      return cookie;
+    }
+  }
+
+  this.link = link;
+  this.value = value;
+  this.exception = exception;
+  this.getHost = getHost;
+  this.logs = logs;
+  this.log = log;
+  this.updateConfig = updateConfig;
+  this.softUpdate = softUpdate;
+  this.isDebugging = isDebugging;
+  this.secure = secure;
+  this.insecure = insecure;
+  this.setRoot = setRoot;
+  this.getRoot = getRoot;
+  this.createCookie = createCookie;
+}
+
+{
+  // Copied from https://jozsefmorrissey.com/js/ju.js
+  function parseSeperator (str, seperator, isRegex) {
+    if ((typeof str) !== 'string') {
+      return {};
+    }
+    if (isRegex !== true) {
+      seperator = seperator.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g, '\\$&');
+    }
+    var keyValues = str.match(new RegExp('.*?=.*?(' + seperator + '|$)', 'g'));
+    var json = {};
+    for (let index = 0; keyValues && index < keyValues.length; index += 1) {
+      var split = keyValues[index].match(new RegExp('\\s*(.*?)\\s*=\\s*(.*?)\\s*(' + seperator + '|$)'));
+      if (split) {
+        json[split[1]] = split[2];
+      }
+    }
+    return json;
+  }
+
+  // Copied from https://jozsefmorrissey.com/js/ju.js
+  function arrayMatches(array, regExp) {
+    var matches = [];
+    for (var index = 0; index < array.length; index += 1) {
+      var elem = new String(array[index]);
+      var match = elem.match(regExp);
+      if (match) {
+        if (arguments.length > 2) {
+          var obj = {};
+          for (var aIndex = 2; aIndex < arguments.length; aIndex += 1) {
+              if ((typeof arguments[aIndex]) === 'string' ) {
+                obj[arguments[aIndex]] = match[aIndex - 1];
+              }
+          }
+          matches.push(obj);
+        } else {
+          matches.push(array[index]);
+        }
+      }
+    }
+    return matches;
+  }
+
+  function getParameter(params) {
+    if ((typeof params) === 'string') {
+      params = parseSeperator(params, '&');
+    }
+    if ((typeof params) === 'object') {
+      var id = params['DebugGui.id'];
+      var debug = params['DebugGui.debug'];
+      var host = params['DebugGui.host'];
+      return {id, debug, host};
+    }
+    DebugGuiClient.debugger.exception('', new Error('Param value must be a string or object'));
+    return {};
+  }
+
+  function getCookie(cookies) {
+    if (cookies === undefined) {
+      return {};
+    } else if ((typeof cookies) === 'string') {
+      var cookieObj = parseSeperator(cookies, ';');
+      return parseSeperator(cookieObj.DebugGui, '|');
+    }
+    DebugGuiClient.debugger.exception('', new Error('Cookies should be expressed as a string'));
+  }
+
+  function getCookieFromValue(value) {
+    return parseSeperator(value, '|');
+  }
+
+  function getHeaderOrCookie(headers) {
+    if (headers['debug-gui']) {
+      return parseSeperator(headers['debug-gui'], '|');
+    } else if (headers.cookie) {
+      return getCookie(headers.cookie);
+    }
+    // DebugGuiClient.debugger.exception('', new Error('Neither a cookie "DebugGui" or a header "debug-gui" are defined'));
+    return {};
+  }
+
+  function express(req, root) {
+    if (req.debugGui) return req.debugGui;
+    var config = getHeaderOrCookie(req.headers);
+    var debugGui = new DebugGuiClient(config, root);
+    config = getParameter(req.params);
+    debugGui.updateConfig(config);
+    req.debugGui = debugGui;
+    return debugGui;
+  }
+
+  var tagConf = undefined;
+  function tagConfig() {
+    if (document.currentScript) {
+      function getScriptAttr(name) {
+        var attr = document.currentScript.attributes[name];
+        return attr ? attr.value : undefined;
+      }
+      tagConf = tagConf || {
+        id: getScriptAttr('identity'),
+        host: getScriptAttr('host'),
+        debug: getScriptAttr('debug'),
+        logWindow: getScriptAttr('log-window')
+      };
+      return tagConf;
+    }
+    return {};
+  }
+
+  function browser(root, programaticConfig) {
+    var debugGui = new DebugGuiClient();
+    debugGui.updateConfig(tagConfig());
+    if (programaticConfig) debugGui.updateConfig(programaticConfig);
+    var config = getCookie(document.cookie);
+    debugGui.updateConfig(config);
+    var params = window.location.href.replace(/^.*?\?(.*?)(#|)$|^.*$()/, '$1');
+    config = getParameter(params);
+    debugGui.updateConfig(config);
+    debugGui.createCookie();
+    debugGui.setRoot(root);
+    return debugGui;
+  }
+
+  function node(args) {
+    var config = require(global.__basedir + '/.debug-gui.json');
+    var argMatches = arrayMatches.apply(undefined, [args, new RegExp(config.debugArg), undefined, 'id']);
+    if (argMatches.length > 0) {
+      config.debug = true;
+      if (argMatches[0].id) {
+        config.id = argMatches[0].id;
+      }
+    }
+    var debugGui = new DebugGuiClient(config);
+
+    return debugGui;
+  }
+
+
+  DebugGuiClient.debugger = new DebugGuiClient({id: 'DebugGui' });
+  DebugGuiClient.getParameter = getParameter;
+  DebugGuiClient.getCookie = getCookie;
+  DebugGuiClient.getCookieFromValue = getCookieFromValue;
+  DebugGuiClient.getHeaderOrCookie = getHeaderOrCookie;
+  DebugGuiClient.express = express;
+  DebugGuiClient.browser = browser;
+  DebugGuiClient.node = node;
+}
+
+try {
+  DebugGuiClient.xmlhr = XMLHttpRequest;
+  DebugGuiClient.inBrowser = true;
+} catch (e) {
+  DebugGuiClient.inBrowser = false;
+  DebugGuiClient.xmlhr = require('xmlhttprequest').XMLHttpRequest;
+}
+
+
+if (!DebugGuiClient.inBrowser) {
+  exports.DebugGuiClient = DebugGuiClient;
+} else {
+  var dg = DebugGuiClient.browser('default');
+}
+
+class CustomEvent {
+  constructor(name) {
+    const watchers = {};
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        if (watchers[name] === undefined) {
+          watchers[name] = [];
+        }
+        watchers[name].push(func);
+      } else {
+        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+
+dg.setRoot('ce-ui');
+
+Request = {
+    onStateChange: function (success, failure, id) {
+      let savedServerId;
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            if (this.headers) {
+              savedServerId = savedServerId || properties.get('ceServerId');
+              const currServerId = this.headers['ce-server-id'];
+              if (currServerId && savedServerId && currServerId !== savedServerId) {
+                CE_SERVER_UPDATE.trigger();
+              }
+            }
+            var resp = this.responseText;
+            CE.dg.value(id || Request.id(), 'response url', this.responseURL);
+            CE.dg.value(id || Request.id(), 'response', resp);
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){}
+            if (success) {
+              success(resp);
+            }
+          } else if (failure) {
+            failure(this);
+          }
+        }
+      }
+    },
+
+    id: function (url, method) {
+      return `request.${method}.${url}`;
+    },
+
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      const id = Request.id(url, 'get');
+      CE.dg.value(id, 'url', url);
+      CE.dg.value(id, 'method', 'get');
+      CE.dg.addHeaderXhr(xhr);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
+      xhr.send();
+      return xhr;
+    },
+
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        const id = Request.id(url, 'get');
+        CE.dg.value(id, 'url', url);
+        CE.dg.value(id, 'method', method);
+        CE.dg.value(id, 'body', body);
+        CE.dg.addHeaderXhr(xhr);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
+      }
+    },
+
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
+}
+
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
+
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
+      }
+    }
+
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
+    };
+
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
+      }
+    }
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
+  }
+}
+
+const properties = new Properties();
+class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        matchingElems[index].style = this.value + matchingElems[index].style;
+      }
+    }
+  }
+}
+
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files.push(this);
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
+    }
+
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
+      }
+    }
+
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
+    }
+  }
+}
+
+CssFile.files = [];
+
+CssFile.apply = function () {
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
+    }
+  }
+}
+
+CssFile.dump = function () {
+  let dumpStr = '';
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  CE.applyCss = CssFile.apply;
+}
+
+try {
+  afterLoad.push(cssAfterLoad);
+} catch (e) {}
+
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+// ./src/index/css.js
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: 100%; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
+    }
+}
+
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
+      }
+    }
+    return recurse(node, 0).node;
+}
+
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
+
+  return recurse(node, 0).node;
+}
+
+function styleUpdate(elem, property, value) {
+  function set(property, value) {
+    elem.style[property] = value;
+  }
+  switch (typeof property) {
+    case 'string':
+      set(property, value);
+      break;
+    case 'object':
+      const keys = Object.keys(property);
+      for (let index = 0; index < keys.length; index += 1) {
+        set(keys[index], property[keys[index]]);
+      }
+      break;
+    default:
+      throw new Error('argument not a string or an object: ' + (typeof property));
+  }
+}
+
+function onEnter(id, func) {
+  const elem = document.getElementById(id);
+  if (elem !== null) {
+    elem.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') func()
+    });
+  }
+}
+
+function elemSpacer(elem) {
+  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
+  const spacerId = elem.getAttribute('spacer-id');
+  elem.style.position = '';
+  elem.style.margin = '';
+  const elemRect = elem.getBoundingClientRect();
+  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
+  spacer.id = spacerId;
+  spacer.style.width = elem.scrollWidth + 'px';
+  spacer.style.height = elem.scrollHeight + 'px';
+  elem.style.width = elem.scrollWidth + 'px';
+  elem.style.height = elem.scrollHeight + 'px';
+  elem.style.margin = 0;
+  elem.style.zIndex = 1;
+  elem.after(spacer);
+  elem.style.position = elem.getAttribute("position");
+}
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
+
+class KeyShortCut {
+  constructor(keys, func) {
+    KeyShortCut.cuts.push(this);
+    var currentKeys = {};
+
+    function keysPressed() {
+      for (let index = 0; index < keys.length; index += 1) {
+        if (!currentKeys[keys[index]]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    this.keyDownListener = (e) => {
+        currentKeys[e.key] = true;
+        if (keysPressed()) func();
+    }
+
+    this.keyUpListener = (e) => delete currentKeys[e.key];
+  }
+}
+
+KeyShortCut.cuts = [];
+
+KeyShortCut.callOnAll = function (func, e) {
+  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
+    KeyShortCut.cuts[index][func](e);
+  }
+}
+
+document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
+document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.header = function() {return '';}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+
 class HoverResources {
   constructor (zIncrement) {
     const id = Math.floor(Math.random() * 1000000);
@@ -160,26 +1053,32 @@ class HoverResources {
     let currFuncs, currElem, selectElem;
     let popupContent, popupCnt;
     let prevLocation, minLocation;
-    let selectOpen = false;
-    let holdOpen = false;
+    let canClose = false;
+    let mouseDown = false;
     let lastMoveEvent;
     let closeFuncs = [];
 
-    document.addEventListener('mousemove', (e) => lastMoveEvent = e);
-
     this.close = () => {
-      getPopupElems().cnt.style.display = 'none';
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
+      if (isOpen() && !withinPopup(-10)) {
+        canClose = false;
+        getPopupElems().cnt.style.display = 'none';
+        // HoverResources.eventCatcher.style.display = 'none';
+        currElem = undefined;
+        closeFuncs.forEach((func) => func());
+        if (minLocation) instance.minimize();
+      }
     }
 
-    this.forceOpen = () => {forceOpen = true; getPopupElems().cnt.style.display = 'block';};
+    this.forceOpen = () => {forceOpen = true; instance.show();};
     this.forceClose = () => {forceOpen = false; exitHover();};
-    this.show = () => setCss({display: 'block'});
+    this.show = () => {
+      setCss({display: 'block'})
+      // HoverResources.eventCatcher.style.display = 'block';
+
+    };
 
     function kill() {
-      if (!selectOpen && !forceOpen && !holdOpen && !withinPopup()) {
+      if (!forceOpen && canClose && !withinPopup(-10)) {
         instance.close();
       }
     }
@@ -188,17 +1087,19 @@ class HoverResources {
       return getPopupElems().cnt.style.display === 'block';
     }
 
-    function withinPopup() {
+    function withinPopup(offset) {
       const rect = getPopupElems().cnt.getBoundingClientRect();
-      const withinX = lastMoveEvent.clientX < rect.right && rect.left < lastMoveEvent.clientX;
-      const withinY = lastMoveEvent.clientY < rect.bottom && rect.top < lastMoveEvent.clientY;
-      return withinX && withinY;
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
+        return withinX && withinY;
       }
+      return true;
+    }
 
     function dontHoldOpen(event) {
-      if (selectOpen && window.getSelection().toString() === '' && selectOpen < new Date().getTime()) selectOpen = false;
-      if (isOpen() && !withinPopup()) {
-        holdOpen = false;
+      if (!canClose) withinPopup(10) && (canClose = true);
+      if (canClose) {
         exitHover();
       }
     }
@@ -228,21 +1129,16 @@ class HoverResources {
     function onHover(event) {
       if (!properties.get('enabled')) return;
       const elem = event.target;
-
-      if (elem.id === POPUP_CNT_ID){
-        holdOpen = true;
-
-      }
+      if (!canClose) withinPopup(10) && (canClose = true);
 
       const funcs = getFunctions(elem);
-      if (funcs) {
+      if (funcs && !mouseDown) {
         if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
           currFuncs = funcs;
           positionOnElement(elem, funcs);
           if (funcs && funcs.html) updateContent(funcs.html(elem));
           if (funcs && funcs.after) funcs.after();
         }
-        holdOpen = true;
       }
     }
 
@@ -255,7 +1151,7 @@ class HoverResources {
     function positionOnElement(elem) {
       currElem = elem || currElem;
       getPopupElems().cnt.style = defaultStyle;
-      getPopupElems().cnt.style.display = 'block';
+      instance.show();
       const tbSpacing = 10;
       const rect = currElem.getBoundingClientRect();
       const height = rect.height;
@@ -289,7 +1185,7 @@ class HoverResources {
               top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
       position.maximize = instance.maximize.bind(position);
       position.minimize = instance.minimize.bind(position);
-      setCss({left, minWidth, maxWidth, top, display: 'block', back: instance.back});
+      setCss({left, minWidth, maxWidth, top, back: instance.back});
       exitHover();
       return position;
     }
@@ -299,7 +1195,6 @@ class HoverResources {
       if (window.getSelection().toString().trim()) {
         selectElem = window.getSelection().getRangeAt(0);
         currElem = selectElem;
-        selectOpen = new Date().getTime() + 3000;
       }
       positionOnElement(selectElem);
     };
@@ -329,9 +1224,9 @@ class HoverResources {
       if (minLocation) {
         setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
         setCss(minLocation);
+        canClose = false;
         prevLocation = minLocation;
         minLocation = undefined;
-        holdOpen = true;
         document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
         document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
       }
@@ -388,7 +1283,6 @@ class HoverResources {
         document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
         document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
         popupCnt.addEventListener('click', (e) => {
-          holdOpen = true;
           if (e.target.tagName !== 'A')
           e.stopPropagation()
         });
@@ -396,13 +1290,38 @@ class HoverResources {
       return {cnt: popupCnt, content: popupContent};
     }
 
+    // function catchAndRelease(e) {
+    //   HoverResources.eventCatcher.style.display = 'none';
+    //   let newEvent;
+    //   if (e instanceof MouseEvent) newEvent = new MouseEvent(e.type, e);
+    //   else newEvent = new Event(e.type, e);
+    //   document.elementFromPoint(e.clientX,e.clientY).dispatchEvent(newEvent);
+    //   HoverResources.eventCatcher.style.display = 'block';
+    //   console.log(e);
+    //   console.log(newEvent);
+    //   lastMoveEvent = e;
+    //   kill();
+    // }
+    //
+    // const allEvents = ['abort','afterprint','beforeprint','beforeunload','blur','canplay','canplaythrough','change','click','contextmenu','copy','cuechange','cut','dblclick','DOMContentLoaded','drag','dragend','dragenter','dragleave','dragover','dragstart','drop','durationchange','emptied','ended','error','focus','focusin','focusout','formchange','forminput','hashchange','input','invalid','keydown','keypress','keyup','load','loadeddata','loadedmetadata','loadstart','message','mousedown','mouseenter','mouseleave','mousemove','mouseout','mouseover','mouseup','mousewheel','offline','online','pagehide','pageshow','paste','pause','play','playing','popstate','progress','ratechange','readystatechange','redo','reset','resize','scroll','seeked','seeking','select','show','stalled','storage','submit','suspend','timeupdate','undo','unload','volumechange','waiting'];
+    //
+    // allEvents.forEach((evt) => HoverResources.eventCatcher.addEventListener(evt, catchAndRelease, {passive: true, capture: false}));
+    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; kill();});
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', offHover);
-    document.addEventListener('click', dontHoldOpen);
+    document.addEventListener('mousedown', () => mouseDown = true);
+    document.addEventListener('mouseup', () => mouseDown = false);
+    // HoverResources.eventCatcher.addEventListener('click', this.close);
+    document.addEventListener('click', this.close);
     this.container = () => getPopupElems().content;
 
   }
 }
+
+// HoverResources.eventCatcher = document.createElement('div');
+// HoverResources.eventCatcher.id = 'event-catcher-id';
+// HoverResources.eventCatcher.style.display = 'none';
+// document.body.append(HoverResources.eventCatcher);
 
 const jsAttrReg = /(onafterprint|onbeforeprint|onbeforeunload|onerror|onhashchange|onload|onmessage|onoffline|ononline|onpagehide|onpageshow|onpopstate|onresize|onstorage|onunload|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclick|ondblclick|onmousedown|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onwheel|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|onscroll|oncopy|oncut|onpaste|onabort|oncanplay|oncanplaythrough|oncuechange|ondurationchange|onemptied|onended|onerror|onloadeddata|onloadedmetadata|onloadstart|onpause|onplay|onplaying|onprogress|onratechange|onseeked|onseeking|onstalled|onsuspend|ontimeupdate|onvolumechange|onwaiting|ontoggle)\s*=/g
 
@@ -422,28 +1341,44 @@ function search() {
     searchWords = searchWords.trim().toLowerCase();
     if (searchWords) {
       lookupHoverResource.show();
-      if (searchWords !== CE.properties.get('searchWords') && searchWords.length < 64) {
+      if (searchWords !== properties.get('searchWords') && searchWords.length < 64) {
         properties.set('searchWords', searchWords);
         lookupTabs.update();
       }
     }
   }
 
-  function onHighlight(e) {
+  function checkHighlight(e) {
     const selection = window.getSelection().toString().replace(/&nbsp;/, '');
     // Google Doc selection.
     // document.querySelector('.kix-selection-overlay')
-    if (CE.properties.get('enabled') && selection) {
+    if (properties.get('enabled') && selection) {
       lookup(selection);
       window.getSelection().removeAllRanges();
       e.stopPropagation();
+      e.preventDefault();
     }
   }
 
-  document.onmouseup = onHighlight;
+  document.addEventListener( "contextmenu", checkHighlight);
   CE.lookup = lookup;
-  CE.properties.onUpdate('env', EPNTS.setHost);
+  properties.onUpdate('env', EPNTS.setHost);
 }
+
+
+properties.onUpdate(['debug', 'debugGuiHost'], () => {
+  const debug = properties.get('debug');
+  const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
+  if (debug) {
+    const root = 'context-explained-ui';
+    const id = 'timmys';
+    const cookieExists = document.cookie.match(/DebugGui=/);
+    CE.dg.softUpdate({debug, root, id, host});
+    if (!cookieExists) window.location.reload();
+  } else if (CE.dg) {
+    CE.dg.updateConfig({debug});
+  }
+});
 
 afterLoad.push(search);
 
@@ -759,451 +1694,6 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 
-Request = {
-    onStateChange: function (success, failure) {
-      let savedServerId;
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            savedServerId = savedServerId || properties.get('ceServerId');
-            const currServerId = this.headers['ce-server-id'];
-            if (savedServerId && currServerId !== savedServerId) {
-              CE_SERVER_UPDATE.trigger();
-            }
-            var resp = this.responseText;
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){}
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            failure(this);
-          }
-        }
-      }
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', CE.properties.get('credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
-      }
-    },
-
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
-}
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
-    this.apply = function () {
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
-      }
-    }
-  }
-}
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  CE.applyCss = CssFile.apply;
-}
-
-try {
-  afterLoad.push(cssAfterLoad);
-} catch (e) {}
-
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-// ./src/index/css.js
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-full {   width: 100%;   height: 100%; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }    .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-upper-right-btn {   position: absolute;   right: 0;   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   z-index: 2147483647; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
-
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
-      }
-    }
-
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = values[key];
-        if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
-          instance.set(key, value);
-        }
-      }
-    }
-
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (keys, func) {
-      keyDefinitionCheck(keys);
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      keys.forEach((key) => {
-        if (updateFuncs[key] === undefined) {
-          updateFuncs[key] = [];
-        }
-        updateFuncs[key].push(func);
-        func(properties[key])
-      });
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
-  }
-}
-
-const properties = new Properties();
-
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
-  }
-}
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
-}
-
-function styleUpdate(elem, property, value) {
-  function set(property, value) {
-    elem.style[property] = value;
-  }
-  switch (typeof property) {
-    case 'string':
-      set(property, value);
-      break;
-    case 'object':
-      const keys = Object.keys(property);
-      for (let index = 0; index < keys.length; index += 1) {
-        set(keys[index], property[keys[index]]);
-      }
-      break;
-    default:
-      throw new Error('argument not a string or an object: ' + (typeof property));
-  }
-}
-
-function onEnter(id, func) {
-  const elem = document.getElementById(id);
-  if (elem !== null) {
-    elem.addEventListener('keypress', (e) => {
-      if(e.key === 'Enter') func()
-    });
-  }
-}
-
 class User {
   constructor() {
     let user;
@@ -1306,13 +1796,20 @@ class User {
         const url = CE.EPNTS.credential.add(uId);
         CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
       }
-    }
+    };
 
     this.register = function (email, username) {
       const url = CE.EPNTS.user.add();
       const body = {email, username};
       CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    }
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
     afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
   }
 }
@@ -1323,6 +1820,46 @@ const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
 const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+
+class Expl {
+  constructor () {
+    let addedResources = false;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
+
+    function addHoverResources (enabled) {
+      if (enabled && !addedResources) {
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate('enabled', addHoverResources);
+  }
+}
+
+Expl = new Expl();
 
 class Opinion {
   constructor() {
@@ -1881,20 +2418,59 @@ $t.functions['863427587'] = function (get) {
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
 }
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+}
+$t.functions['popup-cnt/explanation'] = function (get) {
+	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
+}
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
+	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
+	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> <div` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> </div> </div> </div> `
+}
+$t.functions['-1828676604'] = function (get) {
+	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
+}
+$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
+	return `<div class='ce-merriam-cnt'> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
+}
+$t.functions['-1925646037'] = function (get) {
+	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
+}
+$t.functions['hover-resources'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <div class='ce-hover-max-min-abs-cnt'> <div class='ce-hover-max-min-cnt'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
+}
+$t.functions['icon-menu/settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/key-short-cut.js'></script> <script type="text/javascript" src='/src/manual/short-cut-container.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+}
+$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
+	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+}
+$t.functions['-1132695726'] = function (get) {
+	return `popup-cnt/explanation`
+}
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
 }
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+$t.functions['icon-menu/raw-text-input'] = function (get) {
+	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
 $t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>Text2Html</title> </head> <body> <div id='ce-raw-text-input-cnt-id'> <h1>hash</h1> <p> This page is created from HTTP status code information found at ietf.org and Wikipedia. Click on the category heading or the status code link to read more. </p> </div> </body> <script type="text/javascript" src='/index.js'></script> </html> `
-}
-$t.functions['icon-menu/links/developer'] = function (get) {
-	return `<label>Environment</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> `
-}
-$t.functions['-67159008'] = function (get) {
-	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
@@ -1905,53 +2481,20 @@ $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
-$t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/key-short-cut.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+$t.functions['icon-menu/links/developer'] = function (get) {
+	return `<div> <label>Environment</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host</label> <input type="text" id=` + (get("DEBUG_GUI_HOST_INPUT")) + ` value="` + (get("debugGuiHost")) + `"> </div> `
 }
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+$t.functions['-67159008'] = function (get) {
+	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
 }
-$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
-	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/raw-text-input'] = function (get) {
-	return ` <textarea id='ce-raw-text-input-id' rows="50" cols="200"></textarea> `
-}
-$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> </div> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> <div> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'>Create Your Own</button> </div> </div> `
-}
-$t.functions['-1828676604'] = function (get) {
-	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
-}
-$t.functions['-1132695726'] = function (get) {
-	return `popup-cnt/explanation`
-}
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
-$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam Webster '` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
-}
-$t.functions['-1925646037'] = function (get) {
-	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
-}
-$t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h3> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h3> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
-}
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
-$t.functions['hover-resources'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <link rel="stylesheet" href="file:///home/jozsef/projects/ContextExplained/css/menu.css"> <link rel="stylesheet" href="/css/menu.css"> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> `
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-width-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full-width' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}
-$t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
 }// ./bin/$templates.js
 
 class HoverExplanations {
@@ -2037,12 +2580,6 @@ class HoverExplanations {
     }
     this.display = display;
 
-    function openLogin() {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    }
-
     function voteup() {Opinion.voteup(active.expl, updateContent);}
 
     function votedown() {Opinion.votedown(active.expl, updateContent);}
@@ -2052,7 +2589,7 @@ class HoverExplanations {
         switches = Array.from(document.getElementById(HOVER_SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
-      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = openLogin;
+      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = User.openLogin;
       document.getElementById('ce-expl-voteup-btn').addEventListener('click', voteup);
       document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
     }
@@ -2165,7 +2702,7 @@ class HoverExplanations {
     this.add = add;
 
     this.wrapText = wrapText;
-    this.canApply = (expl) => explIds.indexOf(expl.id) === -1;
+    this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
     function enableToggled(enabled) {
       removeAll();
@@ -2181,59 +2718,24 @@ class HoverExplanations {
 
 HoverExplanations = new HoverExplanations();
 
-class Expl {
-  constructor () {
-    let addedResources = false;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources (enabled) {
-      if (enabled && !addedResources) {
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate('enabled', addHoverResources);
-  }
-}
-
-Expl = new Expl();
-
 const lookupHoverResource = new HoverResources(1);
 
 class Tabs {
   constructor(updateHtml, props) {
     props = props || {};
+    const uniqId = Math.floor(Math.random() * 100000);
     const template = new $t('tabs');
     const CSS_CLASS = props.class || 'ce-tabs-list-item';
     const ACTIVE_CSS_CLASS = `${CSS_CLASS} ${props.activeClass || 'ce-tabs-active'}`;
     const LIST_CLASS = props.listClass || 'ce-tabs-list';
-    const CNT_ID = props.containerId || 'ce-tabs-cnt-id';
-    const LIST_ID = 'ce-tabs-list-id-' + Math.floor(Math.random() * 100000);
-    const TAB_CNT_ID = 'ce-tab-cnt-id';
+    const CNT_ID = props.containerId || 'ce-tabs-cnt-id-' + uniqId;
+    const LIST_ID = 'ce-tabs-list-id-' + uniqId;
+    const TAB_CNT_ID = 'ce-tab-cnt-id-' + uniqId;
+    const NAV_CNT_ID = 'ce-tab-nav-cnt-id-' + uniqId;
+    const NAV_SPACER_ID = 'ce-tab-nav-spacer-id-' + uniqId;
+    const HEADER_CNT_ID = 'ce-tab-header-cnt-id-' + uniqId;
     const instance = this;
+    let firstRender = true;
     const pages = [];
     const positions = {};
     let currIndex;
@@ -2265,21 +2767,40 @@ class Tabs {
 
     function switchTo(index) {
       HoverExplanations.disable();
+      if (index !== undefined && index !== currIndex) firstRender = true;
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
       activePage.beforeOpen();
       lookupHoverResource.updateContent(template.render(getScope()));
+      setDems();
+      setTimeout(setDems, 400);
       lookupHoverResource.minimize();
       lookupHoverResource.select();
       setOnclickMethods();
       activePage.afterOpen();
     }
 
+    function setDems() {
+      const headerElem = document.getElementById(HEADER_CNT_ID);
+      const navElem = document.getElementById(NAV_CNT_ID);
+      if (navElem && headerElem) {
+        elemSpacer(headerElem);
+        elemSpacer(navElem);
+        if (firstRender) {
+          setTimeout(switchTo, 1000);
+          firstRender = false;
+        }
+      }
+   }
+
     function getScope() {
+
       const content = activePage !== undefined ? activePage.html() : '';
+      const header = activePage !== undefined ? activePage.header() : '';
       return {
         CSS_CLASS, ACTIVE_CSS_CLASS, LIST_CLASS, LIST_ID,  CNT_ID, TAB_CNT_ID,
-        activePage, content, pages
+        NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID,
+        activePage, content, pages, header
       }
     }
 
@@ -2315,78 +2836,13 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs(lookupHoverResource.updateContent);
-
-class MerriamWebster extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    let suggestions;
-    let definitions;
-    let selection;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
-
-    function openDictionary(word) {
-      return function() {
-        properties.set('searchWords', word);
-        instance.update();
-      }
-    }
-
-    function html() {
-      return meriamTemplate.render({definitions, key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
-    }
-    this.html = html;
-
-    function updateSuggestions(suggestionHtml) {
-      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      const spans = sugCnt.querySelectorAll('span');
-      for (let index = 0; index < spans.length; index += 1) {
-        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      }
-    }
-    this.afterOpen = updateSuggestions;
-
-    function success (data) {
-      const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(selection) !== -1);
-        key = selection;
-        definitions = data;
-        suggestions = [];
-      } else {
-        key = selection;
-        definitions = undefined;
-        suggestions = data;
-      }
-      lookupTabs.update();
-    }
-
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
-    }
-
-    this.update = function () {
-      const newSelection = properties.get('searchWords');
-      if (newSelection !== selection && (typeof newSelection) === 'string') {
-        selection = newSelection;
-        const url = `${URL_MERRIAM_REQ}${selection}`;
-        Request.get(url, success, failure);
-      }
-    }
-
-    this.beforeOpen = this.update;
-  }
-}
-
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
 class Explanations extends Page {
   constructor(list) {
     super();
     const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
@@ -2453,6 +2909,7 @@ class Explanations extends Page {
 
       document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
       document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
     }
 
     function setExplanation(expls) {
@@ -2462,7 +2919,7 @@ class Explanations extends Page {
       lookupTabs.update();
     }
 
-    function html () {
+    function getScope() {
       const scope = {};
       const tagObj = {}
       scope.explanations = explanations.filter(byTags);
@@ -2481,14 +2938,21 @@ class Explanations extends Page {
 
       scope.allTags = Object.keys(tagObj);
       scope.words = searchWords;
+      scope.loggedIn = User.isLoggedIn();
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
+      return scope;
+    }
+
+    function html () {
       return template.render(scope);
     }
 
-    this.html = html;
+    this.html = () => template.render(getScope());
+    this.header= () => headerTemplate.render(getScope());
     this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
     this.afterOpen = setTagOnclick;
     this.beforeOpen = () => instance.get();
@@ -2586,50 +3050,72 @@ class AddInterface extends Page {
 AddInterface = new AddInterface();
 lookupTabs.add(AddInterface, 2);
 
-class RawText {
-  constructor () {
-    // TODO: implement only show when on proper edit page.
-    function show() {return true;}
-    let text = '';
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
+    let suggestions;
+    let definitions;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
 
-
-
-    const tab = new Tab(URL_IMAGE_TXT, RAW_TEXT_CNT_ID,
-            'popup-cnt/tab-contents/raw-text-input', show);
-
-    function writeChanges() {
-      const container = document.getElementById('ce-raw-text-input-cnt-id')
-      container.innerHTML = textToHtml(text);
-    }
-
-    function onKeyup (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-      }
-    }
-    function onChange (event) {
-      if (event.target.id === 'ce-raw-text-input-id') {
-        text = event.target.value;
-        writeChanges();
-        CE.refresh();
+    function openDictionary(word) {
+      return function() {
+        properties.set('searchWords', word);
+        instance.update();
       }
     }
 
-    function settingsPageChange (settingsPage) {
-      if (settingsPage === 'RawTextTool') {
-        writeChanges();
+    this.html = () => meriamTemplate.render({definitions});
+    this.header = () => meriamHeader.render({key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+
+    function updateSuggestions(suggestionHtml) {
+      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
+      const spans = sugCnt.querySelectorAll('span');
+      for (let index = 0; index < spans.length; index += 1) {
+        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      }
+    }
+    this.afterOpen = updateSuggestions;
+
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
+        definitions = data;
+        suggestions = [];
+      } else {
+        definitions = undefined;
+        suggestions = data;
+      }
+      lookupTabs.update();
+    }
+
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newKey = properties.get('searchWords');
+      if (newKey !== key && (typeof newKey) === 'string') {
+        definitions = undefined;
+        suggestions = undefined;
+        key = newKey.replace(/\s/g, '&nbsp;');
+        const url = EPNTS.merriam.search(key);
+        Request.get(url, success, failure);
       }
     }
 
-    CE.properties.onUpdate('settingsPage', settingsPageChange);
-    document.addEventListener('keyup', onKeyup);
-    document.addEventListener('paste', onKeyup);
-    document.addEventListener('change', onChange);
+    this.beforeOpen = this.update;
   }
 }
 
-return {afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
+
+return {dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }
 CE = CE()
 CE.afterLoad.forEach((item) => {item();});

@@ -1,7 +1,13 @@
-<label>Environment</label>
-<select id='{{ENV_SELECT_ID}}'>
-  <option:t repeat='env in envs' value="{{env}}"
-        {{env === currEnv ? 'selected' : ''}}>
-    {{env}}
-  </option:t>
-</select>
+<div>
+  <label>Environment</label>
+  <select id='{{ENV_SELECT_ID}}'>
+    <option:t repeat='env in envs' value="{{env}}"
+          {{env === currEnv ? 'selected' : ''}}>
+      {{env}}
+    </option:t>
+  </select>
+</div>
+<div>
+  <label>Debug Gui Host</label>
+  <input type="text" id={{DEBUG_GUI_HOST_INPUT}} value="{{debugGuiHost}}">
+</div>

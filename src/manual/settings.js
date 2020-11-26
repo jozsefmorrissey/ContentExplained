@@ -10,6 +10,7 @@ class Settings {
     const LIST_ID = 'ce-setting-list';
     const CNT_ID = 'ce-setting-cnt';
     this.pageName = function () {return page.constructor.name;}
+    this.getPage = () => page;
     const instance = this;
     const li = document.createElement('li');
     const settingsCnt = document.getElementById(CNT_ID);
@@ -22,6 +23,7 @@ class Settings {
     this.hidden = () => page.hide();
     this.activate = function (force) {
       if (force || isActive()) {
+        if (Settings.active) Settings.active.getPage().onClose();
         page.beforeOpen();
         Settings.active = instance;
         window.location.href = `${window.location.href
@@ -92,6 +94,7 @@ class Page {
     this.template = function() {throw new Error('Must implement template()');}
     this.scope = function () {return {};};
     this.onOpen = function () {};
+    this.onClose = function () {};
     this.beforeOpen = function () {};
     this.hide = function() {return false;}
   }
@@ -297,12 +300,57 @@ new Settings(new FavoriteLists());
 class RawTextTool extends Page {
   constructor() {
     super();
-    this.label = function () {return 'Raw Text Tool';};
-    this.template = function() {return 'icon-menu/links/raw-text-tool';}
-    this.onOpen = function () {
-      CE.show();
-      CE.showTab(2);
+    const scope = {
+      TAB_SPACING_INPUT_ID: 'ce-tab-spcing-input-cnt-id',
+      RAW_TEXT_INPUT_ID: 'ce-raw-text-input-id',
+      RAW_TEXT_CNT_ID: 'ce-raw-text-input-cnt-id',
+      tabSpacing: 4
     }
+    const rawInputTemplate = new CE.$t('icon-menu/raw-text-input');
+    const RawSCC = ShortCutCointainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
+
+    function textToHtml(text, spacing, tabSpacing) {
+      const space = new Array(spacing).fill('&nbsp;').join('');
+      const tab = new Array(tabSpacing).fill('&nbsp;').join('');
+      return text.replace(/\n/g, '<br>')
+                  .replace(/\t/g, tab)
+                  .replace(/\s/g, space);
+    }
+
+    // function pulled from https://jsfiddle.net/2wAzx/13/
+    function enableTab(el) {
+      el.onkeydown = function(e) {
+        if (e.keyCode === 9) {
+          var val = this.value,
+              start = this.selectionStart,
+              end = this.selectionEnd;
+          this.value = val.substring(0, start) + '\t' + val.substring(end);
+          this.selectionStart = this.selectionEnd = start + 1;
+          return false;
+        }
+      };
+    }
+
+    this.scope = () => scope;
+    this.label = function () {return 'Raw Text Tool';};
+    this.template = function() {return 'icon-menu/links/raw-text-tool';};
+    this.onOpen = function () {
+      document.getElementById(scope.TAB_SPACING_INPUT_ID).onchange =
+            (event) => scope.tabSpacing = Number.parseInt(event.target.value);
+      const textArea = document.getElementById(scope.RAW_TEXT_INPUT_ID);
+      enableTab(textArea);
+      const container = document.getElementById(scope.RAW_TEXT_CNT_ID);
+      textArea.onkeyup = (event) => container.innerHTML =
+            textToHtml(event.target.value, 1, scope.tabSpacing);
+      RawSCC.unlock();
+      RawSCC.show();
+      RawSCC.lock();
+    };
+    this.onClose = function () {
+      RawSCC.unlock();
+      RawSCC.hide();
+      RawSCC.lock();
+    };
   }
 }
 new Settings(new RawTextTool());
@@ -310,6 +358,7 @@ new Settings(new RawTextTool());
 class Developer extends Page {
   constructor() {
     super();
+    const instance = this;
     const ENV_SELECT_ID = 'ce-env-select-id';
     let show = false;
     this.label = function () {return 'Developer';};
@@ -317,7 +366,8 @@ class Developer extends Page {
     this.scope = () => {
       const envs = Object.keys(CE.EPNTS._envs);
       const currEnv = CE.properties.get('env');
-      return {ENV_SELECT_ID, envs, currEnv};
+      const debugGuiHost = CE.properties.get('debugGuiHost') || 'https://node.jozsefmorrissey.com/debug-gui';
+      return {ENV_SELECT_ID, envs, currEnv, debugGuiHost};
     };
     this.template = function() {return 'icon-menu/links/developer';}
     function envUpdate() {
@@ -328,7 +378,18 @@ class Developer extends Page {
       document.getElementById(ENV_SELECT_ID).onchange = envUpdate;
     }
 
-    new KeyShortCut(['d', 'b'], () => {show = !show; Settings.updateMenus();});
+    new CE.KeyShortCut('dev', () => {
+      show = !show;
+      if (show) {
+        CE.properties.set('debug', true, true);
+        Settings.settings[instance.constructor.name].activate(true);
+      } else {
+        CE.properties.set('debug', false, true);
+        Settings.updateMenus();
+      }
+    });
+    CE.properties.onUpdate('debug', (debug) => show = debug);
   }
 }
-new Settings(new Developer());
+
+const developerSettings = new Settings(new Developer());

@@ -8,6 +8,7 @@ function ShortCutCointainer(id, keys, html, config) {
   var size = 200;
   var container;
   var resizeBar;
+  var locked;
 
   function resizeBarId() {
     return 'ssc-resizeBar-' + id;
@@ -34,7 +35,7 @@ function ShortCutCointainer(id, keys, html, config) {
     container = document.createElement('div');
     container.id = htmlContainerId();
     container.innerHTML = html;
-    container.style.cssText = 'max-height: ' + size + 'px; overflow: scroll;';
+    container.style.cssText = 'height: ' + size + 'px; overflow: scroll;';
     return container;
   }
 
@@ -69,7 +70,7 @@ function ShortCutCointainer(id, keys, html, config) {
         dx = dx < minHeight ? minHeight : dx;
         dx = dx > maxHeight ? maxHeight : dx;
         var height = dx + 'px;';
-        container.style.cssText = 'overflow: scroll; max-height: ' + height;
+        container.style.cssText = 'overflow: scroll; height: ' + height;
         ssc.style.cssText  = noHeight + 'height: ' + height;
         padBottom(height);
       }
@@ -91,21 +92,28 @@ function ShortCutCointainer(id, keys, html, config) {
   }
 
   function show() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'block';
-    var height = ce.style.height;
-    padBottom(height);
-    triggerEvent(OPEN, id);
-    isShowing = true;
+    if (!locked) {
+      var ce = document.getElementById(id);
+      ce.style.display = 'block';
+      var height = ce.style.height;
+      padBottom(height);
+      triggerEvent(OPEN, id);
+      isShowing = true;
+    }
   }
 
   function hide() {
-    var ce = document.getElementById(id);
-    ce.style.display = 'none';
-    padBottom('0px;');
-    triggerEvent(CLOSE, id);
-    isShowing = false;
+    if (!locked) {
+      var ce = document.getElementById(id);
+      ce.style.display = 'none';
+      padBottom('0px;');
+      triggerEvent(CLOSE, id);
+      isShowing = false;
+    }
   }
+
+  const lock = () => locked = true;
+  const unlock = () => locked = false;
 
   let isShowing = false;
   function toggleContentEditor() {
@@ -188,7 +196,7 @@ function ShortCutCointainer(id, keys, html, config) {
   ssc.addEventListener('mousedown', mousedown);
   onLoad();
   retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
-                show, hide, isOpen };
+                show, hide, isOpen, lock, unlock };
   if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
   SHORT_CUT_CONTAINERS.push(retObject);
   window.onmouseup = hide;
@@ -222,4 +230,4 @@ function onLoad() {
   }
 }
 
-afterLoad.push(onLoad);
+window.onload = onLoad;

@@ -10,6 +10,11 @@
   padding-left: 50pt;
 }
 
+.ce-lookup-expl-list-cnt {
+  min-height: 100pt;
+  overflow: auto;
+}
+
 .ce-tabs-list {
   display: block;
   list-style-type: none;
@@ -76,19 +81,6 @@
 }
 #ce-expl-voteup-btn:disabled {
   border-bottom: 10px solid grey;
-}
-
-.ce-upper-right-btn {
-  position: absolute;
-  right: 0;
-  padding: 0 5px;
-  border-radius: 3px;
-  margin: 1px;
-  background-color: transparent;
-  color: black;
-  border-color: gray;
-  border-width: .5px;
-  z-index: 2147483647;
 }
 
 .ce-hover-expl-title-cnt {
@@ -219,6 +211,23 @@
     border-radius: 20px;
     padding: 5px 15px;
     background-color: white;
+}
+
+#ce-lookup-header-padding-id {
+  padding-top: 60pt;
+}
+
+.ce-merriam-header-cnt {
+  background-color: white;
+  min-height: 25px;
+  text-align: center;
+  width: 100%;
+}
+
+.ce-lookup-expl-heading-cnt {
+  background-color: white;
+  z-index: 1000000000;
+  width: 100%;
 }
 
 .ce-key-cnt {

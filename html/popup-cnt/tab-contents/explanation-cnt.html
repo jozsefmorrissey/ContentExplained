@@ -1,24 +1,19 @@
 <div>
-  <div class='ce-key-cnt'>
-    <input type='text' style='font-size: x-large;margin: 0;' value='{{words}}'
-          id='{{EXPL_SEARCH_INPUT_ID}}'>
-    <button class='ce-words-search-btn' id='{{SEARCH_BTN_ID}}'>Search</button>
+  <div class='ce-center'>
+    <h2 {{explanations.length > 0 ? 'hidden' : ''}}>No Explanations Found</h2>
   </div>
-  <h2 {{explanations.length > 0 ? 'hidden' : ''}}>No Explanations Found</h2>
   <div class='ce-expls-cnt'{{explanations.length > 0 ? '' : ' hidden'}}>
-    <div class='ce-expl-tag-cnt'>
-      <span:t repeat='tag in allTags'>
-        <input type='checkbox' class='ce-expl-tag' value='{{tag}}'
-            {{selected.indexOf(tag) === -1 ? '' : 'checked'}}>
-        <label>{{tag}}</label>
-      </span:t>
-    </div>
-    <div>
+    <div class='ce-lookup-expl-list-cnt'>
       <div:t repeat='explanation in explanations'
               $t-id='popup-cnt/explanation'></div:t>
     </div>
   </div>
   <div class='ce-center'>
-    <button id='{{CREATE_YOUR_OWN_BTN_ID}}'>Create Your Own</button>
+    <button{{loggedIn ? '' : ' hidden'}} id='{{CREATE_YOUR_OWN_BTN_ID}}'>
+      Create Your Own
+    </button>
+    <button{{!loggedIn ? '' : ' hidden'}} id='{{LOGIN_BTN_ID}}'>
+      Login
+    </button>
   </div>
 </div>

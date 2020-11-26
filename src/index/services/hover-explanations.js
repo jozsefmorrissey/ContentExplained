@@ -83,12 +83,6 @@ class HoverExplanations {
     }
     this.display = display;
 
-    function openLogin() {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    }
-
     function voteup() {Opinion.voteup(active.expl, updateContent);}
 
     function votedown() {Opinion.votedown(active.expl, updateContent);}
@@ -98,7 +92,7 @@ class HoverExplanations {
         switches = Array.from(document.getElementById(HOVER_SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
-      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = openLogin;
+      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = User.openLogin;
       document.getElementById('ce-expl-voteup-btn').addEventListener('click', voteup);
       document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
     }
@@ -211,7 +205,7 @@ class HoverExplanations {
     this.add = add;
 
     this.wrapText = wrapText;
-    this.canApply = (expl) => explIds.indexOf(expl.id) === -1;
+    this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
     function enableToggled(enabled) {
       removeAll();

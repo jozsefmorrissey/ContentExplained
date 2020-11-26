@@ -30,5 +30,5 @@ KeyShortCut.callOnAll = function (func, e) {
   }
 }
 
-window.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
-window.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
+document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
