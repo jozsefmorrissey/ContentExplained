@@ -1,0 +1,31 @@
+{
+  "name": "content-explained",
+  "version": "1.0.0",
+  "description": "This is my first browser extension.",
+  "main": "index.js",
+  "bin": {
+    "content-explained": "$css.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "async-mutex": "^0.2.6",
+    "fs": "0.0.1-security",
+    "shelljs": "^0.8.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jozsefmorrissey/ContentExplained.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jozsefmorrissey/ContentExplained/issues"
+  },
+  "homepage": "https://github.com/jozsefmorrissey/ContentExplained#readme"
+}

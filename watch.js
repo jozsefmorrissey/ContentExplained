@@ -169,7 +169,6 @@ class JsFile {
 }
 
 function fileExistes(filename) {
-  if (!allJsFiles[filename]) return true;
   return shell.test('-f', filename, {silent: true});
 }
 
