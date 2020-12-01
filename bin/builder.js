@@ -690,6 +690,7 @@ class $t {
 			$t.templates[id] = undefined;
 			$t.functions[id] = undefined;
 		}
+
 		template = template.replace(/\s{1,}/g, ' ');
 		id = $t.functions[template] ? template : id || stringHash(template);
 		if (!$t.functions[id]) {

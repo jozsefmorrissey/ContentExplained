@@ -14,3 +14,18 @@ thier...
 <ul>
   <li>endpoints</li>
 </ul>
+
+##Firefox policy requirments
+
+### Build Requirements
+  should work with any os however have tested
+    - Linux Mint 19.3 Tricia 64-bit
+    -
+  requried installations
+    - node (8.10.0)
+    - npm (3.5.2)
+  installed
+### Install
+npm install
+### Build Process
+  node ./watch.js [local|dev|prod]

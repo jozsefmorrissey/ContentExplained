@@ -129,3 +129,4 @@ const EPNTS = new Endpoints({
   ]
 }
 , 'local').getFuncObj();
+try {exports.EPNTS = EPNTS;}catch(e){}
