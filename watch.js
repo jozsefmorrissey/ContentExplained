@@ -100,6 +100,8 @@ class Watcher {
       });
       if (item.isDirectory()) {
         runAllFiles(path);
+      } else if (item.isFile()) {
+        readFile(item);
       }
     }
 
@@ -138,9 +140,9 @@ class JsFile {
         afterFiles[after] = [after].splice(afterFiles[after].indexOf(instance), 1);
       }
       after = firstLine.replace(/^\s*\/\/\s*(.*)\s*$/, '$1');
-      if (after && after !== firstLine) {
-          if (afterFiles[after] === undefined) afterFiles[after] = [];
-          afterFiles[after].push(instance);
+      if (after && after !== firstLine && after.trim().match(/^\.\/.*$/)) {
+          if (afterFiles[after.trim()] === undefined) afterFiles[after] = [];
+          afterFiles[after.trim()].push(instance);
           delete jsFiles[instance.filename];
       } else {
         after = undefined;
@@ -241,4 +243,5 @@ new Watcher(jsBundler, writeIndexJs).add('./constants/global.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js')
+                      .add('./bin/DebugGui.js')
                       .add('./bin/EPNTS.js');

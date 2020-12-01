@@ -1,4 +1,4 @@
-//here
+
 function DebugGuiClient(config, root, debug) {
   config = config || {};
   var instance = this;
