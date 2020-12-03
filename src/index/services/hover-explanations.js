@@ -46,7 +46,7 @@ class HoverExplanations {
         active.list = explRefs[currRef];
       }
 
-      active.expl.isActive = false;
+      if (active.expl) active.expl.isActive = false;
       active.expl = active.list[currIndex];
       active.expl.isActive = true;
       active.list = active.list.length > 1 ? active.list : [];

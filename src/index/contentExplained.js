@@ -1,3 +1,4 @@
+// ./src/index/properties.js
 
 const jsAttrReg = /(onafterprint|onbeforeprint|onbeforeunload|onerror|onhashchange|onload|onmessage|onoffline|ononline|onpagehide|onpageshow|onpopstate|onresize|onstorage|onunload|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclick|ondblclick|onmousedown|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onwheel|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|onscroll|oncopy|oncut|onpaste|onabort|oncanplay|oncanplaythrough|oncuechange|ondurationchange|onemptied|onended|onerror|onloadeddata|onloadedmetadata|onloadstart|onpause|onplay|onplaying|onprogress|onratechange|onseeked|onseeking|onstalled|onsuspend|ontimeupdate|onvolumechange|onwaiting|ontoggle)\s*=/g
 
@@ -42,17 +43,19 @@ function search() {
 }
 
 
-properties.onUpdate(['debug', 'debugGuiHost'], () => {
+properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
   const debug = properties.get('debug');
+  const enabled = properties.get('enabled');
   const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
-  if (debug) {
+  if (debug && enabled) {
     const root = 'context-explained-ui';
     const id = 'timmys';
     const cookieExists = document.cookie.match(/DebugGui=/);
-    CE.dg.softUpdate({debug, root, id, host});
-    if (!cookieExists) window.location.reload();
+    CE.dg.softUpdate({root, id, host});
+    CE.dg.updateConfig({debug: true});
+    if (!cookieExists) setTimeout(window.location.reload, 200);
   } else if (CE.dg) {
-    CE.dg.updateConfig({debug});
+    CE.dg.updateConfig({debug: false});
   }
 });
 

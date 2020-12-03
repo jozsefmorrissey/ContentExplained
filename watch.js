@@ -10,17 +10,18 @@ const host = EPNTS._envs[env];
 shell.cat('./src/index/ExprDef.js', './src/index/services/\\$t.js')
     .to('./bin/builder.js');
 
-const getEpntsCmd = `curl -X GET --insecure '${host}/EPNTS/${env}'`;
-const epntsCode = shell.exec(getEpntsCmd, {silent: true}).stdout;
-if (epntsCode.indexOf('exports.EPNTS') !== -1) {
-  fs.writeFile('./bin/EPNTS.js', epntsCode, () => {});
+function HachyImport(url, dest) {
+  const curlCmd = `curl -X GET --insecure '${url}'`;
+  const code = shell.exec(curlCmd, {silent: true}).stdout;
+  if (code !== '') {
+    fs.writeFile(dest, code, () =>
+        console.warn(`HackyImport: \n\t${dest}\n\t${url}`));
+  }
 }
 
-const getDbgCmd = `curl -X GET --insecure 'https://localhost:3001/debug-gui/js/debug-gui-client.js'`;
-const dbgCode = shell.exec(getDbgCmd, {silent: true}).stdout;
-if (dbgCode.indexOf('exports.DebugGuiClient') !== -1) {
-  fs.writeFile('./bin/DebugGui.js', dbgCode, () => {});
-}
+HachyImport(`${host}/EPNTS/${env}`, './bin/EPNTS.js');
+HachyImport('https://localhost:3001/debug-gui/js/debug-gui-client.js', './bin/debug-gui-client.js');
+HachyImport('https://localhost:3001/debug-gui/js/debug-gui.js', './bin/debug-gui.js');
 
 
 const $t = require('./bin/builder.js').$t;
@@ -239,9 +240,8 @@ function updateCss() {
 new Watcher(compHtml, updateTemplates).add('./html');
 new Watcher(compCss, updateCss).add('./css/');
 new Watcher(jsBundler, writeIndexJs).add('./constants/global.js')
-                      .add('./bin/DebugGui.js')
+                      .add('./bin/debug-gui-client.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js')
-                      .add('./bin/DebugGui.js')
                       .add('./bin/EPNTS.js');

@@ -1,7 +1,7 @@
 
 class Opinion {
   constructor() {
-    let siteId, userId;
+    let siteId;
     const amendments = {};
     const opinions = {};
     const instance = this;
@@ -14,6 +14,10 @@ class Opinion {
     }
 
     function canVote (expl, favorable)  {
+      const userId = User.loggedIn().id;
+      if (userId === expl.author.id) {
+        return false;
+      }
       if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
         return opinions[expl.id] !== favorable;
       }
@@ -59,7 +63,7 @@ class Opinion {
     function getUserVotes() {
       siteId = properties.get('siteId');
       if (siteId !== undefined && User.loggedIn() !== undefined) {
-        userId = User.loggedIn().id;
+        const userId = User.loggedIn().id;
         const url = EPNTS.opinion.bySite(siteId, userId);
         Request.get(url, saveVotes);
       }

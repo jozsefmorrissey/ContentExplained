@@ -1,6 +1,7 @@
 
 class Endpoints {
   constructor(config, host) {
+    const instance = this;
     host = host || '';
     this.setHost = (newHost) => {
       if ((typeof newHost) === 'string') {
@@ -67,8 +68,8 @@ try {
 const EPNTS = new Endpoints({
   "_envs": {
     "local": "https://localhost:3001/content-explained",
-    "dev": "https://dev.jozsefmorrissey.com/context-explained",
-    "prod": "https://node.jozsefmorrissey.com/context-explained"
+    "dev": "https://dev.jozsefmorrissey.com/content-explained",
+    "prod": "https://node.jozsefmorrissey.com/content-explained"
   },
   "user": {
     "add": "/user",
@@ -79,7 +80,7 @@ const EPNTS = new Endpoints({
   },
   "credential": {
     "add": "/credential/add/:userId",
-    "activate": "/credential/activate/:userId/:activationSecret",
+    "activate": "/credential/activate/:id/:userId/:activationSecret",
     "delete": "/credential/:idOauthorization",
     "get": "/credential/:userId",
     "status": "/credential/status/:authorization"

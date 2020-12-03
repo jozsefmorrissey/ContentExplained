@@ -13,8 +13,8 @@ class HoverResources {
       background-color: white;
       display: none;
       max-height: 40%;
-      min-width: 20%;
-      max-width: 40%;
+      min-width: 40%;
+      max-width: 80%;
       overflow: auto;
       border: 1px solid;
       border-radius: 5pt;
@@ -106,8 +106,8 @@ class HoverResources {
       if (funcs && !mouseDown) {
         if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
           currFuncs = funcs;
-          positionOnElement(elem, funcs);
           if (funcs && funcs.html) updateContent(funcs.html(elem));
+          positionOnElement(elem, funcs);
           if (funcs && funcs.after) funcs.after();
         }
       }
@@ -123,40 +123,34 @@ class HoverResources {
       currElem = elem || currElem;
       getPopupElems().cnt.style = defaultStyle;
       instance.show();
-      const tbSpacing = 10;
-      const rect = currElem.getBoundingClientRect();
-      const height = rect.height;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const elemHorizCenter = (rect.right - rect.left) / 2;
-      const popHorizCenter = (popRect.right - popRect.left) / 2;
-      const calcWidth = rect.left < screenWidth / 2 ? rect.left : screenWidth / 2;
-      let left = elemHorizCenter - popHorizCenter + rect.left;
-      left = left < 0 ? 0 : left;
-      const leftOffset = calcWidth - (screenWidth - left);
-      left = leftOffset > 0 ? left - leftOffset : left;
-      left = `${left}px`;
+      let rect = currElem.getBoundingClientRect();
+      let popRect = getPopupElems().cnt.getBoundingClientRect();
 
-      const maxWidth = `${screenWidth - calcWidth}px`;
-      const minWidth = '20%';
       let top = `${rect.top}px`;
-      const boxHeight = getPopupElems().cnt.getBoundingClientRect().height;
-      if (screenHeight / 2 > rect.top) {
-        top = `${rect.top + height}px`;
-      } else {
-        top = `${rect.top - boxHeight}px`;
-      }
       const position = {};
       position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
       position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
       position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
       position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{setCss({left: rect.left - (popRect.width / 2) + (rect.width / 2) + 'px',
-              top: rect.top - (popRect.height / 2) + (rect.height / 2) + 'px'}); return position;};
+      position.center = () =>{
+              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
+              left = left > 10 ? left : 10;
+              const leftMost = window.innerWidth - popRect.width - 10;
+              left = left < leftMost ? left : leftMost;
+              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
+              top = top > 10 ? top : 10;
+              const bottomMost = window.innerHeight - popRect.height - 10;
+              top = top < bottomMost ? top : bottomMost;
+              setCss({left: left + 'px', top: top + 'px'});
+              return position;};
       position.maximize = instance.maximize.bind(position);
       position.minimize = instance.minimize.bind(position);
-      setCss({left, minWidth, maxWidth, top, back: instance.back});
+      if (window.innerHeight / 2 > rect.top) {
+        position.center().bottom();
+      } else {
+        position.center().top();
+      }
+
       exitHover();
       return position;
     }

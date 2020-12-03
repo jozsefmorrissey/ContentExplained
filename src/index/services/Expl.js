@@ -1,14 +1,18 @@
 
 class Expl {
   constructor () {
-    let addedResources = false;
+    let currEnv;
     function createHoverResouces (data) {
       properties.set('siteId', data.siteId);
       HoverExplanations.set(data.list);
     }
 
-    function addHoverResources (enabled) {
-      if (enabled && !addedResources) {
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env');
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        EPNTS.setHost(env);
         const url = EPNTS.siteExplanation.get();
         Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
       }
@@ -33,7 +37,7 @@ class Expl {
     };
 
 
-    properties.onUpdate('enabled', addHoverResources);
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
   }
 }
 

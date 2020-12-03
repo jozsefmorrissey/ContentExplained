@@ -145,7 +145,7 @@ function DebugGuiClient(config, root, debug) {
   }
 
   function log(log) {
-    logs([log]);
+    logs(log);
   }
 
 
@@ -185,7 +185,7 @@ function DebugGuiClient(config, root, debug) {
     if (DebugGuiClient.inBrowser) {
       var cookie;
       if (instance.isDebugging()) {
-        cookie = 'DebugGui=' + instance.toString() + "; SameSite=None;";
+        cookie = 'DebugGui=' + instance.toString() + ";";
       } else {
         cookie = 'DebugGui=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       }

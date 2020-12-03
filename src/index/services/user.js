@@ -26,12 +26,12 @@ class User {
     function setUser(u) {
       user = u;
       dispatchUpdate();
-      CE.properties.set('loggedIn', true, true);
       console.log('update user event fired')
     }
 
     function updateStatus(s) {
       status = s;
+      CE.properties.set('user.status', status, true);
       dispatchUpdate();
       console.log('update status event fired');
     }
@@ -53,19 +53,26 @@ class User {
       }
     }
 
-    this.logout = function (soft) {
+    function removeCredential() {
+      const cred = CE.properties.get('user.credential');
+      if (cred !== null) {
+        CE.properties.set('user.credential', null, true);
+        instance.update();
+      }
+
       user = undefined;
-      status = 'expired';
-      if (soft !== true) {
-        const cred = CE.properties.get('credential');
-        CE.properties.set('credential', null, true);
-        CE.properties.set('loggedIn', false, true);
-        dispatchUpdate();
-        if(cred !== null) {
-          if (status === 'active') {
-            const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-            CE.Request.delete(deleteCredUrl, undefined, instance.update);
-          }
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = CE.properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
         }
       }
     };
@@ -74,13 +81,13 @@ class User {
     this.update = function (credential) {
       if ((typeof credential) === 'string') {
         if (credential.match(userCredReg)) {
-          CE.properties.set('credential', credential, true);
+          CE.properties.set('user.credential', credential, true);
         } else {
-          CE.properties.set('credential', null, true);
+          removeCredential();
           credential = null;
         }
       } else {
-        credential = CE.properties.get('credential');
+        credential = CE.properties.get('user.credential');
       }
       if ((typeof credential) === 'string') {
         let url = CE.EPNTS.credential.status(credential);
@@ -88,7 +95,7 @@ class User {
         url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
         CE.Request.get(url, setUser);
       } else if (credential === null) {
-        this.logout(true);
+        instance.logout(true);
       }
     };
 
@@ -115,7 +122,7 @@ class User {
       window.open(`${page}#Login`, tabId);
     };
 
-    afterLoad.push(() => CE.properties.onUpdate('credential', () => this.update()));
+    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
   }
 }
 

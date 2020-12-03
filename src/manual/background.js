@@ -15,6 +15,6 @@ chrome.storage.local.set({settingsPage, SETTINGS_TAB_ID});
 
 // chrome.tabs.create({ url: "/html/icon-menu/settings.html" });
 
-chrome.tabs.executeScript({
-  code: 'console.log("here");'
-});
+// chrome.tabs.executeScript({
+//   code: 'console.log("here");'
+// });

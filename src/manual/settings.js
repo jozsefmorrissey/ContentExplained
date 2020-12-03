@@ -134,19 +134,19 @@ class Login extends Page {
         case scope.LOGIN:
           if (error.status === 404) {
             setState(scope.REGISTER)();
+          } else if (error) {
+            scope.errorMsg = error;
           } else {
             scope.errorMsg = 'Server Error';
           }
           break;
-        case scope.RETISTER:
+        case scope.REGISTER:
           scope.errorMsg = 'Username Taken';
           break;
         default:
           scope.errorMsg = 'Server Error';
-        }
-        if (error) {
-          console.error(error);
       }
+
       Settings.updateMenus();
     }
 
@@ -232,7 +232,6 @@ class Profile extends Page {
       UPDATE_FORM_ID: 'ce-update-form'
     };
     const updateEmailSent = 'Email sent: you must confirm changes';
-    const updateFailed = 'Update request failed!'
     this.label = function () {return 'Profile';};
     this.template = function() {return 'icon-menu/links/profile';}
     this.hide = function () {return !CE.User.isLoggedIn();}
@@ -249,7 +248,7 @@ class Profile extends Page {
 
     function setError(errMsg) {
       return function (err) {
-        scope.importantMessage = errMsg;
+        scope.importantMessage = errMsg || err.errorMsg
         console.info(err);
         Settings.updateMenus();
       }
@@ -262,7 +261,7 @@ class Profile extends Page {
       body.user.username = document.getElementById(scope.USERNAME_INPUT_ID).value || undefined;
       body.user.email = document.getElementById(scope.NEW_EMAIL_INPUT_ID).value || undefined;
       const url = CE.EPNTS.user.requestUpdate();
-      CE.Request.post(url, body, setError(updateEmailSent), setError(updateFailed));
+      CE.Request.post(url, body, setError(updateEmailSent), setError());
     }
 
     this.onOpen = function () {
@@ -307,7 +306,7 @@ class RawTextTool extends Page {
       tabSpacing: 4
     }
     const rawInputTemplate = new CE.$t('icon-menu/raw-text-input');
-    const RawSCC = ShortCutCointainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
+    const RawSCC = ShortCutContainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
 
     function textToHtml(text, spacing, tabSpacing) {
       const space = new Array(spacing).fill('&nbsp;').join('');
@@ -388,8 +387,10 @@ class Developer extends Page {
         Settings.updateMenus();
       }
     });
-    CE.properties.onUpdate('debug', (debug) => show = debug);
+
+    this.updateDebug = (debug) => {show = debug; Settings.updateMenus();}
   }
 }
-
-const developerSettings = new Settings(new Developer());
+const developerPage = new Developer();
+const developerSettings = new Settings(developerPage);
+CE.properties.onUpdate('debug', developerPage.updateDebug);
