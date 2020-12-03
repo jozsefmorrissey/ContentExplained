@@ -57,11 +57,11 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -69,14 +69,14 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> <div` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> </div> </div> </div> `
 }
 $t.functions['-1828676604'] = function (get) {
 	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `

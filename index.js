@@ -570,102 +570,95 @@ class CustomEvent {
     }
   }
 }
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
 
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
+dg.setRoot('ce-ui');
 
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
+Request = {
+    onStateChange: function (success, failure, id) {
+      let savedServerId;
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            if (this.headers) {
+              savedServerId = savedServerId || properties.get('ceServerId');
+              const currServerId = this.headers['ce-server-id'];
+              if (currServerId && savedServerId && currServerId !== savedServerId) {
+                CE_SERVER_UPDATE.trigger();
+              }
+            }
+
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){
+              resp = this.responseText;
+            }
+            if (success) {
+              success(resp);
+            }
+          } else if (failure) {
+            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
+            if (errorMsgMatch) {
+              this.errorMsg = errorMsgMatch[1].trim();
+            }
+            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
+            if (errorCodeMatch) {
+              this.errorCode = errorCodeMatch[1];
+
+            }
+            failure(this);
           }
-          str = str.substring(startIndex + length);
+          var resp = this.responseText;
+          CE.dg.value(id || Request.id(), 'response url', this.responseURL);
+          CE.dg.value(id || Request.id(), 'response', resp);
         }
       }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
+    },
 
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
+    id: function (url, method) {
+      return `request.${method}.${url.replace(/\./g, ',')}`;
+    },
 
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      const id = Request.id(url, 'GET');
+      CE.dg.value(id, 'url', url);
+      CE.dg.value(id, 'method', 'get');
+      CE.dg.addHeaderXhr(xhr);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
+      xhr.send();
+      return xhr;
+    },
 
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        const id = Request.id(url, method);
+        CE.dg.value(id, 'url', url);
+        CE.dg.value(id, 'method', method);
+        CE.dg.value(id, 'body', body);
+        CE.dg.addHeaderXhr(xhr);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
       }
-    }
+    },
 
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
 }
 
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
+Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
+Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
 function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -1404,17 +1397,6 @@ KeyShortCut.callOnAll = function (func, e) {
 document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
 document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
 
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.header = function() {return '';}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
-  }
-}
-
 class Properties {
   constructor () {
     const properties = {};
@@ -1552,6 +1534,17 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
 });
 
 afterLoad.push(search);
+
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.header = function() {return '';}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
 class Css {
   constructor(identifier, value) {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
@@ -1650,394 +1643,111 @@ new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
 
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
-
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
 
-dg.setRoot('ce-ui');
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
 
-Request = {
-    onStateChange: function (success, failure, id) {
-      let savedServerId;
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            if (this.headers) {
-              savedServerId = savedServerId || properties.get('ceServerId');
-              const currServerId = this.headers['ce-server-id'];
-              if (currServerId && savedServerId && currServerId !== savedServerId) {
-                CE_SERVER_UPDATE.trigger();
-              }
-            }
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
 
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){
-              resp = this.responseText;
-            }
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
-            if (errorMsgMatch) {
-              this.errorMsg = errorMsgMatch[1].trim();
-            }
-            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
-            if (errorCodeMatch) {
-              this.errorCode = errorCodeMatch[1];
-
-            }
-            failure(this);
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
           }
-          var resp = this.responseText;
-          CE.dg.value(id || Request.id(), 'response url', this.responseURL);
-          CE.dg.value(id || Request.id(), 'response', resp);
+          str = str.substring(startIndex + length);
         }
       }
-    },
-
-    id: function (url, method) {
-      return `request.${method}.${url.replace(/\./g, ',')}`;
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      const id = Request.id(url, 'GET');
-      CE.dg.value(id, 'url', url);
-      CE.dg.value(id, 'method', 'get');
-      CE.dg.addHeaderXhr(xhr);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        const id = Request.id(url, method);
-        CE.dg.value(id, 'url', url);
-        CE.dg.value(id, 'method', method);
-        CE.dg.value(id, 'body', body);
-        CE.dg.addHeaderXhr(xhr);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
+      if (str.length > 0) {
+          splitted.push(str);
       }
-    },
+      return splitted;
+    }
 
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
 }
 
-Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
-Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
 const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
-
-class Expl {
-  constructor () {
-    let currEnv;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env');
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        EPNTS.setHost(env);
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
-  }
-}
-
-Expl = new Expl();
-
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            CE.Request.get(url, success, fail);
-          } else {
-            CE.Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-
-class Opinion {
-  constructor() {
-    let siteId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      const userId = User.loggedIn().id;
-      if (userId === expl.author.id) {
-        return false;
-      }
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr];
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        const userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
-
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      CE.properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = CE.EPNTS.user.get(email);
-        CE.Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = CE.properties.get('user.credential');
-      if (cred !== null) {
-        CE.properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = CE.properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          CE.properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = CE.properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = CE.EPNTS.credential.status(credential);
-        CE.Request.get(url, updateStatus);
-        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        CE.Request.get(url, setUser);
-      } else if (credential === null) {
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = CE.EPNTS.credential.add(user.id);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = CE.EPNTS.credential.add(uId);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = CE.EPNTS.user.add();
-      const body = {email, username};
-      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
 
 class $t {
 	constructor(template, id) {
@@ -2526,11 +2236,11 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -2538,14 +2248,14 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> <div` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> </div> </div> </div> `
 }
 $t.functions['-1828676604'] = function (get) {
 	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -2783,6 +2493,296 @@ class HoverExplanations {
 }
 
 HoverExplanations = new HoverExplanations();
+
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            CE.Request.get(url, success, fail);
+          } else {
+            CE.Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
+
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      CE.properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = CE.EPNTS.user.get(email);
+        CE.Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = CE.properties.get('user.credential');
+      if (cred !== null) {
+        CE.properties.set('user.credential', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = CE.properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          CE.properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = CE.properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = CE.EPNTS.credential.status(credential);
+        CE.Request.get(url, updateStatus);
+        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        CE.Request.get(url, setUser);
+      } else if (credential === null) {
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = CE.EPNTS.credential.add(user.id);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = CE.EPNTS.credential.add(uId);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = CE.EPNTS.user.add();
+      const body = {email, username};
+      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+  }
+}
+
+User = new User();
+
+class Opinion {
+  constructor() {
+    let siteId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      const userId = User.loggedIn().id;
+      if (userId === expl.author.id) {
+        return false;
+      }
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        const userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
+
+class Expl {
+  constructor () {
+    let currEnv;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
+
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env');
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        EPNTS.setHost(env);
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
+  }
+}
+
+Expl = new Expl();
 
 const lookupHoverResource = new HoverResources(1);
 

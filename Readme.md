@@ -20,7 +20,7 @@ thier...
 ### Build Requirements
   should work with any os however have tested
     - Linux Mint 19.3 Tricia 64-bit
-    -
+    - Ubuntu 18.04.3 LTS
   requried installations
     - node (8.10.0)
     - npm (3.5.2)
