@@ -317,6 +317,7 @@ class RawTextTool extends Page {
     const RawSCC = ShortCutContainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
 
     function textToHtml(text, spacing, tabSpacing) {
+      if (text === undefined) return '';
       const space = new Array(spacing).fill('&nbsp;').join('');
       const tab = new Array(tabSpacing).fill('&nbsp;').join('');
       return text.replace(/\n/g, '<br>')

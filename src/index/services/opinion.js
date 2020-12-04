@@ -15,7 +15,7 @@ class Opinion {
 
     function canVote (expl, favorable)  {
       const userId = User.loggedIn().id;
-      if (userId === expl.author.id) {
+      if (expl.author && userId === expl.author.id) {
         return false;
       }
       if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {

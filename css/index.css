@@ -19,6 +19,10 @@
   position: fixed;
 }
 
+.ce-error {
+  color: red;
+}
+
 .ce-padding {
   padding: 5px;
 }

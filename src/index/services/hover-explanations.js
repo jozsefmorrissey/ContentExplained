@@ -24,7 +24,7 @@ class HoverExplanations {
     this.letClose = () => hoverResource.forceClose();
 
     function getHtml(elemExplORef, index) {
-      currIndex = index || currIndex;
+      currIndex = index || currIndex || 0;
       let ref;
       if (elemExplORef instanceof HTMLElement) {
         ref = elemExplORef.getAttribute('ref');

@@ -6,6 +6,7 @@ class AddInterface extends Page {
     const instance = this;
     let content = '';
     let words = '';
+    let writingJs = false;
     const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
@@ -14,6 +15,7 @@ class AddInterface extends Page {
     function getScope() {
       return {
         ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
+        writingJs,
         words: properties.get('searchWords')
       }
     }
@@ -48,6 +50,7 @@ class AddInterface extends Page {
         lookupHoverResource.center().bottom();
         HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
         HoverExplanations.keepOpen();
+        instance.inputElem.focus();
       }
     }
 
@@ -64,8 +67,25 @@ class AddInterface extends Page {
     }
     instance.updateDisplay = updateDisplay;
 
-    function onChange(e) {
-      content = (typeof e.target.value) === "string" ? e.target.value : content;
+    let ignoreChange = false;
+    function onChange(event) {
+      if (ignoreChange) { ignoreChange = false; return;}
+      let isWritingjs = false;
+      try {
+        if ((typeof event.target.value) === 'string') {
+          HoverExplanations.display({words, content: event.target.value},
+                lookupHoverResource.container()).center().top();
+          content = event.target.value;
+        }
+      } catch (error) {
+        isWritingjs = true;
+        ignoreChange = true;
+        instance.inputElem.value = error.clean;
+      }
+      if (writingJs !== isWritingjs) {
+        writingJs = isWritingjs;
+        lookupTabs.update();
+      }
       properties.set('userContent', content, true)
       updateDisplay();
     }

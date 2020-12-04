@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["./index.js"],
+      "js": ["./CE.js"],
       "css": ["./css/index.css",
               "./css/hover-resource.css",
               "./css/lookup.css"]
@@ -40,17 +40,6 @@
   "background": {
     "scripts": ["./src/manual/background.js"]
   },
-  "permissions": [
-  "<all_urls>",
-  "tabs",
-  "cookies",
-  "notifications",
-  "storage",
-  "webNavigation",
-  "contextMenus",
-  "webRequest",
-  "webRequestBlocking",
-  "activeTab"
-  ]
+  "permissions": ["storage"]
 
 }

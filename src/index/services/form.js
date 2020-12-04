@@ -23,9 +23,9 @@ class Form {
           const data = getFormDataObject(e.target);
           method = method === undefined ? 'get' : method.toLowerCase();
           if (method === 'get') {
-            CE.Request.get(url, success, fail);
+            Request.get(url, success, fail);
           } else {
-            CE.Request[method](url, data, success, fail);
+            Request[method](url, data, success, fail);
           }
         } else {
           success();

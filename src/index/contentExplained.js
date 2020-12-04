@@ -1,32 +1,5 @@
 // ./src/index/properties.js
 
-const jsAttrReg = / on[a-zA-Z]*\s*=/g;
-function safeInnerHtml(text, elem) {
-  if (text === undefined) return undefined;
-  const clean = text.replace(/<script[^<]*?>/, '').replace(jsAttrReg, '');
-  if (clean !== text) throw Error('ddddddddiiiiiiiiiiiiiirrrrrrrrrrrrtttttttttttty');
-  if (elem !== undefined) elem.innerHTML = clean;
-  return clean;
-}
-
-function safeOuterHtml(text, elem) {
-  const clean = safeInnerHtml(text);
-  if (elem !== undefined) elem.outerHTML = clean;
-  return clean;
-}
-
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  safeInnerHtml(text);
-  return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script[^<]*?>/, '')
-              .replace(jsAttrReg, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
 function search() {
   function lookup(searchWords) {
     searchWords = searchWords.trim().toLowerCase();
@@ -59,7 +32,6 @@ function search() {
   new KeyShortCut(['c','e'], toggleEnable);
 
   document.addEventListener( "contextmenu", checkHighlight);
-  CE.lookup = lookup;
   properties.onUpdate('env', EPNTS.setHost);
 }
 
@@ -72,9 +44,9 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
   if (debug && enabled) {
     const root = 'context-explained-ui';
     const cookieExists = document.cookie.match(/DebugGui=/);
-    CE.dg.updateConfig({root, host, id, debug: true});
-  } else if (CE.dg) {
-    CE.dg.updateConfig({debug: false});
+    dg.updateConfig({root, host, id, debug: true});
+  } else if (dg) {
+    dg.updateConfig({debug: false});
   }
 });
 

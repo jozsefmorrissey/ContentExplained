@@ -31,7 +31,7 @@ class User {
 
     function updateStatus(s) {
       status = s;
-      CE.properties.set('user.status', status, true);
+      properties.set('user.status', status, true);
       dispatchUpdate();
       console.log('update status event fired');
     }
@@ -46,17 +46,17 @@ class User {
 
     this.get = function (email, success, fail) {
       if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = CE.EPNTS.user.get(email);
-        CE.Request.get(url, success, fail);
+        const url = EPNTS.user.get(email);
+        Request.get(url, success, fail);
       } else {
         fail('Invalid Email');
       }
     }
 
     function removeCredential() {
-      const cred = CE.properties.get('user.credential');
+      const cred = properties.get('user.credential');
       if (cred !== null) {
-        CE.properties.set('user.credential', null, true);
+        properties.set('user.credential', null, true);
         instance.update();
       }
 
@@ -65,12 +65,12 @@ class User {
     }
 
     this.logout = function () {
-      const cred = CE.properties.get('user.credential');
+      const cred = properties.get('user.credential');
       dispatchUpdate();
       if(cred !== null) {
         if (status === 'active') {
-          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
+          const deleteCredUrl = EPNTS.credential.delete(cred);
+          Request.delete(deleteCredUrl, removeCredential, instance.update);
         } else {
           removeCredential();
         }
@@ -81,19 +81,19 @@ class User {
     this.update = function (credential) {
       if ((typeof credential) === 'string') {
         if (credential.match(userCredReg)) {
-          CE.properties.set('user.credential', credential, true);
+          properties.set('user.credential', credential, true);
         } else {
           removeCredential();
           credential = null;
         }
       } else {
-        credential = CE.properties.get('user.credential');
+        credential = properties.get('user.credential');
       }
       if ((typeof credential) === 'string') {
-        let url = CE.EPNTS.credential.status(credential);
-        CE.Request.get(url, updateStatus);
-        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        CE.Request.get(url, setUser);
+        let url = EPNTS.credential.status(credential);
+        Request.get(url, updateStatus);
+        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        Request.get(url, setUser);
       } else if (credential === null) {
         instance.logout(true);
       }
@@ -102,18 +102,18 @@ class User {
     const addCredErrorMsg = 'Failed to add credential';
     this.addCredential = function (uId) {
       if (user !== undefined) {
-        const url = CE.EPNTS.credential.add(user.id);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+        const url = EPNTS.credential.add(user.id);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
       } else if (uId !== undefined) {
-        const url = CE.EPNTS.credential.add(uId);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+        const url = EPNTS.credential.add(uId);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
       }
     };
 
     this.register = function (email, username) {
-      const url = CE.EPNTS.user.add();
+      const url = EPNTS.user.add();
       const body = {email, username};
-      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
     };
 
     this.openLogin = () => {
@@ -122,7 +122,7 @@ class User {
       window.open(`${page}#Login`, tabId);
     };
 
-    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
   }
 }
 

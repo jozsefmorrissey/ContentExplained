@@ -8,7 +8,7 @@ const host = EPNTS._envs[env];
 
 
 shell.cat('./src/index/ExprDef.js', './src/index/services/\\$t.js')
-    .to('./bin/builder.js');
+    .to('./building/bin/builder.js');
 
 function HachyImport(url, dest) {
   const curlCmd = `curl -X GET --insecure '${url}'`;
@@ -25,17 +25,12 @@ HachyImport('https://localhost:3001/debug-gui/js/debug-gui.js', './bin/debug-gui
 HachyImport('https://localhost:3001/js/short-cut-container.js', './bin/short-cut-container.js');
 
 
-const $t = require('./bin/builder.js').$t;
-const CssFile = require('./src/index/css.js').CssFile;
-const multiRunBuffer = 2000;
-const fileDumpLoc = './bin/$templates.js';
-const cssDumpLoc = './bin/$css.js';
-
 class Watcher {
   constructor(onChange, onUpdate) {
     const largNumber = Number.MAX_SAFE_INTEGER;
     const semaphore = new Semaphore(largNumber);
     const mutex = new Mutex();
+    const positions = {};
     function readFile(file) {
       semaphore.acquire().then(function([value, release]) {
 
@@ -60,7 +55,6 @@ class Watcher {
     function runAllFiles(watchDir) {
       watchDir = `${watchDir}/`.replace(/\/{2,}/g, '/');
       const files = shell.ls('-ld', `${watchDir}*`);
-      // const files = shell.find(watchDir, {silent: true});
       for (let index = 0; index < files.length; index += 1) {
         const item = files[index];
         if (item.isFile()) {
@@ -107,14 +101,13 @@ class Watcher {
       }
     }
 
+    let position = 0;
     this.add = function (fileOdir) {
       const stat = fs.stat(fileOdir, function(err, stats) {
         stats.name = fileOdir;
-        if (stats.isDirectory()) {
+        if (stats.isDirectory() || stats.isFile()){
           fileOdir = fileOdir.trim().replace(/^(.*?)\/*$/, '$1');
-          runAllFiles(fileOdir);
-          watch(stats);
-        } else if (stats.isFile()){
+          positions[fileOdir] = position++;
           watch(stats);
         }
       });
@@ -123,128 +116,47 @@ class Watcher {
   }
 }
 
-const jsFiles = {};
-const afterFiles = {};
-const allJsFiles = {};
-let position = 0;
-const refRegex = /(class|function)\s{1}([\$a-zA-Z][a-zA-Z0-9\$]*)/g;
-class JsFile {
-  constructor(filename, contents) {
-    allJsFiles[filename] = this;
-    const instance = this;
-    this.filename = filename;
-    this.contents = contents;
-    this.position = position++;
-    let after;
-    function updateAfter () {
-      let firstLine = instance.contents.split('\n')[0];
-      if (after) {
-        afterFiles[after] = [after].splice(afterFiles[after].indexOf(instance), 1);
-      }
-      after = firstLine.replace(/^\s*\/\/\s*(.*)\s*$/, '$1');
-      if (after && after !== firstLine && after.trim().match(/^\.\/.*$/)) {
-          if (afterFiles[after.trim()] === undefined) afterFiles[after] = [];
-          afterFiles[after.trim()].push(instance);
-          delete jsFiles[instance.filename];
-      } else {
-        after = undefined;
-        jsFiles[instance.filename] = instance;
-      }
-    }
-    this.updateContents = function (cont) {
-      this.contents = cont;
-      const newRefs = {};
+const { HtmlBundler } = require('./building/bundlers/html.js');
+const { CssBundler } = require('./building/bundlers/css.js');
+const { JsBundler } = require('./building/bundlers/js.js');
 
-      const matches = contents.match(refRegex);
-      if (matches) {
-        matches.map(function (elem) {
-          const name = elem.replace(refRegex, '$2');
-          newRefs[name] = true;
-        });
-      }
-      updateAfter();
-      this.references = newRefs;
-    }
-    this.replace = function () {
-      this.overwrite = true;
-    }
-    this.updateContents(contents);
-  }
-}
+const htmlDumpLoc = './bin/$templates.js';
+const cssDumpLoc = './bin/$css.js';
 
-function fileExistes(filename) {
-  return shell.test('-f', filename, {silent: true});
-}
-
-function jsBundler(filename, contents) {
-  if (!fileExistes(filename)) {
-    delete jsFiles[filename];
-    delete allJsFiles[filename];
-    delete afterFiles[filename];
-  } else if (allJsFiles[filename]) {
-    allJsFiles[filename].updateContents(contents);
-  } else {
-    new JsFile(filename, contents);
-  }
-}
-
-function writeIndexJs() {
-  let bundle = 'let CE = function () {\nconst afterLoad = []\n';
-
-  function addAfterFiles(filename) {
-    if (afterFiles[filename]) {
-      afterFiles[filename].forEach((child, i) => {
-        if (child && child.contents) {
-          bundle += child.contents;
-          addAfterFiles(child.filename);
-        }
-      });
-    }
-  }
-  Object.values(jsFiles).sort(function (jsF1, jsF2) {
-    return jsF1.filename.match(/[^.]{2,}?\//g).length -
-          jsF2.filename.match(/[^.]{2,}?\//g).length;
-  }).forEach((item, i) => {
-    bundle += item.contents;
-    addAfterFiles(item.filename);
-  });
-  const exposed = '{safeInnerHtml, textToHtml, dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
-  bundle += `\nreturn ${exposed};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});`;
-  console.log('Writing ./index.js');
-  fs.writeFile('./index.js', bundle, () => {});
-}
-
-function compHtml(filename, contents) {
-  if (!filename) return;
-  new $t(contents, filename.replace(/^.\/html\/(.*)\.html$/, '$1'));
-}
-
-function updateTemplates() {
-  try {
-    shell.touch(fileDumpLoc);
-    console.log('Writing file', fileDumpLoc)
-    fs.writeFileSync(fileDumpLoc, '// ./src/index/services/$t.js\n' + $t.dumpTemplates());
-  } catch (e) {
-    console.log(e);
-  }
-}
+const htmlBundler = new HtmlBundler(htmlDumpLoc);
+const cssBundler = new CssBundler(cssDumpLoc);
+const ceJsBundler = new JsBundler('CE', [])
+const settingJsBundler = new JsBundler('Settings', [])
+const appMenuJsBundler = new JsBundler('AppMenu', [])
 
 
-function compCss(filename, contents) {
-  if (!filename) return;
-  new CssFile(filename, contents);
-}
 
-function updateCss() {
-  console.log('Writing', cssDumpLoc);
-  fs.writeFileSync(cssDumpLoc, '// ./src/index/css.js\n' + CssFile.dump());
-}
-
-new Watcher(compHtml, updateTemplates).add('./html');
-new Watcher(compCss, updateCss).add('./css/');
-new Watcher(jsBundler, writeIndexJs).add('./constants/global.js')
+new Watcher(htmlBundler.change, htmlBundler.write).add('./html');
+new Watcher(cssBundler.change, cssBundler.write).add('./css/');
+new Watcher(ceJsBundler.change, ceJsBundler.write).add('./constants/global.js')
                       .add('./bin/debug-gui-client.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js')
                       .add('./bin/EPNTS.js');
+
+new Watcher(settingJsBundler.change, settingJsBundler.write)
+                            .add('./src/index/properties.js')
+                            .add('./bin/EPNTS.js')
+                            .add('./src/index/key-short-cut.js')
+                            .add('./src/index/services/user.js')
+                            .add('./src/index/request.js')
+                            .add('./src/index/services/form.js')
+                            .add('./src/index/ExprDef.js')
+                            .add('./src/index/services/$t.js')
+                            .add('./bin/$templates.js')
+                            .add('./src/index/dom-tools.js')
+                            .add('./src/settings');
+
+new Watcher(appMenuJsBundler.change, appMenuJsBundler.write)
+                            .add('./src/index/properties.js')
+                            .add('./src/index/ExprDef.js')
+                            .add('./src/index/services/$t.js')
+                            .add('./bin/$templates.js')
+                            .add('./src/index/dom-tools.js')
+                            .add('./src/app-menu/state.js');

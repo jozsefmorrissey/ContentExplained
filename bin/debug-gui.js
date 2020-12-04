@@ -494,7 +494,7 @@ function DebugGui() {
 
   if ((typeof ShortCutContainer) === 'undefined') {
     var script = document.createElement("script");
-    script.src = 'https://localhost:3001/js/short-cut-container.js';
+    script.src = 'https://node.jozsefmorrissey.com/js/short-cut-container.js';
     document.head.appendChild(script);
   }
 

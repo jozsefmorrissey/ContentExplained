@@ -61,7 +61,7 @@ CssFile.dump = function () {
 }
 
 function cssAfterLoad() {
-  CE.applyCss = CssFile.apply;
+  applyCss = CssFile.apply;
 }
 
 try {

@@ -172,7 +172,6 @@ class HoverResources {
       const popRect = getPopupElems().cnt.getBoundingClientRect();
       const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
       const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      console.log(top, left)
       setCss({top,left, right: '', bottom: ''});
       return instance;
     }
@@ -256,35 +255,13 @@ class HoverResources {
       return {cnt: popupCnt, content: popupContent};
     }
 
-    // function catchAndRelease(e) {
-    //   HoverResources.eventCatcher.style.display = 'none';
-    //   let newEvent;
-    //   if (e instanceof MouseEvent) newEvent = new MouseEvent(e.type, e);
-    //   else newEvent = new Event(e.type, e);
-    //   document.elementFromPoint(e.clientX,e.clientY).dispatchEvent(newEvent);
-    //   HoverResources.eventCatcher.style.display = 'block';
-    //   console.log(e);
-    //   console.log(newEvent);
-    //   lastMoveEvent = e;
-    //   kill();
-    // }
-    //
-    // const allEvents = ['abort','afterprint','beforeprint','beforeunload','blur','canplay','canplaythrough','change','click','contextmenu','copy','cuechange','cut','dblclick','DOMContentLoaded','drag','dragend','dragenter','dragleave','dragover','dragstart','drop','durationchange','emptied','ended','error','focus','focusin','focusout','formchange','forminput','hashchange','input','invalid','keydown','keypress','keyup','load','loadeddata','loadedmetadata','loadstart','message','mousedown','mouseenter','mouseleave','mousemove','mouseout','mouseover','mouseup','mousewheel','offline','online','pagehide','pageshow','paste','pause','play','playing','popstate','progress','ratechange','readystatechange','redo','reset','resize','scroll','seeked','seeking','select','show','stalled','storage','submit','suspend','timeupdate','undo','unload','volumechange','waiting'];
-    //
-    // allEvents.forEach((evt) => HoverResources.eventCatcher.addEventListener(evt, catchAndRelease, {passive: true, capture: false}));
     document.addEventListener('mousemove', (e) => {lastMoveEvent = e; kill();});
     document.addEventListener('mouseover', onHover);
     document.addEventListener('mouseout', offHover);
     document.addEventListener('mousedown', () => mouseDown = true);
     document.addEventListener('mouseup', () => mouseDown = false);
-    // HoverResources.eventCatcher.addEventListener('click', this.close);
     document.addEventListener('click', this.close);
     this.container = () => getPopupElems().content;
 
   }
 }
-
-// HoverResources.eventCatcher = document.createElement('div');
-// HoverResources.eventCatcher.id = 'event-catcher-id';
-// HoverResources.eventCatcher.style.display = 'none';
-// document.body.append(HoverResources.eventCatcher);
