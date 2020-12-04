@@ -91,6 +91,7 @@ const EPNTS = new Endpoints({
     "add": "/credential/add/:userId",
     "activate": "/credential/activate/:id/:userId/:activationSecret",
     "delete": "/credential/:idOauthorization",
+    "activationUrl": "/credential/activation/url/:activationSecret",
     "get": "/credential/:userId",
     "status": "/credential/status/:authorization"
   },
@@ -180,6 +181,16 @@ function DebugGuiClient(config, root, debug) {
     updateConfig(config);
   }
 
+  function addScript(id, src) {
+    if (!document.getElementById(id)) {
+      const script = document.createElement("script");
+      script.id = id;
+      script.src = src;
+      document.head.appendChild(script);
+    }
+  }
+
+  var guiAdded = false;
   function updateConfig(config) {
     id = config.id !== undefined ? config.id : id;
     httpHost = config.httpHost || httpHost;
@@ -190,17 +201,10 @@ function DebugGuiClient(config, root, debug) {
     host = config.host !== undefined ? config.host : host;
     if (host !== undefined) host = host.replace(/^(.*?)\/$/, "$1");
     logWindow = logWindow != 25 ? logWindow : config.logWindow;
-    if (host && isDebugging() && DebugGuiClient.inBrowser) {
-      var script;
-      if (!document.head.innerHTML.match(/ src=('|")[^'^"]*\/js\/debug-gui-client.js('|")/)) {
-        script = document.createElement("script");
-        script.src = `${getHost()}/js/debug-gui-client.js`;
-        document.head.appendChild(script);
-      } else if (!document.head.innerHTML.match(/ src=('|")[^'^"]*\/js\/debug-gui.js('|")/)) {
-          script = document.createElement("script");
-          script.src = `${getHost()}/js/debug-gui.js`;
-          document.head.appendChild(script);
-      }
+    if (!guiAdded && host && isDebugging() && DebugGuiClient.inBrowser) {
+      guiAdded = true;
+      addScript(DebugGuiClient.EXISTANCE_ID, `${getHost()}/js/debug-gui-client.js`);
+      addScript(DebugGuiClient.UI_EXISTANCE_ID, `${getHost()}/js/debug-gui.js`);
     }
     createCookie();
   }
@@ -354,6 +358,9 @@ function DebugGuiClient(config, root, debug) {
 }
 
 {
+
+  DebugGuiClient.EXISTANCE_ID = 'debug-gui-exists-globally-unique-id';
+
   const dummyClient = new DebugGuiClient();
   function staticCall(funcName) {
     return (id) => {
@@ -471,7 +478,6 @@ function DebugGuiClient(config, root, debug) {
         return attr ? attr.value : undefined;
       }
       tagConf = tagConf || {
-        id: getScriptAttr('identity'),
         host: getScriptAttr('host'),
         debug: getScriptAttr('debug'),
         logWindow: getScriptAttr('log-window')
@@ -532,6 +538,11 @@ try {
 if (!DebugGuiClient.inBrowser) {
   exports.DebugGuiClient = DebugGuiClient;
 } else {
+  DebugGuiClient.UI_EXISTANCE_ID = 'debug-gui-ui-exists-globally-unique-id';
+  if (document.currentScript &&
+    document.currentScript.src.match(/^.*\/debug-gui-client.js$/)) {
+    document.currentScript.id = DebugGuiClient.EXISTANCE_ID;
+  }
   var dg = DebugGuiClient.browser('default');
 }
 
@@ -570,95 +581,102 @@ class CustomEvent {
     }
   }
 }
+class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
 
-dg.setRoot('ce-ui');
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
 
-Request = {
-    onStateChange: function (success, failure, id) {
-      let savedServerId;
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            if (this.headers) {
-              savedServerId = savedServerId || properties.get('ceServerId');
-              const currServerId = this.headers['ce-server-id'];
-              if (currServerId && savedServerId && currServerId !== savedServerId) {
-                CE_SERVER_UPDATE.trigger();
-              }
-            }
-
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){
-              resp = this.responseText;
-            }
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
-            if (errorMsgMatch) {
-              this.errorMsg = errorMsgMatch[1].trim();
-            }
-            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
-            if (errorCodeMatch) {
-              this.errorCode = errorCodeMatch[1];
-
-            }
-            failure(this);
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
           }
-          var resp = this.responseText;
-          CE.dg.value(id || Request.id(), 'response url', this.responseURL);
-          CE.dg.value(id || Request.id(), 'response', resp);
+          str = str.substring(startIndex + length);
         }
       }
-    },
-
-    id: function (url, method) {
-      return `request.${method}.${url.replace(/\./g, ',')}`;
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      const id = Request.id(url, 'GET');
-      CE.dg.value(id, 'url', url);
-      CE.dg.value(id, 'method', 'get');
-      CE.dg.addHeaderXhr(xhr);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        const id = Request.id(url, method);
-        CE.dg.value(id, 'url', url);
-        CE.dg.value(id, 'method', method);
-        CE.dg.value(id, 'body', body);
-        CE.dg.addHeaderXhr(xhr);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
+      if (str.length > 0) {
+          splitted.push(str);
       }
-    },
+      return splitted;
+    }
 
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
 }
 
-Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
-Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -1298,7 +1316,7 @@ class HoverResources {
     this.onClose = (func) => closeFuncs.push(func);
 
     function updateContent(html) {
-      getPopupElems().content.innerHTML = html;
+      safeInnerHtml(html, getPopupElems().content);
       if (currFuncs && currFuncs.after) currFuncs.after();
       return instance;
     }
@@ -1310,8 +1328,9 @@ class HoverResources {
     this.isMaximized = isMaximized;
 
     const tempElem = document.createElement('div');
-    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
     document.body.append(tempElem);
     function getPopupElems() {
@@ -1397,6 +1416,17 @@ KeyShortCut.callOnAll = function (func, e) {
 document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
 document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
 
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.header = function() {return '';}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+
 class Properties {
   constructor () {
     const properties = {};
@@ -1472,13 +1502,27 @@ class Properties {
 }
 
 const properties = new Properties();
-undefined// ./src/index/properties.js
+// ./src/index/properties.js
 
-const jsAttrReg = /(onafterprint|onbeforeprint|onbeforeunload|onerror|onhashchange|onload|onmessage|onoffline|ononline|onpagehide|onpageshow|onpopstate|onresize|onstorage|onunload|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclick|ondblclick|onmousedown|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onwheel|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|onscroll|oncopy|oncut|onpaste|onabort|oncanplay|oncanplaythrough|oncuechange|ondurationchange|onemptied|onended|onerror|onloadeddata|onloadedmetadata|onloadstart|onpause|onplay|onplaying|onprogress|onratechange|onseeked|onseeking|onstalled|onsuspend|ontimeupdate|onvolumechange|onwaiting|ontoggle)\s*=/g
+const jsAttrReg = / on[a-zA-Z]*\s*=/g;
+function safeInnerHtml(text, elem) {
+  if (text === undefined) return undefined;
+  const clean = text.replace(/<script[^<]*?>/, '').replace(jsAttrReg, '');
+  if (clean !== text) throw Error('ddddddddiiiiiiiiiiiiiirrrrrrrrrrrrtttttttttttty');
+  if (elem !== undefined) elem.innerHTML = clean;
+  return clean;
+}
+
+function safeOuterHtml(text, elem) {
+  const clean = safeInnerHtml(text);
+  if (elem !== undefined) elem.outerHTML = clean;
+  return clean;
+}
 
 const space = new Array(1).fill('&nbsp;').join('');
 const tabSpacing = new Array(2).fill('&nbsp;').join('');
 function textToHtml(text) {
+  safeInnerHtml(text);
   return text.replace(/\n/g, '<br>')
               .replace(/\t/g, tabSpacing)
               .replace(/<script[^<]*?>/, '')
@@ -1511,6 +1555,13 @@ function search() {
     }
   }
 
+  function toggleEnable() {
+    const enabled = properties.get('enabled');
+    properties.set('enabled', !enabled, true);
+  }
+
+  new KeyShortCut(['c','e'], toggleEnable);
+
   document.addEventListener( "contextmenu", checkHighlight);
   CE.lookup = lookup;
   properties.onUpdate('env', EPNTS.setHost);
@@ -1521,30 +1572,17 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
   const debug = properties.get('debug');
   const enabled = properties.get('enabled');
   const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
+  const id = properties.get('debugGuiId');
   if (debug && enabled) {
     const root = 'context-explained-ui';
-    const id = 'timmys';
     const cookieExists = document.cookie.match(/DebugGui=/);
-    CE.dg.softUpdate({root, id, host});
-    CE.dg.updateConfig({debug: true});
-    if (!cookieExists) setTimeout(window.location.reload, 200);
+    CE.dg.updateConfig({root, host, id, debug: true});
   } else if (CE.dg) {
     CE.dg.updateConfig({debug: false});
   }
 });
 
 afterLoad.push(search);
-
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.header = function() {return '';}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
-  }
-}
 class Css {
   constructor(identifier, value) {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
@@ -1618,7 +1656,7 @@ try {
 try{
 	exports.CssFile = CssFile;
 } catch (e) {}
-undefined// ./src/index/css.js
+// ./src/index/css.js
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
 new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
@@ -1629,7 +1667,7 @@ new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
 
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
 
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
@@ -1643,111 +1681,394 @@ new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
 
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
+
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%);1 } ');
 
-class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+dg.setRoot('ce-ui');
 
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
+Request = {
+    onStateChange: function (success, failure, id) {
+      let savedServerId;
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            if (this.headers) {
+              savedServerId = savedServerId || properties.get('ceServerId');
+              const currServerId = this.headers['ce-server-id'];
+              if (currServerId && savedServerId && currServerId !== savedServerId) {
+                CE_SERVER_UPDATE.trigger();
+              }
+            }
 
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){
+              resp = this.responseText;
+            }
+            if (success) {
+              success(resp);
+            }
+          } else if (failure) {
+            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
+            if (errorMsgMatch) {
+              this.errorMsg = errorMsgMatch[1].trim();
+            }
+            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
+            if (errorCodeMatch) {
+              this.errorCode = errorCodeMatch[1];
+
+            }
+            failure(this);
           }
-          str = str.substring(startIndex + length);
+          var resp = this.responseText;
+          CE.dg.value(id || Request.id(), 'response url', this.responseURL);
+          CE.dg.value(id || Request.id(), 'response', resp);
         }
       }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
+    },
 
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
+    id: function (url, method) {
+      return `request.${method}.${url.replace(/\./g, ',')}`;
+    },
 
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      const id = Request.id(url, 'GET');
+      CE.dg.value(id, 'url', url);
+      CE.dg.value(id, 'method', 'get');
+      CE.dg.addHeaderXhr(xhr);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
+      xhr.send();
+      return xhr;
+    },
 
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        const id = Request.id(url, method);
+        CE.dg.value(id, 'url', url);
+        CE.dg.value(id, 'method', method);
+        CE.dg.value(id, 'body', body);
+        CE.dg.addHeaderXhr(xhr);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', CE.properties.get('user.credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
       }
-    }
+    },
 
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
 }
 
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
+Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
+Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
 
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
 const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+
+class Expl {
+  constructor () {
+    let currEnv;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
+
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env');
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        EPNTS.setHost(env);
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
+  }
+}
+
+Expl = new Expl();
+
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            CE.Request.get(url, success, fail);
+          } else {
+            CE.Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
+
+class Opinion {
+  constructor() {
+    let siteId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      const userId = User.loggedIn().id;
+      if (userId === expl.author.id) {
+        return false;
+      }
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        const userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
+
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      CE.properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = CE.EPNTS.user.get(email);
+        CE.Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = CE.properties.get('user.credential');
+      if (cred !== null) {
+        CE.properties.set('user.credential', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = CE.properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
+          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          CE.properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = CE.properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = CE.EPNTS.credential.status(credential);
+        CE.Request.get(url, updateStatus);
+        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        CE.Request.get(url, setUser);
+      } else if (credential === null) {
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = CE.EPNTS.credential.add(user.id);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = CE.EPNTS.credential.add(uId);
+        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = CE.EPNTS.user.add();
+      const body = {email, username};
+      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+  }
+}
+
+User = new User();
 
 class $t {
 	constructor(template, id) {
@@ -2177,7 +2498,7 @@ $t.dumpTemplates = function () {
 try{
 	exports.$t = $t;
 } catch (e) {}
-undefined// ./src/index/services/$t.js
+// ./src/index/services/$t.js
 
 $t.functions['483114051'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("sug")) + `</span>`
@@ -2204,7 +2525,7 @@ $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/state.js'></script> </body> </html> `
 }
 $t.functions['icon-menu/links/developer'] = function (get) {
-	return `<div> <label>Environment</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> `
+	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
@@ -2228,7 +2549,7 @@ $t.functions['icon-menu/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
 $t.functions['icon-menu/settings'] = function (get) {
-	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <script type="text/javascript" src='/src/manual/short-cut-container.js'></script> <script type='text/javascript' src='/bin/debug-gui.js'></script> <script type='text/javascript' src='/bin/debug-gui-client.js'></script> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <script type="text/javascript" src='/bin/short-cut-container.js'></script> <script type='text/javascript' src='/bin/debug-gui.js'></script> <script type='text/javascript' src='/bin/debug-gui-client.js'></script> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/index.js'></script> <script type="text/javascript" src='/src/manual/settings.js'></script> </body> </html> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -2236,11 +2557,11 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
-	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
-}
 $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
+	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -2263,14 +2584,14 @@ $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-width-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full-width' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
+}
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
 }// ./bin/$templates.js
 
 class HoverExplanations {
@@ -2406,7 +2727,8 @@ class HoverExplanations {
       if (text) {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
-        elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
+        const newHtml = elem.innerHTML.replace(textReg, replaceRef);
+        safeInnerHtml(newHtml, elem)
       }
     }
 
@@ -2429,10 +2751,11 @@ class HoverExplanations {
     this.wrapOne = wrapOne;
 
     function removeAll() {
+      wrapIndex = 0;
       let resources = document.getElementsByTagName(tag);
       while (resources.length > 0) {
         Array.from(resources)
-        .forEach((elem) => elem.outerHTML = elem.innerHTML);
+          .forEach((elem) => safeOuterHtml(elem.innerHTML, elem));
         resources = document.getElementsByTagName(tag);
       }
     }
@@ -2447,6 +2770,7 @@ class HoverExplanations {
 
     function set(explList) {
       removeAll();
+      wrapList = [];
       explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
@@ -2493,296 +2817,6 @@ class HoverExplanations {
 }
 
 HoverExplanations = new HoverExplanations();
-
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            CE.Request.get(url, success, fail);
-          } else {
-            CE.Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      CE.properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = CE.EPNTS.user.get(email);
-        CE.Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = CE.properties.get('user.credential');
-      if (cred !== null) {
-        CE.properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = CE.properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = CE.EPNTS.credential.delete(cred);
-          CE.Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          CE.properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = CE.properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = CE.EPNTS.credential.status(credential);
-        CE.Request.get(url, updateStatus);
-        url = CE.EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        CE.Request.get(url, setUser);
-      } else if (credential === null) {
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = CE.EPNTS.credential.add(user.id);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = CE.EPNTS.credential.add(uId);
-        CE.Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = CE.EPNTS.user.add();
-      const body = {email, username};
-      CE.Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => CE.properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
-
-class Opinion {
-  constructor() {
-    let siteId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      const userId = User.loggedIn().id;
-      if (userId === expl.author.id) {
-        return false;
-      }
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr];
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        const userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
-
-class Expl {
-  constructor () {
-    let currEnv;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env');
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        EPNTS.setHost(env);
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
-  }
-}
-
-Expl = new Expl();
 
 const lookupHoverResource = new HoverResources(1);
 
@@ -3181,7 +3215,7 @@ class MerriamWebster extends Page {
 MerriamWebster = new MerriamWebster();
 lookupTabs.add(MerriamWebster, 1);
 
-return {dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
+return {safeInnerHtml, textToHtml, dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties};
 }
 CE = CE()
 CE.afterLoad.forEach((item) => {item();});

@@ -82,6 +82,7 @@ const EPNTS = new Endpoints({
     "add": "/credential/add/:userId",
     "activate": "/credential/activate/:id/:userId/:activationSecret",
     "delete": "/credential/:idOauthorization",
+    "activationUrl": "/credential/activation/url/:activationSecret",
     "get": "/credential/:userId",
     "status": "/credential/status/:authorization"
   },

@@ -133,7 +133,8 @@ class HoverExplanations {
       if (text) {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
-        elem.innerHTML = elem.innerHTML.replace(textReg, replaceRef);
+        const newHtml = elem.innerHTML.replace(textReg, replaceRef);
+        safeInnerHtml(newHtml, elem)
       }
     }
 
@@ -156,10 +157,11 @@ class HoverExplanations {
     this.wrapOne = wrapOne;
 
     function removeAll() {
+      wrapIndex = 0;
       let resources = document.getElementsByTagName(tag);
       while (resources.length > 0) {
         Array.from(resources)
-        .forEach((elem) => elem.outerHTML = elem.innerHTML);
+          .forEach((elem) => safeOuterHtml(elem.innerHTML, elem));
         resources = document.getElementsByTagName(tag);
       }
     }
@@ -174,6 +176,7 @@ class HoverExplanations {
 
     function set(explList) {
       removeAll();
+      wrapList = [];
       explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {

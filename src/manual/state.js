@@ -17,7 +17,7 @@ function stateOnLoad() {
     }
 
     function displayMenu(enabled) {
-      document.getElementById('control-ctn').innerHTML = menuTemplate.render({ enabled });
+      CE.safeInnerHtml(menuTemplate.render({ enabled }), document.getElementById('control-ctn'));
       document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
       document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
       document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html#Login"));

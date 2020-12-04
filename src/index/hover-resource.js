@@ -223,7 +223,7 @@ class HoverResources {
     this.onClose = (func) => closeFuncs.push(func);
 
     function updateContent(html) {
-      getPopupElems().content.innerHTML = html;
+      safeInnerHtml(html, getPopupElems().content);
       if (currFuncs && currFuncs.after) currFuncs.after();
       return instance;
     }
@@ -235,8 +235,9 @@ class HoverResources {
     this.isMaximized = isMaximized;
 
     const tempElem = document.createElement('div');
-    tempElem.innerHTML = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
     document.body.append(tempElem);
     function getPopupElems() {

@@ -3,6 +3,13 @@ function loggedIn() {
   return !(user === null || user === undefined);
 }
 
+function propertyUpdate(key, value) {
+  return function (event) {
+    CE.properties.set(key, event.target.value, true)
+  };
+}
+
+
 class Settings {
   constructor(page) {
     const CSS_CLASS = 'ce-setting-list-item';
@@ -29,7 +36,8 @@ class Settings {
         window.location.href = `${window.location.href
             .replace(Settings.urlReg, '$3')}#${instance.pageName()}`;
         li.className = ACTIVE_CSS_CLASS;
-        settingsCnt.innerHTML = new CE.$t(page.template()).render(page.scope());
+        const html = new CE.$t(page.template()).render(page.scope());
+        CE.safeInnerHtml(html, settingsCnt);
         page.onOpen();
         CE.properties.set('settingsPage', instance.pageName());
       }
@@ -339,8 +347,8 @@ class RawTextTool extends Page {
       const textArea = document.getElementById(scope.RAW_TEXT_INPUT_ID);
       enableTab(textArea);
       const container = document.getElementById(scope.RAW_TEXT_CNT_ID);
-      textArea.onkeyup = (event) => container.innerHTML =
-            textToHtml(event.target.value, 1, scope.tabSpacing);
+      const html = textToHtml(event.target.value, 1, scope.tabSpacing);
+      textArea.onkeyup = (event) => CE.safeInnerHtml(html, container)
       RawSCC.unlock();
       RawSCC.show();
       RawSCC.lock();
@@ -359,6 +367,8 @@ class Developer extends Page {
     super();
     const instance = this;
     const ENV_SELECT_ID = 'ce-env-select-id';
+    const DG_HOST_INPUT_ID = 'ce-dg-host-input';
+    const DG_ID_INPUT_ID = 'ce-dg-id-input';
     let show = false;
     this.label = function () {return 'Developer';};
     this.hide = function () {return !show;}
@@ -366,15 +376,16 @@ class Developer extends Page {
       const envs = Object.keys(CE.EPNTS._envs);
       const currEnv = CE.properties.get('env');
       const debugGuiHost = CE.properties.get('debugGuiHost') || 'https://node.jozsefmorrissey.com/debug-gui';
-      return {ENV_SELECT_ID, envs, currEnv, debugGuiHost};
+      const debugGuiId = CE.properties.get('debugGuiId');
+      return {ENV_SELECT_ID, DG_HOST_INPUT_ID, DG_ID_INPUT_ID,
+              envs, currEnv, debugGuiHost, debugGuiId};
     };
     this.template = function() {return 'icon-menu/links/developer';}
-    function envUpdate() {
-      const newEnv = document.getElementById(ENV_SELECT_ID).value;
-      CE.properties.set('env', newEnv, true);
-    }
+    function envUpdate(event) {CE.properties.set('env', event.target.value, true)};
     this.onOpen = () => {
-      document.getElementById(ENV_SELECT_ID).onchange = envUpdate;
+      document.getElementById(ENV_SELECT_ID).onchange = propertyUpdate('env');
+      document.getElementById(DG_HOST_INPUT_ID).onchange = propertyUpdate('debugGuiHost');
+      document.getElementById(DG_ID_INPUT_ID).onchange = propertyUpdate('debugGuiId');
     }
 
     new CE.KeyShortCut('dev', () => {

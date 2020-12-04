@@ -22,6 +22,7 @@ function HachyImport(url, dest) {
 HachyImport(`${host}/EPNTS/${env}`, './bin/EPNTS.js');
 HachyImport('https://localhost:3001/debug-gui/js/debug-gui-client.js', './bin/debug-gui-client.js');
 HachyImport('https://localhost:3001/debug-gui/js/debug-gui.js', './bin/debug-gui.js');
+HachyImport('https://localhost:3001/js/short-cut-container.js', './bin/short-cut-container.js');
 
 
 const $t = require('./bin/builder.js').$t;
@@ -193,8 +194,10 @@ function writeIndexJs() {
   function addAfterFiles(filename) {
     if (afterFiles[filename]) {
       afterFiles[filename].forEach((child, i) => {
-        bundle += child.contents;
-        addAfterFiles(child.filename);
+        if (child && child.contents) {
+          bundle += child.contents;
+          addAfterFiles(child.filename);
+        }
       });
     }
   }
@@ -205,7 +208,7 @@ function writeIndexJs() {
     bundle += item.contents;
     addAfterFiles(item.filename);
   });
-  const exposed = '{dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
+  const exposed = '{safeInnerHtml, textToHtml, dg, KeyShortCut, afterLoad, $t, Request, EPNTS, User, Form, Expl, HoverResources, properties}';
   bundle += `\nreturn ${exposed};\n}\nCE = CE()\nCE.afterLoad.forEach((item) => {item();});`;
   console.log('Writing ./index.js');
   fs.writeFile('./index.js', bundle, () => {});

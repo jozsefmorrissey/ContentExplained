@@ -1,20 +1,30 @@
-var SHORT_CUT_CONTAINERS;
+var SHORT_CUT_CONTAINERS = [];
 
 function ShortCutContainer(id, keys, html, config) {
-  var SPACER_ID = 'ssc-html-spacer';
-  var OPEN = 'ssc-open';
-  var CLOSE = 'ssc-close';
+  var SPACER_ID = 'scc-html-spacer';
+  var OPEN = 'scc-open';
+  var CLOSE = 'scc-close';
   var currentKeys = {};
   var size = 200;
   var container;
   var resizeBar;
   var locked;
 
+  const jsAttrReg = / on[a-zA-Z]*\s*=/g
+  function innerHtml(html) {
+    if (container) {
+      const clean = html.replace(/<script[^<]*?>/, '').replace(jsAttrReg, '');
+      if (clean !== html)
+        throw Error('ddddddddiiiiiiiiiiiiiirrrrrrrrrrrrtttttttttttty');
+      container.innerHTML = html;
+    }
+  }
+
   function resizeBarId() {
-    return 'ssc-resizeBar-' + id;
+    return 'scc-resizeBar-' + id;
   }
   function htmlContainerId() {
-    return 'ssc-html-container-' + id;
+    return 'scc-html-container-' + id;
   }
 
   function getResizeBarCss() {
@@ -34,7 +44,7 @@ function ShortCutContainer(id, keys, html, config) {
   function createContainer(html) {
     container = document.createElement('div');
     container.id = htmlContainerId();
-    container.innerHTML = html;
+    innerHtml(html);
     container.style.cssText = 'height: ' + size + 'px; overflow: scroll;';
     return container;
   }
@@ -71,7 +81,7 @@ function ShortCutContainer(id, keys, html, config) {
         dx = dx > maxHeight ? maxHeight : dx;
         var height = dx + 'px;';
         container.style.cssText = 'overflow: scroll; height: ' + height;
-        ssc.style.cssText  = noHeight + 'height: ' + height;
+        scc.style.cssText  = noHeight + 'height: ' + height;
         padBottom(height);
       }
       // return event.target.height;
@@ -144,11 +154,6 @@ function ShortCutContainer(id, keys, html, config) {
     return true;
   }
 
-  function onOpen(id) {
-    console.log(id);
-  }
-
-
   function triggerEvent(name, id) {
     var event; // The custom event that will be created
 
@@ -163,41 +168,37 @@ function ShortCutContainer(id, keys, html, config) {
     event.eventName = name;
 
     if (document.createEvent) {
-      ssc.dispatchEvent(event);
+      scc.dispatchEvent(event);
     } else {
-      ssc.fireEvent("on" + event.eventType, event);
+      scc.fireEvent("on" + event.eventType, event);
     }
   }
 
   function onLoad() {
-    document.body.append(ssc);
+    document.body.append(scc);
   }
 
   function keyUpListener(e) {
     delete currentKeys[e.key];
   }
 
-  function innerHtml(html) {
-    if (container) {
-      container.innerHTML = html;
-    }
+  function addEventListener(eventType, func) {
+    container.addEventListener(eventType, func);
   }
 
-  var ssc = document.createElement('div');
-  ssc.id = id;
-  ssc.append(createResizeBar());
-  ssc.append(createContainer(html));
-  ssc.style.cssText = noHeight + 'height: ' + size + 'px;';
+  var scc = document.createElement('div');
+  scc.id = id;
+  scc.append(createResizeBar());
+  scc.append(createContainer(html));
+  scc.style.cssText = noHeight + 'height: ' + size + 'px;';
   if (!config || config.open !== true) {
-    ssc.style.display = 'none';
+    scc.style.display = 'none';
   }
-  ssc.addEventListener(OPEN, onOpen);
-  ssc.addEventListener('mouseup', mouseup);
-  ssc.addEventListener('mousedown', mousedown);
+  scc.addEventListener('mouseup', mouseup);
+  scc.addEventListener('mousedown', mousedown);
   onLoad();
   retObject = { innerHtml, mouseup, mousedown, resize, keyUpListener, keyDownListener,
-                show, hide, isOpen, lock, unlock };
-  if (SHORT_CUT_CONTAINERS === undefined) SHORT_CUT_CONTAINERS = [];
+                show, hide, isOpen, lock, unlock, addEventListener };
   SHORT_CUT_CONTAINERS.push(retObject);
   window.onmouseup = hide;
   return retObject;
@@ -223,7 +224,7 @@ function onLoad() {
     var elem = containers[index];
     if (elem.getAttribute('keys'))
     var keys = elem.getAttribute('keys').split(',')
-    id = elem.id || 'ssc-' + index;
+    id = elem.id || 'scc-' + index;
     html = elem.innerHTML;
     ShortCutContainer(id, keys, html);
     elem.parentNode.removeChild(elem);

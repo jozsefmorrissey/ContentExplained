@@ -1,10 +1,24 @@
 // ./src/index/properties.js
 
-const jsAttrReg = /(onafterprint|onbeforeprint|onbeforeunload|onerror|onhashchange|onload|onmessage|onoffline|ononline|onpagehide|onpageshow|onpopstate|onresize|onstorage|onunload|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclick|ondblclick|onmousedown|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onwheel|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|onscroll|oncopy|oncut|onpaste|onabort|oncanplay|oncanplaythrough|oncuechange|ondurationchange|onemptied|onended|onerror|onloadeddata|onloadedmetadata|onloadstart|onpause|onplay|onplaying|onprogress|onratechange|onseeked|onseeking|onstalled|onsuspend|ontimeupdate|onvolumechange|onwaiting|ontoggle)\s*=/g
+const jsAttrReg = / on[a-zA-Z]*\s*=/g;
+function safeInnerHtml(text, elem) {
+  if (text === undefined) return undefined;
+  const clean = text.replace(/<script[^<]*?>/, '').replace(jsAttrReg, '');
+  if (clean !== text) throw Error('ddddddddiiiiiiiiiiiiiirrrrrrrrrrrrtttttttttttty');
+  if (elem !== undefined) elem.innerHTML = clean;
+  return clean;
+}
+
+function safeOuterHtml(text, elem) {
+  const clean = safeInnerHtml(text);
+  if (elem !== undefined) elem.outerHTML = clean;
+  return clean;
+}
 
 const space = new Array(1).fill('&nbsp;').join('');
 const tabSpacing = new Array(2).fill('&nbsp;').join('');
 function textToHtml(text) {
+  safeInnerHtml(text);
   return text.replace(/\n/g, '<br>')
               .replace(/\t/g, tabSpacing)
               .replace(/<script[^<]*?>/, '')
@@ -37,6 +51,13 @@ function search() {
     }
   }
 
+  function toggleEnable() {
+    const enabled = properties.get('enabled');
+    properties.set('enabled', !enabled, true);
+  }
+
+  new KeyShortCut(['c','e'], toggleEnable);
+
   document.addEventListener( "contextmenu", checkHighlight);
   CE.lookup = lookup;
   properties.onUpdate('env', EPNTS.setHost);
@@ -47,13 +68,11 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
   const debug = properties.get('debug');
   const enabled = properties.get('enabled');
   const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
+  const id = properties.get('debugGuiId');
   if (debug && enabled) {
     const root = 'context-explained-ui';
-    const id = 'timmys';
     const cookieExists = document.cookie.match(/DebugGui=/);
-    CE.dg.softUpdate({root, id, host});
-    CE.dg.updateConfig({debug: true});
-    if (!cookieExists) setTimeout(window.location.reload, 200);
+    CE.dg.updateConfig({root, host, id, debug: true});
   } else if (CE.dg) {
     CE.dg.updateConfig({debug: false});
   }
