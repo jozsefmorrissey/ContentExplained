@@ -1,5 +1,5 @@
 
-const lookupHoverResource = new HoverResources(1);
+const lookupHoverResource = new HoverResources(1, true);
 
 class Tabs {
   constructor(updateHtml, props) {

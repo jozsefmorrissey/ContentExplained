@@ -14,12 +14,12 @@ class JsBundler extends Bundler {
     const refRegex = /(class|function)\s{1}([\$a-zA-Z][a-zA-Z0-9\$]*)/g;
 
     class JsFile {
-      constructor(filename, contents) {
+      constructor(filename, contents, position) {
         allJsFiles[filename] = this;
         const instance = this;
         this.filename = filename;
         this.contents = contents;
-        this.position = position++;
+        this.position = position;
         let after;
         function updateAfter () {
           let firstLine = instance.contents.split('\n')[0];
@@ -61,20 +61,24 @@ class JsBundler extends Bundler {
       return shell.test('-f', filename, {silent: true});
     }
 
-    function change(filename, contents) {
+    function change(filename, contents, position) {
       if (!fileExistes(filename)) {
         delete jsFiles[filename];
         delete allJsFiles[filename];
       } else if (allJsFiles[filename]) {
         allJsFiles[filename].updateContents(contents);
       } else {
-        new JsFile(filename, contents);
+        new JsFile(filename, contents, position);
       }
     }
 
     function sortFileNames (jsF1, jsF2) {
-      return jsF1.filename.match(/[^.]{2,}?\//g).length -
-        jsF2.filename.match(/[^.]{2,}?\//g).length;
+      // console.log(jsF1.filename, jsF1.position)
+      // console.log(jsF2.filename, jsF2.position);
+      const test = jsF1.position - jsF2.position || jsF1.filename.match(/[^.]{2,}?\//g).length -
+        jsF2.filename.match(/[^.]{2,}?\//g).length
+      // console.log(test);
+      return test;
     }
 
     function write() {
@@ -85,14 +89,14 @@ class JsBundler extends Bundler {
           Object.values(afterFiles[filename]).forEach((child, i) => {
             if (child && child.contents) {
               console.log(filename, child.filename)
-              bundle += child.contents;
+              bundle += child.contents + ';';
               addAfterFiles(child.filename);
             }
           });
         }
       }
       Object.values(jsFiles).sort(sortFileNames).forEach((item, i) => {
-            bundle += item.contents;
+            bundle += item.contents + ';';
             console.log(item.filename)
             addAfterFiles(item.filename);
       });

@@ -1,6 +1,89 @@
 let Settings = function () {
 const afterLoad = []
+const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
+const MERRIAM_WEB_SUG_CNT_ID = 'ce-merriam-webster-suggestion-cnt';
+const HISTORY_CNT_ID = 'ce-history-cnt';
+const ADD_EDITOR_ID = 'ce-add-editor-id';
+const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
+const WIKI_CNT_ID = 'ce-wikapedia-cnt';
+const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
+;
+class Properties {
+  constructor () {
+    const properties = {};
+    const updateFuncs = {};
+    const instance = this;
 
+    function notify(key) {
+      const funcList = updateFuncs[key];
+      for (let index = 0; funcList && index < funcList.length; index += 1) {
+        funcList[index](properties[key]);
+      }
+    }
+
+    this.set = function (key, value, storeIt) {
+        properties[key] = value;
+        if (storeIt) {
+          const storeObj = {};
+          storeObj[key] = value;
+          chrome.storage.local.set(storeObj);
+        } else {
+          notify(key);
+        }
+    };
+
+    this.get = function (key) {
+      if (arguments.length === 1) {
+        return properties[key]
+      }
+      const retObj = {};
+      for (let index = 0; index < arguments.length; index += 1) {
+        key = arguments[index];
+        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+      }
+    };
+
+    function storageUpdate (values) {
+      const keys = Object.keys(values);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = values[key];
+        if (value && value.newValue !== undefined) {
+          instance.set(key, values[key].newValue);
+        } else {
+          instance.set(key, value);
+        }
+      }
+    }
+
+    function keyDefinitionCheck(key) {
+      if (key === undefined) {
+        throw new Error('key must be defined');
+      }
+    }
+
+    this.onUpdate = function (keys, func) {
+      keyDefinitionCheck(keys);
+      if (!Array.isArray(keys)) {
+        keys = [keys];
+      }
+      if ((typeof func) !== 'function') throw new Error('update function must be defined');
+      keys.forEach((key) => {
+        if (updateFuncs[key] === undefined) {
+          updateFuncs[key] = [];
+        }
+        updateFuncs[key].push(func);
+        func(properties[key])
+      });
+    }
+
+    chrome.storage.local.get(null, storageUpdate);
+    chrome.storage.onChanged.addListener(storageUpdate);
+  }
+}
+
+const properties = new Properties();
+;
 class Endpoints {
   constructor(config, host) {
     const instance = this;
@@ -133,146 +216,7 @@ const EPNTS = new Endpoints({
   ]
 }
 , 'local').getFuncObj();
-try {exports.EPNTS = EPNTS;}catch(e){}function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
-}
-
-function styleUpdate(elem, property, value) {
-  function set(property, value) {
-    elem.style[property] = value;
-  }
-  switch (typeof property) {
-    case 'string':
-      set(property, value);
-      break;
-    case 'object':
-      const keys = Object.keys(property);
-      for (let index = 0; index < keys.length; index += 1) {
-        set(keys[index], property[keys[index]]);
-      }
-      break;
-    default:
-      throw new Error('argument not a string or an object: ' + (typeof property));
-  }
-}
-
-function onEnter(id, func) {
-  const elem = document.getElementById(id);
-  if (elem !== null) {
-    elem.addEventListener('keypress', (e) => {
-      if(e.key === 'Enter') func()
-    });
-  }
-}
-
-function elemSpacer(elem) {
-  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
-  const spacerId = elem.getAttribute('spacer-id');
-  elem.style.position = '';
-  elem.style.margin = '';
-  const elemRect = elem.getBoundingClientRect();
-  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
-  spacer.id = spacerId;
-  spacer.style.width = elem.scrollWidth + 'px';
-  spacer.style.height = elem.scrollHeight + 'px';
-  elem.style.width = elem.scrollWidth + 'px';
-  elem.style.height = elem.scrollHeight + 'px';
-  elem.style.margin = 0;
-  elem.style.zIndex = 1;
-  elem.after(spacer);
-  elem.style.position = elem.getAttribute("position");
-}
-
-// const doesntWork...??? /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))([^>]*)>/;
-
-class JsDetected extends Error {
-  constructor(orig, clean) {
-      super('Java script was detected');
-      this.orig = orig;
-      this.clean = clean;
-  }
-}
-
-const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=/;
-function safeInnerHtml(text, elem) {
-  if (text === undefined) return undefined;
-  const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
-  if (clean !== text) throw new JsDetected(text, clean);
-  if (elem !== undefined) elem.innerHTML = clean;
-  return clean;
-}
-
-function safeOuterHtml(text, elem) {
-  const clean = safeInnerHtml(text);
-  if (elem !== undefined) elem.outerHTML = clean;
-  return clean;
-}
-
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  safeInnerHtml(text);
-  return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script[^<]*?>/, '')
-              .replace(jsAttrReg, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
+try {exports.EPNTS = EPNTS;}catch(e){};
 class KeyShortCut {
   constructor(keys, func) {
     KeyShortCut.cuts.push(this);
@@ -306,7 +250,136 @@ KeyShortCut.callOnAll = function (func, e) {
 
 document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
 document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+;
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      console.log('update user event fired')
+    }
 
+    function updateStatus(s) {
+      status = s;
+      properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = EPNTS.user.get(email);
+        Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = properties.get('user.credential');
+      if (cred !== null) {
+        properties.set('user.credential', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = EPNTS.credential.delete(cred);
+          Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = EPNTS.credential.status(credential);
+        Request.get(url, updateStatus);
+        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        Request.get(url, setUser);
+      } else if (credential === null) {
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = EPNTS.credential.add(user.id);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = EPNTS.credential.add(uId);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = EPNTS.user.add();
+      const body = {email, username};
+      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+  }
+}
+
+User = new User();
+;
 dg.setRoot('ce-ui');
 
 Request = {
@@ -394,94 +467,49 @@ Request = {
 
 Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
 Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
-class Page {
+;
+class Form {
   constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.template = function() {throw new Error('Must implement template()');}
-    this.scope = function () {return {};};
-    this.onOpen = function () {};
-    this.onClose = function () {};
-    this.beforeOpen = function () {};
-    this.hide = function() {return false;}
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            Request.get(url, success, fail);
+          } else {
+            Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
   }
 }
 
-class Properties {
-  constructor () {
-    const properties = {};
-    const updateFuncs = {};
-    const instance = this;
-
-    function notify(key) {
-      const funcList = updateFuncs[key];
-      for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
-      }
-    }
-
-    this.set = function (key, value, storeIt) {
-        properties[key] = value;
-        if (storeIt) {
-          const storeObj = {};
-          storeObj[key] = value;
-          chrome.storage.local.set(storeObj);
-        } else {
-          notify(key);
-        }
-    };
-
-    this.get = function (key) {
-      if (arguments.length === 1) {
-        return properties[key]
-      }
-      const retObj = {};
-      for (let index = 0; index < arguments.length; index += 1) {
-        key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
-      }
-    };
-
-    function storageUpdate (values) {
-      const keys = Object.keys(values);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = values[key];
-        if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
-          instance.set(key, value);
-        }
-      }
-    }
-
-    function keyDefinitionCheck(key) {
-      if (key === undefined) {
-        throw new Error('key must be defined');
-      }
-    }
-
-    this.onUpdate = function (keys, func) {
-      keyDefinitionCheck(keys);
-      if (!Array.isArray(keys)) {
-        keys = [keys];
-      }
-      if ((typeof func) !== 'function') throw new Error('update function must be defined');
-      keys.forEach((key) => {
-        if (updateFuncs[key] === undefined) {
-          updateFuncs[key] = [];
-        }
-        updateFuncs[key].push(func);
-        func(properties[key])
-      });
-    }
-
-    chrome.storage.local.get(null, storageUpdate);
-    chrome.storage.onChanged.addListener(storageUpdate);
-  }
-}
-
-const properties = new Properties();
-
+Form = new Form();
+;
 let idCount = 0;
 class ExprDef {
   constructor(name, options, notify, stages, alwaysPossible) {
@@ -793,120 +821,7 @@ ExprDef.parse = parse;
 try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
-function loggedIn() {
-  const user = properties.get('user');
-  return !(user === null || user === undefined);
-}
-
-function propertyUpdate(key, value) {
-  return function (event) {
-    properties.set(key, event.target.value, true)
-  };
-}
-
-
-class Settings {
-  constructor(page) {
-    const CSS_CLASS = 'ce-setting-list-item';
-    const ACTIVE_CSS_CLASS = `${CSS_CLASS} ce-active-list-item`;
-    const LIST_ID = 'ce-setting-list';
-    const CNT_ID = 'ce-setting-cnt';
-    this.pageName = function () {return page.constructor.name;}
-    this.getPage = () => page;
-    const instance = this;
-    const li = document.createElement('li');
-    const settingsCnt = document.getElementById(CNT_ID);
-    const settingsList = document.getElementById(LIST_ID);
-
-    function isActive() {
-      return Settings.activePage() === instance.pageName();
-    }
-
-    this.hidden = () => page.hide();
-    this.activate = function (force) {
-      if (force || isActive()) {
-        if (Settings.active) Settings.active.getPage().onClose();
-        page.beforeOpen();
-        Settings.active = instance;
-        window.location.href = `${window.location.href
-            .replace(Settings.urlReg, '$3')}#${instance.pageName()}`;
-        li.className = ACTIVE_CSS_CLASS;
-        const html = new $t(page.template()).render(page.scope());
-        safeInnerHtml(html, settingsCnt);
-        page.onOpen();
-        properties.set('settingsPage', instance.pageName());
-      }
-      instance.updateMenu();
-    }
-
-    this.updateMenu = function() {
-      if (!isActive()) {
-        li.className = CSS_CLASS;
-      }
-      if (instance.hidden()) {
-        li.setAttribute('hidden', true);
-      } else {
-        li.removeAttribute('hidden');
-      }
-      li.innerText = page.label();
-      const listWidth = settingsList.clientWidth;
-      const padding = 10;
-      const settingCntPadding = listWidth + padding;
-      const settingCntWidth = window.outerWidth - (listWidth + (2 * padding));
-      settingsCnt.style = `padding-left: ${settingCntPadding}px;
-        width: ${settingCntWidth}px`;
-    }
-
-    this.isPage = function (p) {return p === page;}
-    function open () {window.location.href = `#${page.constructor.name}`;}
-
-    this.onOpen = function () {}
-
-    li.addEventListener('click', open);
-    settingsList.append(li);
-    Settings.settings[page.constructor.name] = this;
-    this.updateMenu();
-    if (isActive()) this.activate();
-  }
-}
-
-Settings.settings = {};
-Settings.urlReg = /(^((.*?)#)(.*)$)/;
-Settings.activePage = function () {
-  const pageName = window.location.href.replace(Settings.urlReg, '$4');
-  return pageName.indexOf('://') === -1 ? pageName :
-        Object.keys(Settings.settings)[0];
-}
-Settings.updateMenus = function (page) {
-  if (document.readyState !== "complete") return;
-  
-  const settingsPages = Object.values(Settings.settings);
-  if (settingsPages.length) {
-    let activeIndex = 0;
-    Settings.settings[Settings.activePage()].activate(true);
-    while (Settings.active === undefined || Settings.active.hidden()) {
-      settingsPages[activeIndex++].activate(true);
-    }
-    for (let index = 0; index < settingsPages.length; index += 1) {
-      const setting = settingsPages[index];
-      setting.activate();
-    }
-  }
-}
-
-
-window.onhashchange = function () {
-  Settings.updateMenus();
-};
-window.onload = () => document.addEventListener(User.updateEvent(), Settings.updateMenus);
-
-function getInnerState(page) {
-  var stateReg = new RegExp(`^.*?#${page}:(.*)$`);
-  if (window.location.href.match(stateReg)) {
-    return window.location.href.replace(stateReg, "$1")
-  }
-}
-
+;
 class $t {
 	constructor(template, id) {
 		function varReg(prefix, suffix) {
@@ -1335,7 +1250,7 @@ $t.dumpTemplates = function () {
 try{
 	exports.$t = $t;
 } catch (e) {}
-// ./src/index/services/$t.js
+;// ./src/index/services/$t.js
 
 $t.functions['483114051'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("sug")) + `</span>`
@@ -1361,14 +1276,14 @@ $t.functions['hover-resources'] = function (get) {
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/menu.css"> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/AppMenu.js'></script> </body> </html> `
 }
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
-}
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
@@ -1429,178 +1344,270 @@ $t.functions['tabs'] = function (get) {
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
+};function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
     }
+}
 
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            Request.get(url, success, fail);
-          } else {
-            Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
         }
+        return found;
       }
     }
+    return recurse(node, 0).node;
+}
 
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
 
-    document.addEventListener('submit', directForm);
+  return recurse(node, 0).node;
+}
+
+function styleUpdate(elem, property, value) {
+  function set(property, value) {
+    elem.style[property] = value;
+  }
+  switch (typeof property) {
+    case 'string':
+      set(property, value);
+      break;
+    case 'object':
+      const keys = Object.keys(property);
+      for (let index = 0; index < keys.length; index += 1) {
+        set(keys[index], property[keys[index]]);
+      }
+      break;
+    default:
+      throw new Error('argument not a string or an object: ' + (typeof property));
   }
 }
 
-Form = new Form();
+function onEnter(id, func) {
+  const elem = document.getElementById(id);
+  if (elem !== null) {
+    elem.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') func()
+    });
+  }
+}
 
-class User {
+function elemSpacer(elem) {
+  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
+  const spacerId = elem.getAttribute('spacer-id');
+  elem.style.position = '';
+  elem.style.margin = '';
+  const elemRect = elem.getBoundingClientRect();
+  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
+  spacer.id = spacerId;
+  spacer.style.width = elem.scrollWidth + 'px';
+  spacer.style.height = elem.scrollHeight + 'px';
+  elem.style.width = elem.scrollWidth + 'px';
+  elem.style.height = elem.scrollHeight + 'px';
+  elem.style.margin = 0;
+  elem.style.zIndex = 1;
+  elem.after(spacer);
+  elem.style.position = elem.getAttribute("position");
+}
+
+// const doesntWork...??? /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))([^>]*)>/;
+
+class JsDetected extends Error {
+  constructor(orig, clean) {
+      super('Java script was detected');
+      this.orig = orig;
+      this.clean = clean;
+  }
+}
+
+const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=/;
+function safeInnerHtml(text, elem) {
+  if (text === undefined) return undefined;
+  const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
+  if (clean !== text) throw new JsDetected(text, clean);
+  if (elem !== undefined) elem.innerHTML = clean;
+  return clean;
+}
+
+function safeOuterHtml(text, elem) {
+  const clean = safeInnerHtml(text);
+  if (elem !== undefined) elem.outerHTML = clean;
+  return clean;
+}
+
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  safeInnerHtml(text);
+  return text.replace(/\n/g, '<br>')
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script[^<]*?>/, '')
+              .replace(jsAttrReg, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
+;class Page {
   constructor() {
-    let user;
-    let status = 'expired';
+    this.label = function () {throw new Error('Must implement label()');};
+    this.template = function() {throw new Error('Must implement template()');}
+    this.scope = function () {return {};};
+    this.onOpen = function () {};
+    this.onClose = function () {};
+    this.beforeOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+;function loggedIn() {
+  const user = properties.get('user');
+  return !(user === null || user === undefined);
+}
+
+function propertyUpdate(key, value) {
+  return function (event) {
+    properties.set(key, event.target.value, true)
+  };
+}
+
+
+class Settings {
+  constructor(page) {
+    const CSS_CLASS = 'ce-setting-list-item';
+    const ACTIVE_CSS_CLASS = `${CSS_CLASS} ce-active-list-item`;
+    const LIST_ID = 'ce-setting-list';
+    const CNT_ID = 'ce-setting-cnt';
+    this.pageName = function () {return page.constructor.name;}
+    this.getPage = () => page;
     const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
+    const li = document.createElement('li');
+    const settingsCnt = document.getElementById(CNT_ID);
+    const settingsList = document.getElementById(LIST_ID);
+
+    function isActive() {
+      return Settings.activePage() === instance.pageName();
+    }
+
+    this.hidden = () => page.hide();
+    this.activate = function (force) {
+      if (force || isActive()) {
+        if (Settings.active) Settings.active.getPage().onClose();
+        page.beforeOpen();
+        Settings.active = instance;
+        window.location.href = `${window.location.href
+            .replace(Settings.urlReg, '$3')}#${instance.pageName()}`;
+        li.className = ACTIVE_CSS_CLASS;
+        const html = new $t(page.template()).render(page.scope());
+        safeInnerHtml(html, settingsCnt);
+        page.onOpen();
+        properties.set('settingsPage', instance.pageName());
       }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
+      instance.updateMenu();
     }
 
-    function updateStatus(s) {
-      status = s;
-      properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = EPNTS.user.get(email);
-        Request.get(url, success, fail);
+    this.updateMenu = function() {
+      if (!isActive()) {
+        li.className = CSS_CLASS;
+      }
+      if (instance.hidden()) {
+        li.setAttribute('hidden', true);
       } else {
-        fail('Invalid Email');
+        li.removeAttribute('hidden');
       }
+      li.innerText = page.label();
+      const listWidth = settingsList.clientWidth;
+      const padding = 10;
+      const settingCntPadding = listWidth + padding;
+      const settingCntWidth = window.outerWidth - (listWidth + (2 * padding));
+      settingsCnt.style = `padding-left: ${settingCntPadding}px;
+        width: ${settingCntWidth}px`;
     }
 
-    function removeCredential() {
-      const cred = properties.get('user.credential');
-      if (cred !== null) {
-        properties.set('user.credential', null, true);
-        instance.update();
-      }
+    this.isPage = function (p) {return p === page;}
+    function open () {window.location.href = `#${page.constructor.name}`;}
 
-      user = undefined;
-      updateStatus('expired');
-    }
+    this.onOpen = function () {}
 
-    this.logout = function () {
-      const cred = properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = EPNTS.credential.delete(cred);
-          Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus);
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
-      } else if (credential === null) {
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = EPNTS.credential.add(user.id);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = EPNTS.credential.add(uId);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = EPNTS.user.add();
-      const body = {email, username};
-      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+    li.addEventListener('click', open);
+    settingsList.append(li);
+    Settings.settings[page.constructor.name] = this;
+    this.updateMenu();
+    if (isActive()) this.activate();
   }
 }
 
-User = new User();
+Settings.settings = {};
+Settings.urlReg = /(^((.*?)#)(.*)$)/;
+Settings.activePage = function () {
+  const pageName = window.location.href.replace(Settings.urlReg, '$4');
+  return pageName.indexOf('://') === -1 ? pageName :
+        Object.keys(Settings.settings)[0];
+}
+Settings.updateMenus = function (page) {
+  if (document.readyState !== "complete") return;
 
+  const settingsPages = Object.values(Settings.settings);
+  if (settingsPages.length) {
+    let activeIndex = 0;
+    Settings.settings[Settings.activePage()].activate(true);
+    while (Settings.active === undefined || Settings.active.hidden()) {
+      settingsPages[activeIndex++].activate(true);
+    }
+    for (let index = 0; index < settingsPages.length; index += 1) {
+      const setting = settingsPages[index];
+      setting.activate();
+    }
+  }
+}
+
+
+window.onhashchange = function () {
+  Settings.updateMenus();
+};
+window.onload = () => document.addEventListener(User.updateEvent(), Settings.updateMenus);
+
+function getInnerState(page) {
+  var stateReg = new RegExp(`^.*?#${page}:(.*)$`);
+  if (window.location.href.match(stateReg)) {
+    return window.location.href.replace(stateReg, "$1")
+  }
+}
+;
 class Developer extends Page {
   constructor() {
     super();
@@ -1644,7 +1651,7 @@ class Developer extends Page {
 const developerPage = new Developer();
 const developerSettings = new Settings(developerPage);
 properties.onUpdate('debug', developerPage.updateDebug);
-
+;
 class FavoriteLists extends Page {
   constructor() {
     super();
@@ -1654,7 +1661,7 @@ class FavoriteLists extends Page {
   }
 }
 new Settings(new FavoriteLists());
-
+;
 class Login extends Page {
   constructor() {
     super();
@@ -1774,7 +1781,7 @@ class Login extends Page {
   }
 }
 new Settings(new Login());
-
+;
 class Profile extends Page {
   constructor() {
     super();
@@ -1828,7 +1835,7 @@ class Profile extends Page {
   }
 }
 const profileSetting = new Settings(new Profile());
-
+;
 class RawTextTool extends Page {
   constructor() {
     super();
@@ -1887,7 +1894,7 @@ class RawTextTool extends Page {
   }
 }
 new Settings(new RawTextTool());
-
+;
 return {afterLoad};
 }
 Settings = Settings()

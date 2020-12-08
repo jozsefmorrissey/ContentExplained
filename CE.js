@@ -7,7 +7,140 @@ const ADD_EDITOR_ID = 'ce-add-editor-id';
 const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
 const WIKI_CNT_ID = 'ce-wikapedia-cnt';
 const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
+;
+class Endpoints {
+  constructor(config, host) {
+    const instance = this;
+    host = host || '';
+    this.setHost = (newHost) => {
+      if ((typeof newHost) === 'string') {
+        host = config._envs[newHost] || newHost;
+      }
+    };
+    this.setHost(host);
+    this.getHost = (env) => env === undefined ? host : config._envs[env];
 
+    const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
+    this.getFuncObj = function () {return endPointFuncs;};
+
+
+    function build(str) {
+      const pieces = str.split(/:[a-zA-Z0-9]*/g);
+      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
+      return function () {
+        let values = [];
+        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
+          values = arguments;
+        } else {
+          const obj = arguments[0];
+          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
+        }
+        let endpoint = '';
+        for (let index = 0; index < pieces.length; index += 1) {
+          const arg = values[index];
+          let value = '';
+          if (index < pieces.length - 1) {
+            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
+          }
+          endpoint += pieces[index] + value;
+        }
+        return `${host}${endpoint}`;
+      }
+    }
+
+    function configRecurse(currConfig, currFunc) {
+      const keys = Object.keys(currConfig);
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const value = currConfig[key];
+        if (key.indexOf('_') !== 0) {
+          if (value instanceof Object) {
+            currFunc[key] = {};
+            configRecurse(value, currFunc[key]);
+          } else {
+            currFunc[key] = build(value);
+          }
+        } else {
+          currFunc[key] = value;
+        }
+      }
+    }
+
+    configRecurse(config, endPointFuncs);
+  }
+}
+
+try {
+  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
+} catch (e) {}
+
+const EPNTS = new Endpoints({
+  "_envs": {
+    "local": "https://localhost:3001/content-explained",
+    "dev": "https://dev.jozsefmorrissey.com/content-explained",
+    "prod": "https://node.jozsefmorrissey.com/content-explained"
+  },
+  "user": {
+    "add": "/user",
+    "get": "/user/:idsOemail",
+    "login": "/user/login",
+    "update": "/user/update/:updateSecret",
+    "requestUpdate": "/user/update/request"
+  },
+  "credential": {
+    "add": "/credential/add/:userId",
+    "activate": "/credential/activate/:id/:userId/:activationSecret",
+    "delete": "/credential/:idOauthorization",
+    "activationUrl": "/credential/activation/url/:activationSecret",
+    "get": "/credential/:userId",
+    "status": "/credential/status/:authorization"
+  },
+  "site": {
+    "add": "/site",
+    "get": "/site/get"
+  },
+  "explanation": {
+    "add": "/explanation",
+    "author": "/explanation/author/:authorId",
+    "get": "/explanation/:words",
+    "update": "/explanation"
+  },
+  "siteExplanation": {
+    "add": "/site/explanation/:explanationId",
+    "get": "/site/explanation"
+  },
+  "opinion": {
+    "like": "/like/:explanationId/:siteId",
+    "dislike": "/dislike/:explanationId/:siteId",
+    "bySite": "/opinion/:siteId/:userId"
+  },
+  "endpoints": {
+    "json": "/html/endpoints.json",
+    "EPNTS": "/EPNTS/:env"
+  },
+  "images": {
+    "logo": "/images/icons/logo.png",
+    "wiki": "/images/icons/wikapedia.png",
+    "txt": "/images/icons/txt.png",
+    "merriam": "/images/icons/Merriam-Webster.png"
+  },
+  "merriam": {
+    "search": "/merriam/webster/:searchText"
+  },
+  "_secure": [
+    "user.update",
+    "credential.get",
+    "credential.delete",
+    "site.add",
+    "explanation.add",
+    "explanation.update",
+    "siteExplanation.add",
+    "opinion.like",
+    "opinion.dislike"
+  ]
+}
+, 'local').getFuncObj();
+try {exports.EPNTS = EPNTS;}catch(e){};
 function DebugGuiClient(config, root, debug) {
   config = config || {};
   var instance = this;
@@ -412,140 +545,131 @@ if (!DebugGuiClient.inBrowser) {
   }
   var dg = DebugGuiClient.browser('default');
 }
-
-class Endpoints {
-  constructor(config, host) {
-    const instance = this;
-    host = host || '';
-    this.setHost = (newHost) => {
-      if ((typeof newHost) === 'string') {
-        host = config._envs[newHost] || newHost;
-      }
-    };
-    this.setHost(host);
-    this.getHost = (env) => env === undefined ? host : config._envs[env];
-
-    const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
-    this.getFuncObj = function () {return endPointFuncs;};
-
-
-    function build(str) {
-      const pieces = str.split(/:[a-zA-Z0-9]*/g);
-      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
-      return function () {
-        let values = [];
-        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
-          values = arguments;
-        } else {
-          const obj = arguments[0];
-          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
-        }
-        let endpoint = '';
-        for (let index = 0; index < pieces.length; index += 1) {
-          const arg = values[index];
-          let value = '';
-          if (index < pieces.length - 1) {
-            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
-          }
-          endpoint += pieces[index] + value;
-        }
-        return `${host}${endpoint}`;
+;class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        matchingElems[index].style = this.value + matchingElems[index].style;
       }
     }
-
-    function configRecurse(currConfig, currFunc) {
-      const keys = Object.keys(currConfig);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = currConfig[key];
-        if (key.indexOf('_') !== 0) {
-          if (value instanceof Object) {
-            currFunc[key] = {};
-            configRecurse(value, currFunc[key]);
-          } else {
-            currFunc[key] = build(value);
-          }
-        } else {
-          currFunc[key] = value;
-        }
-      }
-    }
-
-    configRecurse(config, endPointFuncs);
   }
 }
 
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files.push(this);
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
+    }
+
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
+      }
+    }
+
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
+    }
+  }
+}
+
+CssFile.files = [];
+
+CssFile.apply = function () {
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
+    }
+  }
+}
+
+CssFile.dump = function () {
+  let dumpStr = '';
+  for (let index = 0; index < CssFile.files.length; index += 1) {
+    const cssFile = CssFile.files[index];
+    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  applyCss = CssFile.apply;
+}
+
 try {
-  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
+  afterLoad.push(cssAfterLoad);
 } catch (e) {}
 
-const EPNTS = new Endpoints({
-  "_envs": {
-    "local": "https://localhost:3001/content-explained",
-    "dev": "https://dev.jozsefmorrissey.com/content-explained",
-    "prod": "https://node.jozsefmorrissey.com/content-explained"
-  },
-  "user": {
-    "add": "/user",
-    "get": "/user/:idsOemail",
-    "login": "/user/login",
-    "update": "/user/update/:updateSecret",
-    "requestUpdate": "/user/update/request"
-  },
-  "credential": {
-    "add": "/credential/add/:userId",
-    "activate": "/credential/activate/:id/:userId/:activationSecret",
-    "delete": "/credential/:idOauthorization",
-    "activationUrl": "/credential/activation/url/:activationSecret",
-    "get": "/credential/:userId",
-    "status": "/credential/status/:authorization"
-  },
-  "site": {
-    "add": "/site",
-    "get": "/site/get"
-  },
-  "explanation": {
-    "add": "/explanation",
-    "author": "/explanation/author/:authorId",
-    "get": "/explanation/:words",
-    "update": "/explanation"
-  },
-  "siteExplanation": {
-    "add": "/site/explanation/:explanationId",
-    "get": "/site/explanation"
-  },
-  "opinion": {
-    "like": "/like/:explanationId/:siteId",
-    "dislike": "/dislike/:explanationId/:siteId",
-    "bySite": "/opinion/:siteId/:userId"
-  },
-  "endpoints": {
-    "json": "/html/endpoints.json",
-    "EPNTS": "/EPNTS/:env"
-  },
-  "images": {
-    "logo": "/images/icons/logo.png",
-    "wiki": "/images/icons/wikapedia.png",
-    "txt": "/images/icons/txt.png",
-    "merriam": "/images/icons/Merriam-Webster.png"
-  },
-  "merriam": {
-    "search": "/merriam/webster/:searchText"
-  },
-  "_secure": [
-    "user.update",
-    "credential.get",
-    "credential.delete",
-    "site.add",
-    "explanation.add",
-    "explanation.update",
-    "siteExplanation.add",
-    "opinion.like",
-    "opinion.dislike"
-  ]
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+;// ./src/index/css.js
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: 100%; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+;
+class CustomEvent {
+  constructor(name) {
+    const watchers = {};
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        if (watchers[name] === undefined) {
+          watchers[name] = [];
+        }
+        watchers[name].push(func);
+      } else {
+        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
 }
-, 'local').getFuncObj();
-try {exports.EPNTS = EPNTS;}catch(e){}function up(selector, node) {
+;function up(selector, node) {
     if (node.matches(selector)) {
         return node;
     } else {
@@ -684,7 +808,7 @@ function textToHtml(text) {
               .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
                       '<a target=\'blank\' href="$2">$1</a>');
 }
-
+;
 dg.setRoot('ce-ui');
 
 Request = {
@@ -772,274 +896,7 @@ Request = {
 
 Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
 Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
-//here
-class HoverResources {
-  constructor (zIncrement) {
-    const id = Math.floor(Math.random() * 1000000);
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
-    const template = new $t('hover-resources');
-    const instance = this;
-    const defaultStyle = `position: fixed;
-      z-index: ${(zIncrement || 0) + 999999};
-      background-color: white;
-      display: none;
-      max-height: 40%;
-      min-width: 40%;
-      max-width: 80%;
-      overflow: auto;
-      border: 1px solid;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-    const htmlFuncs = {};
-    let forceOpen = false;
-    let currFuncs, currElem, selectElem;
-    let popupContent, popupCnt;
-    let prevLocation, minLocation;
-    let canClose = false;
-    let mouseDown = false;
-    let lastMoveEvent;
-    let closeFuncs = [];
-
-    this.close = () => {
-      if (isOpen() && !withinPopup(-10)) {
-        canClose = false;
-        getPopupElems().cnt.style.display = 'none';
-        // HoverResources.eventCatcher.style.display = 'none';
-        currElem = undefined;
-        closeFuncs.forEach((func) => func());
-        if (minLocation) instance.minimize();
-      }
-    }
-
-    this.forceOpen = () => {forceOpen = true; instance.show();};
-    this.forceClose = () => {forceOpen = false; exitHover();};
-    this.show = () => {
-      setCss({display: 'block'})
-      // HoverResources.eventCatcher.style.display = 'block';
-
-    };
-
-    function kill() {
-      if (!forceOpen && canClose && !withinPopup(-10)) {
-        instance.close();
-      }
-    }
-
-    function isOpen() {
-      return getPopupElems().cnt.style.display === 'block';
-    }
-
-    function withinPopup(offset) {
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      if (lastMoveEvent) {
-        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
-        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
-        return withinX && withinY;
-      }
-      return true;
-    }
-
-    function dontHoldOpen(event) {
-      if (!canClose) withinPopup(10) && (canClose = true);
-      if (canClose) {
-        exitHover();
-      }
-    }
-
-    function getFunctions(elem) {
-      let foundFuncs;
-      const queryStrs = Object.keys(htmlFuncs);
-      queryStrs.forEach((queryStr) => {
-        if (elem.matches(queryStr)) {
-          if (foundFuncs) {
-            throw new Error('Multiple functions being invoked on one hover event');
-          } else {
-            foundFuncs = htmlFuncs[queryStr];
-          }
-        }
-      });
-      return foundFuncs;
-    }
-
-    function offHover(event) {
-      const elem = event.target;
-      const funcs = getFunctions(elem);
-      if (funcs) return;
-      dontHoldOpen(event);
-    }
-
-    function onHover(event) {
-      if (!properties.get('enabled')) return;
-      const elem = event.target;
-      if (!canClose) withinPopup(10) && (canClose = true);
-
-      const funcs = getFunctions(elem);
-      if (funcs && !mouseDown) {
-        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
-          currFuncs = funcs;
-          if (funcs && funcs.html) updateContent(funcs.html(elem));
-          positionOnElement(elem, funcs);
-          if (funcs && funcs.after) funcs.after();
-        }
-      }
-    }
-
-    function exitHover() {
-      setTimeout(kill, 500);
-    }
-
-    this.back = () => setCss(prevLocation);
-
-    function positionOnElement(elem) {
-      currElem = elem || currElem;
-      getPopupElems().cnt.style = defaultStyle;
-      instance.show();
-      let rect = currElem.getBoundingClientRect();
-      let popRect = getPopupElems().cnt.getBoundingClientRect();
-
-      let top = `${rect.top}px`;
-      const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{
-              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
-              left = left > 10 ? left : 10;
-              const leftMost = window.innerWidth - popRect.width - 10;
-              left = left < leftMost ? left : leftMost;
-              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
-              top = top > 10 ? top : 10;
-              const bottomMost = window.innerHeight - popRect.height - 10;
-              top = top < bottomMost ? top : bottomMost;
-              setCss({left: left + 'px', top: top + 'px'});
-              return position;};
-      position.maximize = instance.maximize.bind(position);
-      position.minimize = instance.minimize.bind(position);
-      if (window.innerHeight / 2 > rect.top) {
-        position.center().bottom();
-      } else {
-        position.center().top();
-      }
-
-      exitHover();
-      return position;
-    }
-
-    this.elem = positionOnElement;
-    this.select = () => {
-      if (window.getSelection().toString().trim()) {
-        selectElem = window.getSelection().getRangeAt(0);
-        currElem = selectElem;
-      }
-      positionOnElement(selectElem);
-    };
-    this.top = () => setCss({top:0,bottom:''});
-    this.left = () => setCss({right:'',left:0});
-    this.bottom = () => setCss({top:'',bottom:0});
-    this.right = () => setCss({right:0,left:''});
-
-    this.center = function () {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
-      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      setCss({top,left, right: '', bottom: ''});
-      return instance;
-    }
-
-    this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
-      minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
-      return this;
-    }
-
-    this.minimize = function () {
-      if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
-        setCss(minLocation);
-        canClose = false;
-        prevLocation = minLocation;
-        minLocation = undefined;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
-      }
-      return this;
-    }
-
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      return instance;
-    }
-    this.setCss = setCss;
-
-    function on(queryStr, funcObj) {
-      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
-      htmlFuncs[queryStr] = funcObj;
-    }
-    this.on = on;
-
-    this.onClose = (func) => closeFuncs.push(func);
-
-    function updateContent(html) {
-      safeInnerHtml(html, getPopupElems().content);
-      if (currFuncs && currFuncs.after) currFuncs.after();
-      return instance;
-    }
-    this.updateContent = updateContent;
-
-    function isMaximized() {
-      return minLocation !== undefined;
-    }
-    this.isMaximized = isMaximized;
-
-    const tempElem = document.createElement('div');
-    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
-    safeInnerHtml(tempHtml, tempElem);
-    tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
-    function getPopupElems() {
-      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
-      if (newPopupContent !== popupContent) {
-        popupCnt = document.getElementById(POPUP_CNT_ID);
-        popupContent = newPopupContent;
-        popupCnt.style = defaultStyle;
-        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.addEventListener('click', (e) => {
-          if (e.target.tagName !== 'A')
-          e.stopPropagation()
-        });
-      }
-      return {cnt: popupCnt, content: popupContent};
-    }
-
-    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; kill();});
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', offHover);
-    document.addEventListener('mousedown', () => mouseDown = true);
-    document.addEventListener('mouseup', () => mouseDown = false);
-    document.addEventListener('click', this.close);
-    this.container = () => getPopupElems().content;
-
-  }
-}
-
+;
 let idCount = 0;
 class ExprDef {
   constructor(name, options, notify, stages, alwaysPossible) {
@@ -1351,7 +1208,273 @@ ExprDef.parse = parse;
 try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
+;//here
+class HoverResources {
+  constructor (zIncrement, clickClose) {
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
+    const template = new $t('hover-resources');
+    const instance = this;
+    const defaultStyle = `position: fixed;
+      z-index: ${(zIncrement || 0) + 999999};
+      background-color: white;
+      display: none;
+      max-height: 40%;
+      min-width: 40%;
+      max-width: 80%;
+      overflow: auto;
+      border: 1px solid;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
+    const htmlFuncs = {};
+    let forceOpen = false;
+    let currFuncs, currElem, selectElem;
+    let popupContent, popupCnt;
+    let prevLocation, minLocation;
+    let canClose = false;
+    let mouseDown = false;
+    let lastMoveEvent;
+    let closeFuncs = [];
 
+    this.close = () => {
+      canClose = false;
+      getPopupElems().cnt.style.display = 'none';
+      // HoverResources.eventCatcher.style.display = 'none';
+      currElem = undefined;
+      closeFuncs.forEach((func) => func());
+      if (minLocation) instance.minimize();
+    }
+
+    this.forceOpen = () => {forceOpen = true; instance.show();};
+    this.forceClose = () => {forceOpen = false; instance.close();};
+    this.show = () => {
+      setCss({display: 'block'})
+      // HoverResources.eventCatcher.style.display = 'block';
+
+    };
+
+    function softClose() {
+      if (!clickClose && canClose && !forceOpen && isOpen() && !withinPopup(-10)) {
+        instance.close();
+      }
+    }
+
+    function isOpen() {
+      return getPopupElems().cnt.style.display === 'block';
+    }
+
+    function withinPopup(offset) {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
+        return withinX && withinY;
+      }
+      return true;
+    }
+
+    function dontHoldOpen(event) {
+      if (!canClose) withinPopup(10) && (canClose = true);
+      if (canClose) {
+        exitHover();
+      }
+    }
+
+    function getFunctions(elem) {
+      let foundFuncs;
+      const queryStrs = Object.keys(htmlFuncs);
+      queryStrs.forEach((queryStr) => {
+        if (elem.matches(queryStr)) {
+          if (foundFuncs) {
+            throw new Error('Multiple functions being invoked on one hover event');
+          } else {
+            foundFuncs = htmlFuncs[queryStr];
+          }
+        }
+      });
+      return foundFuncs;
+    }
+
+    function offHover(event) {
+      const elem = event.target;
+      const funcs = getFunctions(elem);
+      if (funcs) return;
+      dontHoldOpen(event);
+    }
+
+    function onHover(event) {
+      if (!properties.get('enabled')) return;
+      const elem = event.target;
+      if (!canClose) withinPopup(10) && (canClose = true);
+
+      const funcs = getFunctions(elem);
+      if (funcs && !mouseDown) {
+        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
+          currFuncs = funcs;
+          if (funcs && funcs.html) updateContent(funcs.html(elem));
+          positionOnElement(elem, funcs);
+          if (funcs && funcs.after) funcs.after();
+        }
+      }
+    }
+
+    function exitHover() {
+      setTimeout(softClose, 500);
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      getPopupElems().cnt.style = defaultStyle;
+      instance.show();
+      let rect = currElem.getBoundingClientRect();
+      let popRect = getPopupElems().cnt.getBoundingClientRect();
+
+      let top = `${rect.top}px`;
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{
+              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
+              left = left > 10 ? left : 10;
+              const leftMost = window.innerWidth - popRect.width - 10;
+              left = left < leftMost ? left : leftMost;
+              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
+              top = top > 10 ? top : 10;
+              const bottomMost = window.innerHeight - popRect.height - 10;
+              top = top < bottomMost ? top : bottomMost;
+              setCss({left: left + 'px', top: top + 'px'});
+              return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
+      if (window.innerHeight / 2 > rect.top) {
+        position.center().bottom();
+      } else {
+        position.center().top();
+      }
+
+      exitHover();
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss(minLocation);
+        canClose = false;
+        prevLocation = minLocation;
+        minLocation = undefined;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+      return this;
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      return instance;
+    }
+    this.setCss = setCss;
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      safeInnerHtml(html, getPopupElems().content);
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+    this.isMaximized = isMaximized;
+
+    const tempElem = document.createElement('div');
+    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    safeInnerHtml(tempHtml, tempElem);
+    tempElem.children[0].style = defaultStyle;
+    document.body.append(tempElem);
+    function getPopupElems() {
+      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
+      if (newPopupContent !== popupContent) {
+        popupCnt = document.getElementById(POPUP_CNT_ID);
+        popupContent = newPopupContent;
+        popupCnt.style = defaultStyle;
+        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+        popupCnt.addEventListener('click', (e) => {
+          forceOpen = true;
+          if (e.target.tagName !== 'A')
+          e.stopPropagation()
+        });
+      }
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; softClose();});
+    document.addEventListener('mouseover', onHover);
+    document.addEventListener('mouseout', offHover);
+    document.addEventListener('mousedown', () => mouseDown = true);
+    document.addEventListener('mouseup', () => mouseDown = false);
+    document.addEventListener('click',  () => { this.forceClose() });
+    this.container = () => getPopupElems().content;
+
+  }
+}
+;
 class KeyShortCut {
   constructor(keys, func) {
     KeyShortCut.cuts.push(this);
@@ -1385,7 +1508,7 @@ KeyShortCut.callOnAll = function (func, e) {
 
 document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
 document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
-
+;
 class Page {
   constructor() {
     this.label = function () {throw new Error('Must implement label()');};
@@ -1396,7 +1519,7 @@ class Page {
     this.hide = function() {return false;}
   }
 }
-
+;
 class Properties {
   constructor () {
     const properties = {};
@@ -1472,7 +1595,7 @@ class Properties {
 }
 
 const properties = new Properties();
-// ./src/index/properties.js
+;// ./src/index/properties.js
 
 function search() {
   function lookup(searchWords) {
@@ -1525,7 +1648,180 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
 });
 
 afterLoad.push(search);
-class RegArr {
+;
+class DragDropResize {
+  constructor (target) {
+
+    this.close = () => {
+      getPopupElems().cnt.style.display = 'none';
+    }
+
+    this.show = () => {
+      setCss({display: 'block'})
+    };
+
+    function isOpen() {
+      return getPopupElems().cnt.style.display === 'block';
+    }
+
+    function withinPopup(offset) {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
+        return withinX && withinY;
+      }
+      return true;
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      getPopupElems().cnt.style = defaultStyle;
+      instance.show();
+      let rect = currElem.getBoundingClientRect();
+      let popRect = getPopupElems().cnt.getBoundingClientRect();
+
+      let top = `${rect.top}px`;
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{
+              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
+              left = left > 10 ? left : 10;
+              const leftMost = window.innerWidth - popRect.width - 10;
+              left = left < leftMost ? left : leftMost;
+              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
+              top = top > 10 ? top : 10;
+              const bottomMost = window.innerHeight - popRect.height - 10;
+              top = top < bottomMost ? top : bottomMost;
+              setCss({left: left + 'px', top: top + 'px'});
+              return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
+      if (window.innerHeight / 2 > rect.top) {
+        position.center().bottom();
+      } else {
+        position.center().top();
+      }
+
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss(minLocation);
+        canClose = false;
+        prevLocation = minLocation;
+        minLocation = undefined;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+      return this;
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      return instance;
+    }
+    this.setCss = setCss;
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      safeInnerHtml(html, getPopupElems().content);
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+    this.isMaximized = isMaximized;
+
+    const tempElem = document.createElement('div');
+    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+    safeInnerHtml(tempHtml, tempElem);
+    tempElem.children[0].style = defaultStyle;
+    document.body.append(tempElem);
+    function getPopupElems() {
+      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
+      if (newPopupContent !== popupContent) {
+        popupCnt = document.getElementById(POPUP_CNT_ID);
+        popupContent = newPopupContent;
+        popupCnt.style = defaultStyle;
+        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+        popupCnt.onclick = (e) => {
+          if (e.target.tagName !== 'A')
+          e.stopPropagation()
+        });
+      }
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; softClose();});
+    document.addEventListener('mouseover', onHover);
+    document.addEventListener('mouseout', offHover);
+    document.addEventListener('mousedown', () => mouseDown = true);
+    document.addEventListener('mouseup', () => mouseDown = false);
+    document.addEventListener('click',  () => { this.forceClose() });
+    this.container = () => getPopupElems().content;
+
+  }
+}
+;class RegArr {
   constructor(string, array) {
     const newLine = 'akdiehtpwksldjfurioeidu';
     const noNewLines = string.replace(/\n/g, newLine);
@@ -1621,136 +1917,56 @@ class RegArr {
 try{
 	exports.RegArr = RegArr;
 } catch (e) {}
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
-    this.apply = function () {
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
-      }
-    }
-  }
-}
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  applyCss = CssFile.apply;
-}
-
-try {
-  afterLoad.push(cssAfterLoad);
-} catch (e) {}
-
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-// ./src/index/css.js
-new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: 100%; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
-
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-
+;
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
 const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+;
+class Expl {
+  constructor () {
+    let currEnv;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      HoverExplanations.set(data.list);
+    }
 
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env');
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        EPNTS.setHost(env);
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
+  }
+}
+
+Expl = new Expl();
+;
 class Form {
   constructor() {
     const formFuncs = {};
@@ -1792,82 +2008,7 @@ class Form {
 }
 
 Form = new Form();
-
-class Opinion {
-  constructor() {
-    let siteId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      const userId = User.loggedIn().id;
-      if (expl.author && userId === expl.author.id) {
-        return false;
-      }
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr];
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        const userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
-
+;
 class User {
   constructor() {
     let user;
@@ -1996,7 +2137,7 @@ class User {
 }
 
 User = new User();
-
+;
 class $t {
 	constructor(template, id) {
 		function varReg(prefix, suffix) {
@@ -2425,7 +2566,7 @@ $t.dumpTemplates = function () {
 try{
 	exports.$t = $t;
 } catch (e) {}
-// ./src/index/services/$t.js
+;// ./src/index/services/$t.js
 
 $t.functions['483114051'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("sug")) + `</span>`
@@ -2451,14 +2592,14 @@ $t.functions['hover-resources'] = function (get) {
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/menu.css"> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/AppMenu.js'></script> </body> </html> `
 }
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
-}
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
@@ -2519,7 +2660,7 @@ $t.functions['tabs'] = function (get) {
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}// ./bin/$templates.js
+};// ./bin/$templates.js
 
 class HoverExplanations {
   constructor () {
@@ -2744,52 +2885,83 @@ class HoverExplanations {
 }
 
 HoverExplanations = new HoverExplanations();
+;
+class Opinion {
+  constructor() {
+    let siteId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
 
-class Expl {
-  constructor () {
-    let currEnv;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env');
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        EPNTS.setHost(env);
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
       }
     }
 
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
+    function canVote (expl, favorable)  {
+      const userId = User.loggedIn().id;
+      if (expl.author && userId === expl.author.id) {
+        return false;
+      }
+      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+        return opinions[expl.id] !== favorable;
+      }
+      return userId !== undefined && amendments[expl.id] !== favorable;
     };
 
-    this.siteList = function (success, fail) {
-    };
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr];
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value;
+    }
 
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
 
 
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        const userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
   }
 }
 
-Expl = new Expl();
-
-const lookupHoverResource = new HoverResources(1);
+Opinion = new Opinion();
+;
+const lookupHoverResource = new HoverResources(1, true);
 
 class Tabs {
   constructor(updateHtml, props) {
@@ -2907,7 +3079,72 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs(lookupHoverResource.updateContent);
+;
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
+    let suggestions;
+    let definitions;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
 
+    function openDictionary(word) {
+      return function() {
+        properties.set('searchWords', word);
+        instance.update();
+      }
+    }
+
+    this.html = () => meriamTemplate.render({definitions});
+    this.header = () => meriamHeader.render({key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+
+    function updateSuggestions(suggestionHtml) {
+      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
+      const spans = sugCnt.querySelectorAll('span');
+      for (let index = 0; index < spans.length; index += 1) {
+        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      }
+    }
+    this.afterOpen = updateSuggestions;
+
+    function success (data) {
+      const elem = data[0];
+      if (elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
+        definitions = data;
+        suggestions = [];
+      } else {
+        definitions = undefined;
+        suggestions = data;
+      }
+      lookupTabs.update();
+    }
+
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newKey = properties.get('searchWords');
+      if (newKey !== key && (typeof newKey) === 'string') {
+        definitions = undefined;
+        suggestions = undefined;
+        key = newKey.replace(/\s/g, '&nbsp;');
+        const url = EPNTS.merriam.search(key);
+        Request.get(url, success, failure);
+      }
+    }
+
+    this.beforeOpen = this.update;
+  }
+}
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
+;
 class AddInterface extends Page {
   constructor () {
     super();
@@ -3005,7 +3242,7 @@ class AddInterface extends Page {
 
 AddInterface = new AddInterface();
 lookupTabs.add(AddInterface, 2);
-class Explanations extends Page {
+;class Explanations extends Page {
   constructor(list) {
     super();
     const template = new $t('popup-cnt/tab-contents/explanation-cnt');
@@ -3140,72 +3377,7 @@ class Explanations extends Page {
 
 Explanations = new Explanations();
 lookupTabs.add(Explanations, 0);
-
-class MerriamWebster extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
-    let suggestions;
-    let definitions;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
-
-    function openDictionary(word) {
-      return function() {
-        properties.set('searchWords', word);
-        instance.update();
-      }
-    }
-
-    this.html = () => meriamTemplate.render({definitions});
-    this.header = () => meriamHeader.render({key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
-
-    function updateSuggestions(suggestionHtml) {
-      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      const spans = sugCnt.querySelectorAll('span');
-      for (let index = 0; index < spans.length; index += 1) {
-        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      }
-    }
-    this.afterOpen = updateSuggestions;
-
-    function success (data) {
-      const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
-        definitions = data;
-        suggestions = [];
-      } else {
-        definitions = undefined;
-        suggestions = data;
-      }
-      lookupTabs.update();
-    }
-
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
-    }
-
-    this.update = function () {
-      const newKey = properties.get('searchWords');
-      if (newKey !== key && (typeof newKey) === 'string') {
-        definitions = undefined;
-        suggestions = undefined;
-        key = newKey.replace(/\s/g, '&nbsp;');
-        const url = EPNTS.merriam.search(key);
-        Request.get(url, success, failure);
-      }
-    }
-
-    this.beforeOpen = this.update;
-  }
-}
-
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
-
+;
 return {afterLoad};
 }
 CE = CE()

@@ -31,7 +31,7 @@ class Watcher {
     const semaphore = new Semaphore(largNumber);
     const mutex = new Mutex();
     const positions = {};
-    function readFile(file) {
+    function readFile(file, position) {
       semaphore.acquire().then(function([value, release]) {
 
         function notify() {
@@ -44,23 +44,24 @@ class Watcher {
           if (err) {
             console.error(err);
           }
-          console.log('ran file: ', `${file.name}`)
-          onChange(file.name, contents);
+          console.log('ran file: ', `${file.name} - ${position}`);
+          onChange(file.name, contents, position);
           setTimeout(notify, 300);
         }
         fs.readFile(file.name, 'utf8', read);
       });
     }
 
-    function runAllFiles(watchDir) {
+    function runAllFiles(watchDir, position) {
       watchDir = `${watchDir}/`.replace(/\/{2,}/g, '/');
       const files = shell.ls('-ld', `${watchDir}*`);
       for (let index = 0; index < files.length; index += 1) {
         const item = files[index];
         if (item.isFile()) {
-          readFile(item);
+          readFile(item, position);
         } else if (item.isDirectory() && !dirs[item.name]) {
           dirs[item.name] = true;
+          positions[item.name] = position;
           watch(item, watchDir);
         }
       }
@@ -72,7 +73,7 @@ class Watcher {
       const path = item.isDirectory() || parent === undefined ?
             item.name : `${parent}${item.name}`.replace(/\/{2,}/g, '/');
       pending[path] = {};
-      console.log(`Watching: ${path}`);
+      console.log(`Watching: ${path} - ${positions[item.name]}`);
       fs.watch(path, { encoding: 'utf8' }, (eventType, filename) => {
         function wait(release) {
           if (pending[path][filename]) {release();return;}
@@ -83,9 +84,10 @@ class Watcher {
             stat.name = filePath;
             if (stat.isDirectory() && !dirs[stat.name]) {
               dirs[stat.name] = true;
+              positions[stat.name] = positions[item.name];
               watch(stat);
             } else if (stat.isFile()) {
-              readFile(stat);
+              readFile(stat, positions[item.name]);
             }
             mutex.acquire().then((release) => {
                 pending[path][filename] = false;release();})
@@ -95,24 +97,25 @@ class Watcher {
         mutex.acquire().then(wait);
       });
       if (item.isDirectory()) {
-        runAllFiles(path);
+        runAllFiles(path, positions[item.name]);
       } else if (item.isFile()) {
-        readFile(item);
+        readFile(item, positions[item.name]);
       }
     }
 
     let position = 0;
     this.add = function (fileOdir) {
+      fileOdir = fileOdir.trim().replace(/^(.*?)\/*$/, '$1');
+      positions[fileOdir] = position++;
       const stat = fs.stat(fileOdir, function(err, stats) {
         stats.name = fileOdir;
         if (stats.isDirectory() || stats.isFile()){
-          fileOdir = fileOdir.trim().replace(/^(.*?)\/*$/, '$1');
-          positions[fileOdir] = position++;
           watch(stats);
         }
       });
       return this;
     }
+    this.positions = positions;
   }
 }
 
@@ -134,13 +137,14 @@ const appMenuJsBundler = new JsBundler('AppMenu', [])
 new Watcher(htmlBundler.change, htmlBundler.write).add('./html');
 new Watcher(cssBundler.change, cssBundler.write).add('./css/');
 new Watcher(ceJsBundler.change, ceJsBundler.write).add('./constants/global.js')
+                      .add('./bin/EPNTS.js')
                       .add('./bin/debug-gui-client.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
-                      .add('./bin/$templates.js')
-                      .add('./bin/EPNTS.js');
+                      .add('./bin/$templates.js');
 
 new Watcher(settingJsBundler.change, settingJsBundler.write)
+                            .add('./constants/global.js')
                             .add('./src/index/properties.js')
                             .add('./bin/EPNTS.js')
                             .add('./src/index/key-short-cut.js')

@@ -1,62 +1,20 @@
-//here
-class HoverResources {
-  constructor (zIncrement, clickClose) {
-    const id = Math.floor(Math.random() * 1000000);
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
-    const template = new $t('hover-resources');
-    const instance = this;
-    const defaultStyle = `position: fixed;
-      z-index: ${(zIncrement || 0) + 999999};
-      background-color: white;
-      display: none;
-      max-height: 40%;
-      min-width: 40%;
-      max-width: 80%;
-      overflow: auto;
-      border: 1px solid;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-    const htmlFuncs = {};
-    let forceOpen = false;
-    let currFuncs, currElem, selectElem;
-    let popupContent, popupCnt;
-    let prevLocation, minLocation;
-    let canClose = false;
-    let mouseDown = false;
-    let lastMoveEvent;
-    let closeFuncs = [];
+
+class DragDropResize {
+  constructor (target) {
 
     this.close = () => {
-      canClose = false;
       getPopupElems().cnt.style.display = 'none';
-      // HoverResources.eventCatcher.style.display = 'none';
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
     }
 
-    this.forceOpen = () => {forceOpen = true; instance.show();};
-    this.forceClose = () => {forceOpen = false; instance.close();};
     this.show = () => {
       setCss({display: 'block'})
-      // HoverResources.eventCatcher.style.display = 'block';
-
     };
-
-    function softClose() {
-      if (!clickClose && canClose && !forceOpen && isOpen() && !withinPopup(-10)) {
-        instance.close();
-      }
-    }
 
     function isOpen() {
       return getPopupElems().cnt.style.display === 'block';
     }
 
-    function withinPopup(offset) {
+    function within(offset) {
       const rect = getPopupElems().cnt.getBoundingClientRect();
       if (lastMoveEvent) {
         const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
@@ -64,55 +22,6 @@ class HoverResources {
         return withinX && withinY;
       }
       return true;
-    }
-
-    function dontHoldOpen(event) {
-      if (!canClose) withinPopup(10) && (canClose = true);
-      if (canClose) {
-        exitHover();
-      }
-    }
-
-    function getFunctions(elem) {
-      let foundFuncs;
-      const queryStrs = Object.keys(htmlFuncs);
-      queryStrs.forEach((queryStr) => {
-        if (elem.matches(queryStr)) {
-          if (foundFuncs) {
-            throw new Error('Multiple functions being invoked on one hover event');
-          } else {
-            foundFuncs = htmlFuncs[queryStr];
-          }
-        }
-      });
-      return foundFuncs;
-    }
-
-    function offHover(event) {
-      const elem = event.target;
-      const funcs = getFunctions(elem);
-      if (funcs) return;
-      dontHoldOpen(event);
-    }
-
-    function onHover(event) {
-      if (!properties.get('enabled')) return;
-      const elem = event.target;
-      if (!canClose) withinPopup(10) && (canClose = true);
-
-      const funcs = getFunctions(elem);
-      if (funcs && !mouseDown) {
-        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
-          currFuncs = funcs;
-          if (funcs && funcs.html) updateContent(funcs.html(elem));
-          positionOnElement(elem, funcs);
-          if (funcs && funcs.after) funcs.after();
-        }
-      }
-    }
-
-    function exitHover() {
-      setTimeout(softClose, 500);
     }
 
     this.back = () => setCss(prevLocation);
@@ -149,7 +58,6 @@ class HoverResources {
         position.center().top();
       }
 
-      exitHover();
       return position;
     }
 
@@ -245,8 +153,7 @@ class HoverResources {
         popupCnt.style = defaultStyle;
         document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
         document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.addEventListener('click', (e) => {
-          forceOpen = true;
+        popupCnt.onclick = (e) => {
           if (e.target.tagName !== 'A')
           e.stopPropagation()
         });

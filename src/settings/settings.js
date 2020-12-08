@@ -84,7 +84,7 @@ Settings.activePage = function () {
 }
 Settings.updateMenus = function (page) {
   if (document.readyState !== "complete") return;
-  
+
   const settingsPages = Object.values(Settings.settings);
   if (settingsPages.length) {
     let activeIndex = 0;
