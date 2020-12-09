@@ -17,7 +17,8 @@
 
   "web_accessible_resources": [
     "/html/icon-menu/settings.html",
-    "/html/icon-menu/controls.html"
+    "/html/icon-menu/controls.html",
+    "/html/icon-menu/test.html"
   ],
 
   "browser_action": {

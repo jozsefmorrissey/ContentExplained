@@ -83,17 +83,19 @@ function onEnter(id, func) {
   }
 }
 
-function elemSpacer(elem) {
+function elemSpacer(elem, pad) {
   elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
   const spacerId = elem.getAttribute('spacer-id');
   elem.style.position = '';
   elem.style.margin = '';
+  elem.style.width = 'unset'
+  elem.style.height = 'unset'
   const elemRect = elem.getBoundingClientRect();
   const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
   spacer.id = spacerId;
-  spacer.style.width = elem.scrollWidth + 'px';
+  spacer.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   spacer.style.height = elem.scrollHeight + 'px';
-  elem.style.width = elem.scrollWidth + 'px';
+  elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   elem.style.height = elem.scrollHeight + 'px';
   elem.style.margin = 0;
   elem.style.zIndex = 1;

@@ -17,15 +17,20 @@ function stateOnLoad() {
       }
     }
 
-    function displayMenu(enabled) {
-      safeInnerHtml(menuTemplate.render({ enabled }), document.getElementById('control-ctn'));
-      document.getElementById('enable-btn').addEventListener('click', toggleEnable(true));
-      document.getElementById('disable-btn').addEventListener('click', toggleEnable(false));
-      document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html#Login"));
+    function displayMenu() {
+      const hoverOff = properties.get('hoverOff');
+      const enabled = properties.get('enabled');
+      const loggedIn = properties.get('user.status') === 'active';
+      const logInOutPage = `/html/icon-menu/settings.html#${loggedIn ? 'Profile' : 'Login'}`;
+      safeInnerHtml(menuTemplate.render({ enabled, hoverOff, loggedIn }), document.getElementById('control-ctn'));
+      document.getElementById('login-btn').addEventListener('click', openPage(logInOutPage));
+      document.getElementById('enable-btn').addEventListener('click', () => properties.toggle('enabled', true));
+      document.getElementById('hover-btn').addEventListener('click', () => properties.toggle('hoverOff', true));
+      document.getElementById('ce-settings').addEventListener('click', openPage("/html/icon-menu/settings.html"));
     }
 
     properties.set('SETTINGS_TAB_ID', SETTINGS_TAB_ID);
-    properties.onUpdate('enabled', displayMenu);
+    properties.onUpdate(['enabled', 'hoverOff', 'user.status'], displayMenu);
   });
 }
 

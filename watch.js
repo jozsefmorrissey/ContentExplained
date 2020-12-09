@@ -81,6 +81,7 @@ class Watcher {
           release();
           const filePath = item.isFile() ? path : `${path}/${filename}`.replace(/\/{2,}/g, '/');
           fs.stat(filePath, function (err, stat) {
+            if (err) console.log(err);
             stat.name = filePath;
             if (stat.isDirectory() && !dirs[stat.name]) {
               dirs[stat.name] = true;
@@ -136,20 +137,22 @@ const appMenuJsBundler = new JsBundler('AppMenu', [])
 
 new Watcher(htmlBundler.change, htmlBundler.write).add('./html');
 new Watcher(cssBundler.change, cssBundler.write).add('./css/');
-new Watcher(ceJsBundler.change, ceJsBundler.write).add('./constants/global.js')
-                      .add('./bin/EPNTS.js')
+new Watcher(ceJsBundler.change, ceJsBundler.write)
                       .add('./bin/debug-gui-client.js')
+                      .add('./constants/global.js')
+                      .add('./bin/EPNTS.js')
                       .add('./src/index/')
                       .add('./bin/$css.js')
                       .add('./bin/$templates.js');
 
 new Watcher(settingJsBundler.change, settingJsBundler.write)
+                            .add('./bin/debug-gui-client.js')
                             .add('./constants/global.js')
                             .add('./src/index/properties.js')
+                            .add('./src/index/request.js')
                             .add('./bin/EPNTS.js')
                             .add('./src/index/key-short-cut.js')
                             .add('./src/index/services/user.js')
-                            .add('./src/index/request.js')
                             .add('./src/index/services/form.js')
                             .add('./src/index/ExprDef.js')
                             .add('./src/index/services/$t.js')
@@ -158,6 +161,7 @@ new Watcher(settingJsBundler.change, settingJsBundler.write)
                             .add('./src/settings');
 
 new Watcher(appMenuJsBundler.change, appMenuJsBundler.write)
+                            .add('./bin/debug-gui-client.js')
                             .add('./src/index/properties.js')
                             .add('./src/index/ExprDef.js')
                             .add('./src/index/services/$t.js')

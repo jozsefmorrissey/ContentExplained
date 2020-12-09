@@ -1,6 +1,32 @@
+// ./bin/$templates.js
 
 class DragDropResize {
-  constructor (target) {
+  constructor (zIncrement) {
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'place-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'place-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'place-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
+    const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
+    const MAX_MIN_CNT_ID = 'place-max-min-cnt-id-' + id;
+    const template = new $t('place');
+    let lastMoveEvent, prevLocation, mouseDown, minLocation;
+    const instance = this;
+
+    function getWidth() {return '40vw';}
+    function getHeigth() {return '20vh';}
+
+    const defaultStyle = `
+      z-index: ${(zIncrement || 0) + 999999};
+      background-color: white;
+      position: relative;
+      overflow: auto;
+      width: ${getWidth()};
+      height: ${getHeigth()};
+      border: 1px solid;
+      padding: 3pt;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
 
     this.close = () => {
       getPopupElems().cnt.style.display = 'none';
@@ -83,7 +109,7 @@ class DragDropResize {
     }
 
     this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
       minLocation = prevLocation;
       document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
       document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
@@ -92,9 +118,8 @@ class DragDropResize {
 
     this.minimize = function () {
       if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: getWidth()})
         setCss(minLocation);
-        canClose = false;
         prevLocation = minLocation;
         minLocation = undefined;
         document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
@@ -139,35 +164,68 @@ class DragDropResize {
     }
     this.isMaximized = isMaximized;
 
+    let lastClickTime;
+    let dragging;
+    function drag(e) {
+      const clickTime = new Date().getTime();
+      if (!isMaximized() && clickTime < lastClickTime + 400) {
+        const rect = popupCnt.getBoundingClientRect();
+        dragging = {clientX: e.clientX, clientY: e.clientY, top: rect.top, left: rect.left};
+        console.log('moveing');
+      }
+      lastClickTime = clickTime;
+    }
+
+    function stopDragging() {
+      console.log('NOT moveing');
+      dragging = undefined;
+    }
+
     const tempElem = document.createElement('div');
     const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
     document.body.append(tempElem);
+
+    const popupContent = document.getElementById(POPUP_CONTENT_ID);
+    const popupCnt = document.getElementById(POPUP_CNT_ID);
+    popupCnt.style = defaultStyle;
+    document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+    document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+    document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
+    popupCnt.onmousedown = drag;
+    popupCnt.onmouseup = stopDragging;
+    popupCnt.onclick = (e) => {
+      if (e.target.tagName !== 'A')
+      e.stopPropagation()
+    };
+
+    CssFile.apply('place');
+
+
     function getPopupElems() {
-      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
-      if (newPopupContent !== popupContent) {
-        popupCnt = document.getElementById(POPUP_CNT_ID);
-        popupContent = newPopupContent;
-        popupCnt.style = defaultStyle;
-        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.onclick = (e) => {
-          if (e.target.tagName !== 'A')
-          e.stopPropagation()
-        });
-      }
       return {cnt: popupCnt, content: popupContent};
     }
 
-    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; softClose();});
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', offHover);
+    function mouseMove(e) {
+      if (dragging) {
+        console.log('dragging');
+        const dy = dragging.clientY - lastMoveEvent.clientY;
+        const dx = dragging.clientX - lastMoveEvent.clientX;
+        const rect = popupCnt.getBoundingClientRect();
+        popupCnt.style.top = dragging.top - dy + 'px';
+        popupCnt.style.left = dragging.left - dx + 'px';
+      }
+      lastMoveEvent = e;
+    }
+
+    document.addEventListener('mousemove', mouseMove);
     document.addEventListener('mousedown', () => mouseDown = true);
     document.addEventListener('mouseup', () => mouseDown = false);
     document.addEventListener('click',  () => { this.forceClose() });
     this.container = () => getPopupElems().content;
-
   }
 }
+
+new DragDropResize().center();

@@ -29,8 +29,6 @@ function search() {
     properties.set('enabled', !enabled, true);
   }
 
-  new KeyShortCut(['c','e'], toggleEnable);
-
   document.addEventListener( "contextmenu", checkHighlight);
   properties.onUpdate('env', EPNTS.setHost);
 }

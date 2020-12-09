@@ -25,6 +25,7 @@ class HoverResources {
     let popupContent, popupCnt;
     let prevLocation, minLocation;
     let canClose = false;
+    let hoverOff = false;
     let mouseDown = false;
     let lastMoveEvent;
     let closeFuncs = [];
@@ -38,8 +39,8 @@ class HoverResources {
       if (minLocation) instance.minimize();
     }
 
-    this.forceOpen = () => {forceOpen = true; instance.show();};
-    this.forceClose = () => {forceOpen = false; instance.close();};
+    this.forceOpen = () => {hoverOff = true; forceOpen = true; instance.show();};
+    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.close();};
     this.show = () => {
       setCss({display: 'block'})
       // HoverResources.eventCatcher.style.display = 'block';
@@ -96,7 +97,7 @@ class HoverResources {
     }
 
     function onHover(event) {
-      if (!properties.get('enabled')) return;
+      if (hoverOff || properties.get('hoverOff') || !properties.get('enabled')) return;
       const elem = event.target;
       if (!canClose) withinPopup(10) && (canClose = true);
 
@@ -261,6 +262,9 @@ class HoverResources {
     document.addEventListener('mouseup', () => mouseDown = false);
     document.addEventListener('click',  () => { this.forceClose() });
     this.container = () => getPopupElems().content;
-
   }
 }
+
+afterLoad.push(() => new KeyShortCut(['c','e'], () => {
+  properties.toggle('hoverOff', true);
+}));

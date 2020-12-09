@@ -1,15 +1,24 @@
+
 class Css {
   constructor(identifier, value) {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.value = value.trim().replace(/\s{1,}/g, ' ');
+    this.string = value.trim().replace(/\s{1,}/g, ' ');
+    this.properties = [];
+    const addProp = (match, key, value) => this.properties.push({key, value});
+    this.string.replace(Css.propReg, addProp);
     this.apply = function () {
       const matchingElems = document.querySelectorAll(this.identifier);
       for (let index = 0; index < matchingElems.length; index += 1) {
-        matchingElems[index].style = this.value + matchingElems[index].style;
+        const elem = matchingElems[index];
+        for (let pIndex = 0; pIndex < this.properties.length; pIndex += 1) {
+          const prop = this.properties[pIndex];
+          elem.style[prop.key] = prop.value;
+        }
       }
     }
   }
 }
+Css.propReg = /([a-zA-Z-0-9]{1,}):\s*([a-zA-Z-0-9%\(\),.\s]{1,})/g;
 
 class CssFile {
   constructor(filename, string) {
@@ -41,9 +50,10 @@ class CssFile {
 CssFile.files = [];
 
 CssFile.apply = function () {
+  const args = Array.from(arguments);
   for (let index = 0; index < CssFile.files.length; index += 1) {
     const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
       cssFile.apply();
     }
   }
@@ -51,9 +61,10 @@ CssFile.apply = function () {
 
 CssFile.dump = function () {
   let dumpStr = '';
+  const args = Array.from(arguments);
   for (let index = 0; index < CssFile.files.length; index += 1) {
     const cssFile = CssFile.files[index];
-    if (arguments.length === 0 || arguments.indexOf(cssFile.filename) !== -1) {
+    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
       dumpStr += cssFile.dump();
     }
   }

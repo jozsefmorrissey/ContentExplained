@@ -1,0 +1,41 @@
+.place-btn {
+  padding: 0 5px;
+  border-radius: 3px;
+  margin: 2px;
+  background-color: transparent;
+  color: black;
+  border-color: gray;
+  border-width: .5px;
+  background-color: whitesmoke;
+}
+
+.place-right {
+  float: right;
+}
+
+.place-left {
+  float: left;
+}
+
+.pop-out {
+  border: 1px solid;
+  border-radius: 5pt;
+  padding: 10px;
+  box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;
+}
+
+.place-max-min-cnt {
+  display: grid;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+}
+
+.place-inline {
+  display: inline-flex;
+}
+
+.place-full-width {
+  width: 100%;
+}

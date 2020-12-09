@@ -1,16 +1,13 @@
 
 <menu>
-  <menuitem id='login-btn' {{loggedIn ? 'hidden': ''}}>
-    Login
+  <menuitem id='login-btn'>
+    {{!loggedIn ? 'Login': 'Logout'}}
   </menuitem>
-  <menuitem id='logout-btn' {{!loggedIn ? 'hidden': ''}}>
-    Logout
+  <menuitem id='hover-btn'>
+    Hover:&nbsp;{{hoverOff ? 'OFF': 'ON'}}
   </menuitem>
-  <menuitem id='enable-btn' {{enabled ? 'hidden': ''}}>
-    Enable
-  </menuitem>
-  <menuitem id='disable-btn' {{!enabled ? 'hidden': ''}}>
-    Disable
+  <menuitem id='enable-btn'>
+    {{enabled ? 'Disable': 'Enable'}}
   </menuitem>
   <menuitem id='ce-settings'>
       Settings

@@ -1,6 +1,411 @@
 let Settings = function () {
 const afterLoad = []
-const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
+
+function DebugGuiClient(config, root, debug) {
+  config = config || {};
+  var instance = this;
+  var host = config.host;
+  var httpHost = config.httpHost;
+  var httpsHost = config.httpsHost;
+  var id = config.id;
+  var logWindow = config.logWindow || 25;
+
+  debug = debug || config.debug || config.debug === 'true' || false;
+
+  this.getId = function () {return id;}
+  this.setId = function (value) {id = value; createCookie();}
+  this.setHost = function (value) {host = value; createCookie();}
+
+  function secure() {host = httpsHost;}
+  function insecure() {host = httpHost;}
+  function getHost() {return host;}
+  function setRoot(r) {root = r;}
+  function getRoot() {return root;}
+
+  function path(str) {
+    if (str) {
+      return str + "/";
+    }
+    return "";
+  }
+
+  function prefixRoot(group) {
+    return root + "." + group;
+  }
+
+  function softUpdate(config) {
+    config.id = id || config.id;
+    config.host = host || config.host;
+    config.httpHost = httpHost || config.httpHost;
+    config.httpsHost = httpsHost || config.httpsHost;
+    updateConfig(config);
+  }
+
+  function addScript(id, src) {
+    if (!document.getElementById(id)) {
+      const script = document.createElement("script");
+      script.id = id;
+      script.src = src;
+      document.head.appendChild(script);
+    }
+  }
+
+  var guiAdded = false;
+  function updateConfig(config) {
+    id = config.id !== undefined ? config.id : id;
+    httpHost = config.httpHost || httpHost;
+    httpsHost = config.httpsHost || httpsHost;
+    config.debug = String(config.debug);
+    debug = config.debug.trim().match(/^(true|false)$/) ? config.debug : debug;
+    debug = debug === true || debug === 'true';
+    host = config.host !== undefined ? config.host : host;
+    if (host !== undefined) host = host.replace(/^(.*?)\/$/, "$1");
+    logWindow = logWindow != 25 ? logWindow : config.logWindow;
+    if (!guiAdded && host && isDebugging() && DebugGuiClient.inBrowser) {
+      guiAdded = true;
+      addScript(DebugGuiClient.EXISTANCE_ID, `${getHost()}/js/debug-gui-client.js`);
+      addScript(DebugGuiClient.UI_EXISTANCE_ID, `${getHost()}/js/debug-gui.js`);
+    }
+    createCookie();
+  }
+
+  function getUrl(host, ext, id, group) {
+    host = path(host);
+    ext = path(ext);
+    id = path(id);
+    group = group ? group.replace(/\//g, '%2F').replace(/\s/g, '%20') : undefined;
+    group = path(group);
+
+    var url = host + ext + id + group;
+    return url.substr(0, url.length - 1);
+  }
+
+  function exception(group, exception, soft) {
+    const exObj = {id: id, msg: exception.toString(), stacktrace: exception.stack}
+    var xhr = new DebugGuiClient.xmlhr();
+    xhr.open("POST", getUrl(host, 'exception', id, prefixRoot(group)), true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    if (soft !== true) {
+      console.error(group + ' - threw the following exception\n\t' + exception);
+    }
+    xhr.send(JSON.stringify(exObj));
+  }
+
+  function data(onSuccess) {
+    var xhr = new DebugGuiClient.xmlhr();
+    xhr.onreadystatechange = function () {
+        if (this.readyState != 4) return;
+
+        console.error('dg resp', this.responseText);
+        if (this.status == 200) {
+            var data = JSON.parse(this.responseText);
+            if (onSuccess) {
+              onSuccess(data);
+            }
+        }
+    };
+
+    xhr.open('GET', getUrl(host, id), true);
+    xhr.send();
+  }
+
+  function link(group, label, url) {
+    if (debug) {
+      var xhr = new DebugGuiClient.xmlhr();
+      xhr.open("POST", getUrl(host, "link", id, prefixRoot(group)), true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({label, url}));
+    }
+    return instance;
+  }
+
+  function value(group, key, value) {
+    if (debug) {
+      var xhr = new DebugGuiClient.xmlhr();
+      xhr.open("POST", getUrl(host, "value", id, prefixRoot(group)), true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      if ((typeof value) === 'object') value = JSON.stringify(value, null, 2);
+      xhr.send(JSON.stringify({key, value}));
+    }
+    return instance;
+  }
+
+  function logs() {
+    if (debug) {
+      var log = '';
+      for (let i = 0; i < arguments.length; i++) {
+        if ((typeof arguments[i]) === 'object') {
+          log += JSON.stringify(arguments[i], null, 6);
+        } else {
+          log += arguments[i];
+        }
+      }
+      var xhr = new DebugGuiClient.xmlhr();
+      var url = getUrl(host, "log", id);
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({log}));
+    }
+    return instance;
+  }
+
+  function log(log) {
+    logs(log);
+  }
+
+
+  function isDebugging() {
+    return debug;
+  }
+
+  this.toString = function () {
+    var id = instance.getId() || '';
+    var host = instance.getHost() || '';
+    noProtocol=host.replace(/^(http|https):\/\//, "")
+    var portReg = /([^:]*?:[0-9]{4})(\/.*)$/;
+    var httpHost;
+    var httpsHost;
+    var portMatch = noProtocol.match(portReg);
+    if (portMatch) {
+      // localhost
+      var rootValue = portMatch[1].substr(0, portMatch[1].length - 1);
+      httpHost = "http://" + rootValue + 0 + portMatch[2];
+      httpsHost = "https://" + rootValue + 1 + portMatch[2];
+    } else {
+      // production
+      httpHost = host.replace(/https/, 'http');
+      httpsHost = host.replace(/http/, 'https');
+    }
+    var cookie = "id=" + id;
+    return cookie + "|host=" +
+        host + "|httpHost="  + httpHost + "|httpsHost=" + httpsHost + "|debug=" + isDebugging();
+  }
+
+  this.addHeaderXhr = function (xhr) {
+    xhr.setRequestHeader('debug-gui', instance.toString());
+  }
+
+  function createCookie() {
+    if (!instance.getId() || !instance.getHost()) return;
+    if (DebugGuiClient.inBrowser) {
+      var cookie;
+      if (instance.isDebugging()) {
+        cookie = 'DebugGui=' + instance.toString() + ";";
+      } else {
+        cookie = 'DebugGui=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      }
+      document.cookie = cookie;
+      return cookie;
+    }
+  }
+
+  this.link = link;
+  this.value = value;
+  this.exception = exception;
+  this.getHost = getHost;
+  this.logs = logs;
+  this.log = log;
+  this.updateConfig = updateConfig;
+  this.softUpdate = softUpdate;
+  this.isDebugging = isDebugging;
+  this.secure = secure;
+  this.insecure = insecure;
+  this.setRoot = setRoot;
+  this.getRoot = getRoot;
+  this.cache = () => DebugGuiClient.clients[id] = this;
+  this.trash = () => DebugGuiClient.clients[id] = undefined;
+  this.createCookie = createCookie;
+}
+
+{
+
+  DebugGuiClient.EXISTANCE_ID = 'debug-gui-exists-globally-unique-id';
+
+  const dummyClient = new DebugGuiClient();
+  function staticCall(funcName) {
+    return (id) => {
+      const args = Array.from(arguments).splice(1);
+      const realClient = DebugGuiClient.clients[id];
+      realClient ? realClient[funcName].apply(realClient, args) :
+          dummyClient[funcName].apply(dummyClient, args);
+    }
+  }
+
+  DebugGuiClient.clients = {};
+  function createStaticInterface() {
+    const funcNames = Object.keys(dummyClient);
+    for (var index = 0; index < funcNames.length; index += 1) {
+      const funcName = funcNames[index];
+      DebugGuiClient[funcName] = staticCall(funcName);
+    }
+  }
+
+  // Copied from https://jozsefmorrissey.com/js/ju.js
+  function parseSeperator (str, seperator, isRegex) {
+    if ((typeof str) !== 'string') {
+      return {};
+    }
+    if (isRegex !== true) {
+      seperator = seperator.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g, '\\$&');
+    }
+    var keyValues = str.match(new RegExp('.*?=.*?(' + seperator + '|$)', 'g'));
+    var json = {};
+    for (let index = 0; keyValues && index < keyValues.length; index += 1) {
+      var split = keyValues[index].match(new RegExp('\\s*(.*?)\\s*=\\s*(.*?)\\s*(' + seperator + '|$)'));
+      if (split) {
+        json[split[1]] = split[2];
+      }
+    }
+    return json;
+  }
+
+  // Copied from https://jozsefmorrissey.com/js/ju.js
+  function arrayMatches(array, regExp) {
+    var matches = [];
+    for (var index = 0; index < array.length; index += 1) {
+      var elem = new String(array[index]);
+      var match = elem.match(regExp);
+      if (match) {
+        if (arguments.length > 2) {
+          var obj = {};
+          for (var aIndex = 2; aIndex < arguments.length; aIndex += 1) {
+              if ((typeof arguments[aIndex]) === 'string' ) {
+                obj[arguments[aIndex]] = match[aIndex - 1];
+              }
+          }
+          matches.push(obj);
+        } else {
+          matches.push(array[index]);
+        }
+      }
+    }
+    return matches;
+  }
+
+  function getParameter(params) {
+    if ((typeof params) === 'string') {
+      params = parseSeperator(params, '&');
+    }
+    if ((typeof params) === 'object') {
+      var id = params['DebugGui.id'];
+      var debug = params['DebugGui.debug'];
+      var host = params['DebugGui.host'];
+      return {id, debug, host};
+    }
+    DebugGuiClient.debugger.exception('', new Error('Param value must be a string or object'));
+    return {};
+  }
+
+  function getCookie(cookies) {
+    if (cookies === undefined) {
+      return {};
+    } else if ((typeof cookies) === 'string') {
+      var cookieObj = parseSeperator(cookies, ';');
+      return parseSeperator(cookieObj.DebugGui, '|');
+    }
+    DebugGuiClient.debugger.exception('', new Error('Cookies should be expressed as a string'));
+  }
+
+  function getCookieFromValue(value) {
+    return parseSeperator(value, '|');
+  }
+
+  function getHeaderOrCookie(headers) {
+    if (headers['debug-gui']) {
+      return parseSeperator(headers['debug-gui'], '|');
+    } else if (headers.cookie) {
+      return getCookie(headers.cookie);
+    }
+    // DebugGuiClient.debugger.exception('', new Error('Neither a cookie "DebugGui" or a header "debug-gui" are defined'));
+    return {};
+  }
+
+  function express(req, root) {
+    if (req === undefined) return new DebugGuiClient({}, root);
+    if (req.debugGui) return req.debugGui;
+    var config = getHeaderOrCookie(req.headers);
+    var debugGui = new DebugGuiClient(config, root);
+    config = getParameter(req.params);
+    debugGui.updateConfig(config);
+    return debugGui;
+  }
+
+  var tagConf = undefined;
+  function tagConfig() {
+    if (document.currentScript) {
+      function getScriptAttr(name) {
+        var attr = document.currentScript.attributes[name];
+        return attr ? attr.value : undefined;
+      }
+      tagConf = tagConf || {
+        host: getScriptAttr('host'),
+        debug: getScriptAttr('debug'),
+        logWindow: getScriptAttr('log-window')
+      };
+      return tagConf;
+    }
+    return {};
+  }
+
+  function browser(root, programaticConfig) {
+    var debugGui = new DebugGuiClient();
+    debugGui.updateConfig(tagConfig());
+    if (programaticConfig) debugGui.updateConfig(programaticConfig);
+    var config = getCookie(document.cookie);
+    debugGui.updateConfig(config);
+    var params = window.location.href.replace(/^.*?\?(.*?)(#|)$|^.*$()/, '$1');
+    config = getParameter(params);
+    debugGui.updateConfig(config);
+    debugGui.createCookie();
+    debugGui.setRoot(root);
+    return debugGui;
+  }
+
+  function node(args) {
+    var config = require(global.__basedir + '/.debug-gui.json');
+    var argMatches = arrayMatches.apply(undefined, [args, new RegExp(config.debugArg), undefined, 'id']);
+    if (argMatches.length > 0) {
+      config.debug = true;
+      if (argMatches[0].id) {
+        config.id = argMatches[0].id;
+      }
+    }
+    var debugGui = new DebugGuiClient(config);
+
+    return debugGui;
+  }
+
+
+  DebugGuiClient.debugger = new DebugGuiClient({id: 'DebugGui' });
+  DebugGuiClient.getParameter = getParameter;
+  DebugGuiClient.getCookie = getCookie;
+  DebugGuiClient.getCookieFromValue = getCookieFromValue;
+  DebugGuiClient.getHeaderOrCookie = getHeaderOrCookie;
+  DebugGuiClient.express = express;
+  DebugGuiClient.browser = browser;
+  DebugGuiClient.node = node;
+}
+
+try {
+  DebugGuiClient.xmlhr = XMLHttpRequest;
+  DebugGuiClient.inBrowser = true;
+} catch (e) {
+  DebugGuiClient.inBrowser = false;
+  DebugGuiClient.xmlhr = require('xmlhttprequest').XMLHttpRequest;
+}
+
+
+if (!DebugGuiClient.inBrowser) {
+  exports.DebugGuiClient = DebugGuiClient;
+} else {
+  DebugGuiClient.UI_EXISTANCE_ID = 'debug-gui-ui-exists-globally-unique-id';
+  if (document.currentScript &&
+    document.currentScript.src.match(/^.*\/debug-gui-client.js$/)) {
+    document.currentScript.id = DebugGuiClient.EXISTANCE_ID;
+  }
+  var dg = DebugGuiClient.browser('default');
+}
+;const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
 const MERRIAM_WEB_SUG_CNT_ID = 'ce-merriam-webster-suggestion-cnt';
 const HISTORY_CNT_ID = 'ce-history-cnt';
 const ADD_EDITOR_ID = 'ce-add-editor-id';
@@ -77,12 +482,104 @@ class Properties {
       });
     }
 
+    this.toggle = function (key, save) {
+      instance.set(key, !instance.get(key), save);
+    }
+
     chrome.storage.local.get(null, storageUpdate);
     chrome.storage.onChanged.addListener(storageUpdate);
   }
 }
 
 const properties = new Properties();
+;
+dg.setRoot('ce-ui');
+
+Request = {
+    onStateChange: function (success, failure, id) {
+      return function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            const serverId = this.getResponseHeader('ce-server-id');
+            const savedServerId = properties.get('ceServerId');
+            if (serverId && serverId !== savedServerId) {
+              properties.set('ceServerId', serverId, true);
+              console.log('triggerededede')
+              CE_SERVER_UPDATE.trigger();
+            }
+
+            try {
+              resp = JSON.parse(this.responseText);
+            } catch (e){
+              resp = this.responseText;
+            }
+            if (success) {
+              success(resp);
+            }
+          } else if (failure) {
+            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
+            if (errorMsgMatch) {
+              this.errorMsg = errorMsgMatch[1].trim();
+            }
+            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
+            if (errorCodeMatch) {
+              this.errorCode = errorCodeMatch[1];
+
+            }
+            failure(this);
+          }
+          var resp = this.responseText;
+          dg.value(id || Request.id(), 'response url', this.responseURL);
+          dg.value(id || Request.id(), 'response', resp);
+        }
+      }
+    },
+
+    id: function (url, method) {
+      return `request.${method}.${url.replace(/\./g, ',')}`;
+    },
+
+    get: function (url, success, failure) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      const id = Request.id(url, 'GET');
+      dg.value(id, 'url', url);
+      dg.value(id, 'method', 'get');
+      dg.addHeaderXhr(xhr);
+      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', properties.get('user.credential'));
+      xhr.send();
+      return xhr;
+    },
+
+    hasBody: function (method) {
+      return function (url, body, success, failure) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        const id = Request.id(url, method);
+        dg.value(id, 'url', url);
+        dg.value(id, 'method', method);
+        dg.value(id, 'body', body);
+        dg.addHeaderXhr(xhr);
+        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', properties.get('user.credential'));
+        xhr.send(JSON.stringify(body));
+        return xhr;
+      }
+    },
+
+    post: function () {Request.hasBody('POST')(...arguments)},
+    delete: function () {Request.hasBody('DELETE')(...arguments)},
+    options: function () {Request.hasBody('OPTIONS')(...arguments)},
+    head: function () {Request.hasBody('HEAD')(...arguments)},
+    put: function () {Request.hasBody('PUT')(...arguments)},
+    connect: function () {Request.hasBody('CONNECT')(...arguments)},
+}
+
+Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
+Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
 ;
 class Endpoints {
   constructor(config, host) {
@@ -379,94 +876,6 @@ class User {
 }
 
 User = new User();
-;
-dg.setRoot('ce-ui');
-
-Request = {
-    onStateChange: function (success, failure, id) {
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            const serverId = this.getResponseHeader('ce-server-id');
-            const savedServerId = properties.get('ceServerId');
-            if (serverId && serverId !== savedServerId) {
-              properties.set('ceServerId', serverId, true);
-              console.log('triggerededede')
-              CE_SERVER_UPDATE.trigger();
-            }
-
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){
-              resp = this.responseText;
-            }
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
-            if (errorMsgMatch) {
-              this.errorMsg = errorMsgMatch[1].trim();
-            }
-            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
-            if (errorCodeMatch) {
-              this.errorCode = errorCodeMatch[1];
-
-            }
-            failure(this);
-          }
-          var resp = this.responseText;
-          dg.value(id || Request.id(), 'response url', this.responseURL);
-          dg.value(id || Request.id(), 'response', resp);
-        }
-      }
-    },
-
-    id: function (url, method) {
-      return `request.${method}.${url.replace(/\./g, ',')}`;
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      const id = Request.id(url, 'GET');
-      dg.value(id, 'url', url);
-      dg.value(id, 'method', 'get');
-      dg.addHeaderXhr(xhr);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', properties.get('user.credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        const id = Request.id(url, method);
-        dg.value(id, 'url', url);
-        dg.value(id, 'method', method);
-        dg.value(id, 'body', body);
-        dg.addHeaderXhr(xhr);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', properties.get('user.credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
-      }
-    },
-
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
-}
-
-Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
-Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
 ;
 class Form {
   constructor() {
@@ -1295,7 +1704,7 @@ $t.functions['icon-menu/links/raw-text-tool'] = function (get) {
 	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
 }
 $t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn' ` + (get("loggedIn") ? 'hidden': '') + `> Login </menuitem> <menuitem id='logout-btn' ` + (!get("loggedIn") ? 'hidden': '') + `> Logout </menuitem> <menuitem id='enable-btn' ` + (get("enabled") ? 'hidden': '') + `> Enable </menuitem> <menuitem id='disable-btn' ` + (!get("enabled") ? 'hidden': '') + `> Disable </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['icon-menu/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
@@ -1303,8 +1712,14 @@ $t.functions['icon-menu/raw-text-input'] = function (get) {
 $t.functions['icon-menu/settings'] = function (get) {
 	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <script type="text/javascript" src='/bin/short-cut-container.js'></script> <script type='text/javascript' src='/bin/debug-gui.js'></script> <script type='text/javascript' src='/bin/debug-gui-client.js'></script> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/Settings.js'></script> </body> </html> `
 }
+$t.functions['place'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right' id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
+}
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
+}
+$t.functions['icon-menu/test'] = function (get) {
+	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> </body> <script type="text/javascript" src='/CE.js'></script> </html> `
 }
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
@@ -1327,23 +1742,23 @@ $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 $t.functions['-1828676604'] = function (get) {
 	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
 }
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-width-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full-width' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
 };function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -1429,17 +1844,19 @@ function onEnter(id, func) {
   }
 }
 
-function elemSpacer(elem) {
+function elemSpacer(elem, pad) {
   elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
   const spacerId = elem.getAttribute('spacer-id');
   elem.style.position = '';
   elem.style.margin = '';
+  elem.style.width = 'unset'
+  elem.style.height = 'unset'
   const elemRect = elem.getBoundingClientRect();
   const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
   spacer.id = spacerId;
-  spacer.style.width = elem.scrollWidth + 'px';
+  spacer.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   spacer.style.height = elem.scrollHeight + 'px';
-  elem.style.width = elem.scrollWidth + 'px';
+  elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   elem.style.height = elem.scrollHeight + 'px';
   elem.style.margin = 0;
   elem.style.zIndex = 1;

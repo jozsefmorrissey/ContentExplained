@@ -68,6 +68,10 @@ class Properties {
       });
     }
 
+    this.toggle = function (key, save) {
+      instance.set(key, !instance.get(key), save);
+    }
+
     chrome.storage.local.get(null, storageUpdate);
     chrome.storage.onChanged.addListener(storageUpdate);
   }
