@@ -1,4 +1,3 @@
-// ./src/index/services/$t.js
 
 function stateOnLoad() {
   let eventCount = 0;
