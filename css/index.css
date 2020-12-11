@@ -6,6 +6,15 @@
   width: 100%;
 }
 
+.ce-pointer {
+  cursor: pointer;
+}
+
+.ce-pointer:hover {
+  background-color: #8080802e;
+  border-radius: 40pt;
+}
+
 .ce-overflow {
   overflow: auto;
 }

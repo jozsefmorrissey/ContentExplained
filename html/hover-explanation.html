@@ -1,7 +1,7 @@
 <div>
   <div class="ce-inline ce-width-full">
     <div class="">
-      <ul id='{{HOVER_SWITCH_LIST_ID}}'>
+      <ul id='{{SWITCH_LIST_ID}}'>
         <li:t class='ce-hover-list{{expl.id === active.expl.id ? " active": ""}}'
               repeat='expl in active.list'>
           {{expl.words}}&nbsp;<b class='ce-small-text'>({{expl.popularity}}%)</b>
@@ -10,16 +10,16 @@
     </div>
     <div class='ce-width-full'>
       <div class='ce-hover-expl-title-cnt'>
-        <div class='ce-center'>
-          <button id='ce-expl-voteup-btn'{{canLike ? '' : ' disabled'}}></button>
+        <div id='{{VOTEUP_BTN_ID}}' class='ce-center{{canLike ? " ce-pointer" : ""}}'>
+          <button class='ce-like-btn'{{canLike ? '' : ' disabled'}}></button>
           <br>
           {{likes}}
         </div>
         <h3>{{active.expl.words}}</h3>
-        <div class='ce-center'>
+        <div id='{{VOTEDOWN_BTN_ID}}' class='ce-center{{canDislike ? " ce-pointer" : ""}}'>
           {{dislikes}}
           <br>
-          <button id='ce-expl-votedown-btn'{{canDislike ? '' : ' disabled'}}></button>
+          <button class='ce-dislike-btn'{{canDislike ? '' : ' disabled'}}></button>
         </div>
         &nbsp;&nbsp;&nbsp;&nbsp;
       </div>
@@ -29,7 +29,7 @@
     </div>
   </div>
   <div class='ce-center'>
-    <button {{loggedIn ? ' hidden' : ''}} id='{{HOVER_LOGIN_BTN_ID}}'>
+    <button {{loggedIn ? ' hidden' : ''}} id='{{LOGIN_BTN_ID}}'>
       Login
     </button>
   </div>

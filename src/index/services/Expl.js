@@ -4,12 +4,12 @@ class Expl {
     let currEnv;
     function createHoverResouces (data) {
       properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
+      hoverExplanations.set(data.list);
     }
 
     function addHoverResources () {
       const enabled = properties.get('enabled');
-      const env = properties.get('env');
+      const env = properties.get('env') || 'local';
       if (enabled && env !== currEnv) {
         currEnv = env;
         EPNTS.setHost(env);

@@ -67,19 +67,20 @@
   top: 50%;
 }
 
-#ce-expl-voteup-btn {
+.ce-like-btn {
   width: 0;
   height: 0;
   border-color: transparent;
   border-right: 10px solid transparent;
   border-left: 10px solid transparent;
   border-bottom: 10px solid #3dd23d;
+  cursor: pointer;
   background-color: transparent;
   border-radius: 0;
   margin: 0;
   padding: 0;
 }
-#ce-expl-voteup-btn:disabled {
+.ce-like-btn:disabled {
   border-bottom: 10px solid grey;
 }
 
@@ -89,20 +90,21 @@
   text-align: center;
 }
 
-#ce-expl-votedown-btn {
+.ce-dislike-btn {
   width: 0;
   height: 0;
   border-color: transparent;
   border-right: 10px solid transparent;
   border-left: 10px solid transparent;
   border-top: 10px solid #f74848;
+  cursor: pointer;
   background-color: transparent;
   border-radius: 0;
   margin: 0;
   padding: 0;
 }
 
-#ce-expl-votedown-btn:disabled {
+.ce-dislike-btn:disabled {
   border-top: 10px solid grey;
 }
 
@@ -122,17 +124,16 @@
 }
 
 #ce-add-editor-id {
-  width: 99%;
+  width: 98%;
   height: 85%;
+  margin: 1%;
 }
 
 #ce-add-editor-add-expl-btn-id {
-  margin: 0 0 0 7pt;
-  padding: 0 4pt;
+  margin: 0 0 0 10pt;
   font-size: x-small;
-  position: relative;
   top: 50%;
-  transform: translate(0, -50%);
+  transform: translate(0, 25%);
 }
 
 .ce-expls-cnt {
@@ -227,7 +228,7 @@
 .ce-lookup-expl-heading-cnt {
   background-color: white;
   z-index: 1000000000;
-  width: 100%;
+  width: fit-content;
 }
 
 .ce-key-cnt {

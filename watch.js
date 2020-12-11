@@ -81,7 +81,7 @@ class Watcher {
           release();
           const filePath = item.isFile() ? path : `${path}/${filename}`.replace(/\/{2,}/g, '/');
           fs.stat(filePath, function (err, stat) {
-            if (err) console.log(err);
+            if (err) {console.log(err); return;}
             stat.name = filePath;
             if (stat.isDirectory() && !dirs[stat.name]) {
               dirs[stat.name] = true;

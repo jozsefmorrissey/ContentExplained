@@ -6,17 +6,20 @@ class AddInterface extends Page {
     const instance = this;
     let content = '';
     let words = '';
+    let url = '';
     let writingJs = false;
     const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
     let updatePending = false;
+    const editHoverExpl = new HoverExplanations({hideClose: true});
+    const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
 
     function getScope() {
       return {
         ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
         writingJs,
-        words: properties.get('searchWords')
+        words
       }
     }
 
@@ -27,12 +30,17 @@ class AddInterface extends Page {
     function initContent(userContent) {
       if (content === '' && (typeof userContent) === 'string') {
         content = userContent;
-        updateDisplay()
+        if (instance.inputElem !== undefined) {
+          instance.inputElem.value = content;
+          instance.inputElem.focus();
+          editHoverExpl.display({words, content: content},
+                dragDropResize.container());
+        }
       }
     }
 
     function addExplSuccessful(expl) {
-      HoverExplanations.add(expl);
+      hoverExplanations.add(expl);
       properties.set('userContent', '', true)
       content = '';
     }
@@ -42,39 +50,14 @@ class AddInterface extends Page {
       Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
     }
 
-    function updateDisplay () {
-      if (instance.inputElem !== undefined) {
-        instance.inputElem.value = content;
-        lookupHoverResource.minimize();
-        lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
-        lookupHoverResource.center().bottom();
-        HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-        HoverExplanations.keepOpen();
-        instance.inputElem.focus();
-      }
-    }
-
-    this.afterOpen = (newWords) => {
-      words = properties.get('searchWords');
-      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
-      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
-      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
-      instance.inputElem.addEventListener('keyup', onChange);
-      // instance.inputElem.addEventListener('blur', HoverExplanations.close);
-      instance.addExplBtn.addEventListener('click', addExplanation);
-      HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-      instance.updateDisplay();
-    }
-    instance.updateDisplay = updateDisplay;
-
     let ignoreChange = false;
     function onChange(event) {
       if (ignoreChange) { ignoreChange = false; return;}
       let isWritingjs = false;
       try {
         if ((typeof event.target.value) === 'string') {
-          HoverExplanations.display({words, content: event.target.value},
-                lookupHoverResource.container()).center().top();
+          editHoverExpl.display({words, content: event.target.value},
+                dragDropResize.container());
           content = event.target.value;
         }
       } catch (error) {
@@ -84,15 +67,47 @@ class AddInterface extends Page {
       }
       if (writingJs !== isWritingjs) {
         writingJs = isWritingjs;
-        lookupTabs.update();
       }
       properties.set('userContent', content, true)
-      updateDisplay();
     }
 
+    function bottomFull() {
+      return {width: '100vw', height: '75vh'};
+    }
+
+    function close() {
+      editHoverExpl.unlockOpen();
+      editHoverExpl.close();
+    }
+    this.close = close;
+
+    function open(w, u) {
+      words = w || words;
+      url = u || url;
+      dragDropResize.show()
+        .setCss(bottomFull())
+        .updateContent(instance.html())
+        .center().bottom();
+      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
+      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
+      instance.inputElem.addEventListener('keyup', onChange);
+      // instance.inputElem.addEventListener('blur', editHoverExpl.close);
+      instance.addExplBtn.addEventListener('click', addExplanation);
+
+
+      editHoverExpl.display({words, content}).elem(dragDropResize.container()).center().top();
+      editHoverExpl.lockOpen();
+    }
+    this.open = open;
+    this.toggle = () => dragDropResize.hidden() ? instance.open() : dragDropResize.close();
+
+    dragDropResize.onClose(close);
     properties.onUpdate('userContent', initContent);
   }
 }
 
+
 AddInterface = new AddInterface();
-lookupTabs.add(AddInterface, 2);
+AddInterface.open('poopLuck');
+new KeyShortCut('ca', AddInterface.toggle);

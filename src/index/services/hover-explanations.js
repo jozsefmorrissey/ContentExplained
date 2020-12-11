@@ -1,21 +1,39 @@
 // ./bin/$templates.js
 
 class HoverExplanations {
-  constructor () {
+  constructor (props) {
+    props = props || {};
     const template = new $t('hover-explanation');
     const instance = this;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     const  active = {expl: {}};
-    const hoverResource = new HoverResources();
+    const tag = 'hover-explanation';
+
     let switches = [];
     let disabled = false;
     let explRefs = {};
     let left;
     let explIds = [];
     let currIndex, currRef;
-    const tag = 'hover-explanation';
-    const HOVER_LOGIN_BTN_ID = 'ce-hover-login-btn-id';
-    const HOVER_SWITCH_LIST_ID = 'ce-hover-switch-list-id';
+    let lastEnabled = properties.get('enabled');
+
+    const id = Math.floor(Math.random() * 1000000);
+    const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
+    const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
+    const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
+    const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
+
+    const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
+    const setDems = (dems) => {
+      if (hoverExplanations === instance)
+        properties.set('hoverExplanationsDems', dems, true);
+    };
+
+    props.setDems = props.setDems || setDems;
+    props.getDems = props.getDems || getDems;
+    const hoverResource = new HoverResources(props);
+    hoverResource.container().addEventListener('drop', () => newHoverResource());
+    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
 
     this.close = () => hoverResource.close();
     this.disable = () => {disabled = true; instance.close()};
@@ -24,7 +42,7 @@ class HoverExplanations {
     this.letClose = () => hoverResource.forceClose();
 
     function getHtml(elemExplORef, index) {
-      currIndex = index || currIndex || 0;
+      currIndex = index === undefined ? currIndex || 0 : index;
       let ref;
       if (elemExplORef instanceof HTMLElement) {
         ref = elemExplORef.getAttribute('ref');
@@ -54,7 +72,7 @@ class HoverExplanations {
 
       const loggedIn = User.isLoggedIn();
       const scope = {
-        HOVER_LOGIN_BTN_ID, HOVER_SWITCH_LIST_ID,
+        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID,
         active, loggedIn,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
@@ -66,35 +84,35 @@ class HoverExplanations {
     }
     this.getHtml = getHtml;
 
-    function updateContent() {
-      const position = hoverResource.updateContent(getHtml());
+    function updateContent(expl, index) {
+      const position = hoverResource.updateContent(getHtml(expl, index));
       return position;
     }
 
     function switchFunc (index) {
       return () => {
-        hoverResource.updateContent(getHtml(undefined, index));
+        updateContent(undefined, index);
       };
     }
 
-    function display(expl, elem) {
-      hoverResource.updateContent(getHtml(expl));
-      return hoverResource.elem(elem);
+    function display(expl) {
+      updateContent(expl);
+      return hoverResource.position();
     }
     this.display = display;
 
-    function voteup() {Opinion.voteup(active.expl, updateContent);}
+    function voteup() {Opinion.voteup(active.expl, () => updateContent());}
 
-    function votedown() {Opinion.votedown(active.expl, updateContent);}
+    function votedown() {Opinion.votedown(active.expl, () => updateContent());}
 
     function setSwitches() {
       if (active.list.length > 1) {
-        switches = Array.from(document.getElementById(HOVER_SWITCH_LIST_ID).children);
+        switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
-      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = User.openLogin;
-      document.getElementById('ce-expl-voteup-btn').addEventListener('click', voteup);
-      document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
+      document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
     }
 
     function sortByPopularity(expl1, expl2) {
@@ -174,10 +192,11 @@ class HoverExplanations {
       return Object.keys(uniq).sort(sortByLength);
     }
 
-    function set(explList) {
+    function set(explList, soft) {
+      explRefs = explList;
+      if (soft) return;
       removeAll();
       wrapList = [];
-      explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
         const ref = wordList[index];
@@ -210,16 +229,30 @@ class HoverExplanations {
     this.wrapText = wrapText;
     this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
+    this.lockOpen = hoverResource.lockOpen;
+    this.unlockOpen = hoverResource.unlockOpen;
+
     function enableToggled(enabled) {
-      removeAll();
-      if (enabled) {
-        instance.wrapOne();
+      if (enabled !== lastEnabled) {
+        lastEnabled = enabled;
+        removeAll();
+        if (enabled) {
+          instance.wrapOne();
+        }
       }
     }
 
-    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    const newHoverResource = () => {
+        if(hoverResource) {
+          hoverResource.stopHover();
+          hoverResource.lockOpen();
+          hoverExplanations = new HoverExplanations();
+          hoverExplanations.set(explRefs, true);
+        }
+    }
+
     properties.onUpdate('enabled', enableToggled);
   }
 }
 
-HoverExplanations = new HoverExplanations();
+let hoverExplanations = new HoverExplanations();

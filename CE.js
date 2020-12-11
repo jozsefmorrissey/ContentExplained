@@ -545,145 +545,38 @@ const EPNTS = new Endpoints({
   ]
 }
 , 'local').getFuncObj();
-try {exports.EPNTS = EPNTS;}catch(e){};class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
+try {exports.EPNTS = EPNTS;}catch(e){};
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
       } else {
-        stack.push({str, index: array.length - 1});
+        return 'on' + name;
       }
     }
 
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
       } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+          element.fireEvent("on" + this.event.eventType, this.event);
       }
     }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
     }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-;
-class KeyShortCut {
-  constructor(keys, func) {
-    KeyShortCut.cuts.push(this);
-    var currentKeys = {};
-
-    function keysPressed() {
-      for (let index = 0; index < keys.length; index += 1) {
-        if (!currentKeys[keys[index]]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    this.keyDownListener = (e) => {
-        currentKeys[e.key] = true;
-        if (keysPressed()) func();
-    }
-
-    this.keyUpListener = (e) => delete currentKeys[e.key];
-  }
-}
-
-KeyShortCut.cuts = [];
-
-KeyShortCut.callOnAll = function (func, e) {
-  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
-    KeyShortCut.cuts[index][func](e);
-  }
-}
-
-document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
-document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
-;
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.header = function() {return '';}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
   }
 }
 ;
@@ -771,21 +664,43 @@ try{
 	exports.CssFile = CssFile;
 } catch (e) {}
 ;// ./src/index/css.js
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  #ce-expl-voteup-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } #ce-expl-voteup-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  #ce-expl-votedown-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  #ce-expl-votedown-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: 100%; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
 
-new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 0;   width: 100%; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
+new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 0;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
 
 new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
 
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
+
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      padding: 0 4pt;   font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative; */   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative; */   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 96%;   height: 85%;   margin: 2%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-upper-right-btn-cnt {   float: right;   display: inline-flex;   margin-right: 1%; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 0;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
+
+new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 1%;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
 
 ;function up(selector, node) {
     if (node.matches(selector)) {
@@ -1016,312 +931,6 @@ Request = {
 
 Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
 Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
-;
-class CustomEvent {
-  constructor(name) {
-    const watchers = {};
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
-      } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-;//here
-class HoverResources {
-  constructor (zIncrement, clickClose) {
-    const id = Math.floor(Math.random() * 1000000);
-    const POPUP_CNT_ID = 'ce-hover-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'ce-hover-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'ce-hover-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'ce-hover-minimize-id-' + id;
-    const template = new $t('hover-resources');
-    const instance = this;
-    const defaultStyle = `position: fixed;
-      z-index: ${(zIncrement || 0) + 999999};
-      background-color: white;
-      display: none;
-      max-height: 40%;
-      min-width: 40%;
-      max-width: 80%;
-      overflow: auto;
-      border: 1px solid;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-    const htmlFuncs = {};
-    let forceOpen = false;
-    let currFuncs, currElem, selectElem;
-    let popupContent, popupCnt;
-    let prevLocation, minLocation;
-    let canClose = false;
-    let hoverOff = false;
-    let mouseDown = false;
-    let lastMoveEvent;
-    let closeFuncs = [];
-
-    this.close = () => {
-      canClose = false;
-      getPopupElems().cnt.style.display = 'none';
-      // HoverResources.eventCatcher.style.display = 'none';
-      currElem = undefined;
-      closeFuncs.forEach((func) => func());
-      if (minLocation) instance.minimize();
-    }
-
-    this.forceOpen = () => {hoverOff = true; forceOpen = true; instance.show();};
-    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.close();};
-    this.show = () => {
-      setCss({display: 'block'})
-      // HoverResources.eventCatcher.style.display = 'block';
-
-    };
-
-    function softClose() {
-      if (!clickClose && canClose && !forceOpen && isOpen() && !withinPopup(-10)) {
-        instance.close();
-      }
-    }
-
-    function isOpen() {
-      return getPopupElems().cnt.style.display === 'block';
-    }
-
-    function withinPopup(offset) {
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      if (lastMoveEvent) {
-        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
-        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
-        return withinX && withinY;
-      }
-      return true;
-    }
-
-    function dontHoldOpen(event) {
-      if (!canClose) withinPopup(10) && (canClose = true);
-      if (canClose) {
-        exitHover();
-      }
-    }
-
-    function getFunctions(elem) {
-      let foundFuncs;
-      const queryStrs = Object.keys(htmlFuncs);
-      queryStrs.forEach((queryStr) => {
-        if (elem.matches(queryStr)) {
-          if (foundFuncs) {
-            throw new Error('Multiple functions being invoked on one hover event');
-          } else {
-            foundFuncs = htmlFuncs[queryStr];
-          }
-        }
-      });
-      return foundFuncs;
-    }
-
-    function offHover(event) {
-      const elem = event.target;
-      const funcs = getFunctions(elem);
-      if (funcs) return;
-      dontHoldOpen(event);
-    }
-
-    function onHover(event) {
-      if (hoverOff || properties.get('hoverOff') || !properties.get('enabled')) return;
-      const elem = event.target;
-      if (!canClose) withinPopup(10) && (canClose = true);
-
-      const funcs = getFunctions(elem);
-      if (funcs && !mouseDown) {
-        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
-          currFuncs = funcs;
-          if (funcs && funcs.html) updateContent(funcs.html(elem));
-          positionOnElement(elem, funcs);
-          if (funcs && funcs.after) funcs.after();
-        }
-      }
-    }
-
-    function exitHover() {
-      setTimeout(softClose, 500);
-    }
-
-    this.back = () => setCss(prevLocation);
-
-    function positionOnElement(elem) {
-      currElem = elem || currElem;
-      getPopupElems().cnt.style = defaultStyle;
-      instance.show();
-      let rect = currElem.getBoundingClientRect();
-      let popRect = getPopupElems().cnt.getBoundingClientRect();
-
-      let top = `${rect.top}px`;
-      const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{
-              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
-              left = left > 10 ? left : 10;
-              const leftMost = window.innerWidth - popRect.width - 10;
-              left = left < leftMost ? left : leftMost;
-              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
-              top = top > 10 ? top : 10;
-              const bottomMost = window.innerHeight - popRect.height - 10;
-              top = top < bottomMost ? top : bottomMost;
-              setCss({left: left + 'px', top: top + 'px'});
-              return position;};
-      position.maximize = instance.maximize.bind(position);
-      position.minimize = instance.minimize.bind(position);
-      if (window.innerHeight / 2 > rect.top) {
-        position.center().bottom();
-      } else {
-        position.center().top();
-      }
-
-      exitHover();
-      return position;
-    }
-
-    this.elem = positionOnElement;
-    this.select = () => {
-      if (window.getSelection().toString().trim()) {
-        selectElem = window.getSelection().getRangeAt(0);
-        currElem = selectElem;
-      }
-      positionOnElement(selectElem);
-    };
-    this.top = () => setCss({top:0,bottom:''});
-    this.left = () => setCss({right:'',left:0});
-    this.bottom = () => setCss({top:'',bottom:0});
-    this.right = () => setCss({right:0,left:''});
-
-    this.center = function () {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
-      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      setCss({top,left, right: '', bottom: ''});
-      return instance;
-    }
-
-    this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: 'unset'})
-      minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
-      return this;
-    }
-
-    this.minimize = function () {
-      if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset'})
-        setCss(minLocation);
-        canClose = false;
-        prevLocation = minLocation;
-        minLocation = undefined;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
-      }
-      return this;
-    }
-
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      return instance;
-    }
-    this.setCss = setCss;
-
-    function on(queryStr, funcObj) {
-      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
-      htmlFuncs[queryStr] = funcObj;
-    }
-    this.on = on;
-
-    this.onClose = (func) => closeFuncs.push(func);
-
-    function updateContent(html) {
-      safeInnerHtml(html, getPopupElems().content);
-      if (currFuncs && currFuncs.after) currFuncs.after();
-      return instance;
-    }
-    this.updateContent = updateContent;
-
-    function isMaximized() {
-      return minLocation !== undefined;
-    }
-    this.isMaximized = isMaximized;
-
-    const tempElem = document.createElement('div');
-    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID});
-    safeInnerHtml(tempHtml, tempElem);
-    tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
-    function getPopupElems() {
-      const newPopupContent = document.getElementById(POPUP_CONTENT_ID);
-      if (newPopupContent !== popupContent) {
-        popupCnt = document.getElementById(POPUP_CNT_ID);
-        popupContent = newPopupContent;
-        popupCnt.style = defaultStyle;
-        document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-        document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-        popupCnt.addEventListener('click', (e) => {
-          forceOpen = true;
-          if (e.target.tagName !== 'A')
-          e.stopPropagation()
-        });
-      }
-      return {cnt: popupCnt, content: popupContent};
-    }
-
-    document.addEventListener('mousemove', (e) => {lastMoveEvent = e; softClose();});
-    document.addEventListener('mouseover', onHover);
-    document.addEventListener('mouseout', offHover);
-    document.addEventListener('mousedown', () => mouseDown = true);
-    document.addEventListener('mouseup', () => mouseDown = false);
-    document.addEventListener('click',  () => { this.forceClose() });
-    this.container = () => getPopupElems().content;
-  }
-}
-
-afterLoad.push(() => new KeyShortCut(['c','e'], () => {
-  properties.toggle('hoverOff', true);
-}));
 ;
 let idCount = 0;
 class ExprDef {
@@ -1635,6 +1244,147 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 ;
+class KeyShortCut {
+  constructor(keys, func) {
+    KeyShortCut.cuts.push(this);
+    var currentKeys = {};
+
+    function keysPressed() {
+      for (let index = 0; index < keys.length; index += 1) {
+        if (!currentKeys[keys[index]]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    this.keyDownListener = (e) => {
+        currentKeys[e.key] = true;
+        if (keysPressed()) func();
+    }
+
+    this.keyUpListener = (e) => delete currentKeys[e.key];
+  }
+}
+
+KeyShortCut.cuts = [];
+
+KeyShortCut.callOnAll = function (func, e) {
+  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
+    KeyShortCut.cuts[index][func](e);
+  }
+}
+
+document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
+document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+;
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.header = function() {return '';}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
+;class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
+;
 class Properties {
   constructor () {
     const properties = {};
@@ -1689,7 +1439,7 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (keys, func) {
+    this.onUpdate = function (keys, func, skipInit) {
       keyDefinitionCheck(keys);
       if (!Array.isArray(keys)) {
         keys = [keys];
@@ -1700,7 +1450,7 @@ class Properties {
           updateFuncs[key] = [];
         }
         updateFuncs[key].push(func);
-        func(properties[key])
+        func(properties[key]);
       });
     }
 
@@ -1765,6 +1515,828 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
 });
 
 afterLoad.push(search);
+;
+class CatchAll {
+  constructor(container) {
+    const instance = this;
+    container = container || document.body;
+    let events = Array.from(arguments).splice(1);
+    events = events.length > 0 ? events : CatchAll.allMouseEvents;
+
+    // const zIndex = 1000008;
+    const backdrop = document.createElement('DIV');
+
+    this.hide = () => backdrop.hidden = true;
+    this.show = () => {
+      backdrop.hidden = false
+      instance.updateZindex();
+    };
+
+    this.updateZindex = (zIndex) => backdrop.style.zIndex = zIndex || CatchAll.findHigestZindex() + 1;
+
+    this.on = (eventName, func) => backdrop.addEventListener(eventName, func);
+
+    backdrop.style.position = 'fixed';
+    backdrop.style.backgroundColor = 'transparent';
+
+    // backdrop.style.cursor = 'none';
+    backdrop.style.top = 0;
+    backdrop.style.bottom = 0;
+    backdrop.style.right = 0;
+    backdrop.style.left = 0;
+    const stopPropagation = (e) => e.stopPropagation();
+    events.forEach((eventName) => instance.on(eventName, stopPropagation));
+    container.append(backdrop);
+
+    this.updateZindex();
+    this.hide();
+  }
+}
+
+
+CatchAll.allMouseEvents = ['auxclick', 'click', 'contextmenu', 'dblclick',
+                        'mousedown', 'mouseenter', 'mouseleave', 'mousemove',
+                        'mouseover', 'mouseout', 'mouseup', 'pointerlockchange',
+                        'pointerlockerror', 'select', 'wheel'];
+
+// Ripped off of: https://stackoverflow.com/a/1120068
+CatchAll.findHigestZindex = function () {
+  var elems = document.querySelectorAll('*');
+  var highest = Number.MIN_SAFE_INTEGER || -(Math.pow(2, 53) - 1);
+  for (var i = 0; i < elems.length; i++)
+  {
+    var zindex = Number.parseInt(
+      document.defaultView.getComputedStyle(elems[i], null).getPropertyValue("z-index"),
+      10
+    );
+    if (zindex > highest && zindex !== 2147483647)
+    {
+      highest = zindex;
+    }
+  }
+  return highest;
+}
+;// ./src/index/popup-utils/catch-all.js
+
+class Resizer {
+  constructor (elem, axisObj, cursor) {
+    const instance = this;
+    const minimumSize = 40;
+    let resizeId = elem.getAttribute(Resizer.resizeAttr);
+    let sizeLocked = false;
+
+    if (!resizeId) {
+      resizeId = 'resize-' + Math.floor(Math.random() * 1000000);
+      elem.setAttribute(Resizer.resizeAttr, resizeId);
+    }
+
+    this.show = () => {this.container.hidden = false; this.position()};
+    this.hide = () => this.container.hidden = true;
+
+    function updateZindex(zIndex) {
+      if (instance.container.hidden === false) {
+        instance.container.style.zIndex = zIndex;
+        elem.style.zIndex = zIndex;
+        Resizer.backdrop.updateZindex(zIndex + 1);
+        instance.show();
+      }
+    }
+    this.updateZindex = updateZindex;
+    elem.addEventListener('click', () => Resizer.updateZindex(elem));
+
+
+    if (resizeId) {
+      if (!Resizer.collections[resizeId]) {
+        Resizer.collections[resizeId] = [];
+      }
+      Resizer.collections[resizeId].push(this);
+    }
+    const padding = 8;
+    let resize = false;
+    let lastPosition;
+
+    const attrs = Object.values(axisObj);
+    const top = attrs.indexOf('top') !== -1;
+    const bottom = attrs.indexOf('bottom') !== -1;
+    const left = attrs.indexOf('left') !== -1;
+    const right = attrs.indexOf('right') !== -1;
+
+    this.container = document.createElement('DIV');
+    this.container.style.cursor = cursor;
+    this.container.style.padding = padding/2 + 'px';
+    this.container.style.position = axisObj.position || 'absolute';
+    this.container.style.backgroundColor = 'black';
+    Resizer.container.append(this.container);
+
+    function getComputedSize(element, property) {
+      return Number.parseInt(window.getComputedStyle(element).getPropertyValue(property));
+    }
+
+    function resizeCnt (event) {
+      if (resize) {
+        Resizer.updateZindex(elem);
+        let dy = resize.clientY - event.clientY;
+        let dx = resize.clientX - event.clientX;
+        let minHeight = getComputedSize(elem, 'min-height');
+        let minWidth = getComputedSize(elem, 'min-width');
+        if (axisObj.x) {
+          if (left) dx *= -1;
+          const newWidth = lastPosition.width - dx;
+          if (newWidth > minWidth) {
+            if (left) {
+              elem.style.left = lastPosition.left + dx + 'px';
+            }
+            elem.style.width = newWidth + 'px'
+          }
+        }
+        if (axisObj.y) {
+          if (top) dy *= -1;
+          const newHeight = lastPosition.height - dy;
+          if (newHeight > minHeight) {
+            if (top) {
+              elem.style.top = lastPosition.top + dy + 'px';
+            }
+            elem.style.height = newHeight + 'px'
+          }
+        }
+      }
+    }
+
+    this.container.onmousedown = (e) => {
+      resize = e;
+      Resizer.backdrop.show();
+      lastPosition = elem.getBoundingClientRect();
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
+    function stopResizing() {
+      if (resize) {
+        resize = undefined;
+        Resizer.position(elem);
+        Resizer.backdrop.hide();
+        Resizer.events.resize.trigger(elem);
+      }
+    }
+
+    this.container.addEventListener('click',
+    (e) =>
+    e.stopPropagation()
+    );
+    Resizer.backdrop.on('mouseup', stopResizing);
+    this.container.onmouseup = stopResizing;
+
+    this.container.onmousemove = resizeCnt;
+    Resizer.backdrop.on('mousemove', resizeCnt);
+    this.position = function () {
+      const height = document.documentElement.clientHeight;
+      const width = document.documentElement.clientWidth;
+      const rect = elem.getBoundingClientRect();
+      const cntStyle = instance.container.style;
+      const scrollY =  window.scrollY;
+      const scrollX =  window.scrollX;
+      if (top) {
+        cntStyle.top = rect.top - padding + scrollY + 'px';
+      } else if (!bottom) {
+        cntStyle.top = rect.top + scrollY + 'px';
+      }
+
+      if (bottom) {
+        cntStyle.bottom = (height - rect.bottom) - padding - scrollY + 'px';
+      } else if (!top) {
+        cntStyle.bottom = (height - rect.bottom) - scrollY + 'px';
+      }
+
+      if (right) {
+        cntStyle.right = (width - rect.right) - padding - scrollX + 'px';
+      } else if (!left) {
+        cntStyle.right = (width - rect.right) - scrollX + 'px';
+      }
+
+      if (left) {
+        cntStyle.left = rect.left - padding + scrollX + 'px';
+      } else if (!right) {
+        cntStyle.left = rect.left + scrollX + 'px';
+      }
+    }
+  }
+}
+
+Resizer.container = document.createElement('div');
+document.body.append(Resizer.container);
+
+Resizer.lastZindexSearch = new Date().getTime();
+Resizer.zIndex = (zindex) => {
+  const time = new Date().getTime();
+  if (time > Resizer.lastZindexSearch + 500) {
+    Resizer.zed = CatchAll.findHigestZindex();
+    lastZindexSearch = time;
+  }
+  return Resizer.zed;
+}
+Resizer.container.id = 'resize-id-id';
+Resizer.container.addEventListener('click', (e) => e.stopPropagation());
+Resizer.events = {};
+Resizer.events.resize = new CustomEvent ('resized')
+
+Resizer.backdrop = new CatchAll(Resizer.container);
+
+Resizer.resizeAttr = 'resizer-id'
+Resizer.collections = {};
+Resizer.position = function (elem) {
+  const resizeId = elem.getAttribute(Resizer.resizeAttr);
+  const collection = Resizer.collections[resizeId];
+  if (collection) {
+    collection.forEach((item) => item.position());
+  }
+}
+Resizer.onEach = function (elem, func) {
+  const callArgs = Array.from(arguments).splice(2);
+  const resizeId = elem.getAttribute(Resizer.resizeAttr);
+  const collection = Resizer.collections[resizeId];
+  if (collection) {
+    collection.forEach((item) => item[func](...callArgs));
+  }
+}
+Resizer.hide = (elem) => Resizer.onEach(elem, 'hide');
+Resizer.show = (elem) => {
+    if (!Resizer.isLocked(elem)) Resizer.onEach(elem, 'show');
+};
+Resizer.updateZindex = (elem) => {
+  const highestZIndex = Resizer.zIndex() - 2;
+  if (!elem.style.zIndex ||
+      (elem.style.zIndex.match(/[0-9]{1,}/) &&
+        highestZIndex > Number.parseInt(elem.style.zIndex))) {
+    Resizer.onEach(elem, 'updateZindex', highestZIndex + 3);
+  }
+}
+
+{
+  const locked = {};
+  Resizer.lock = (elem) => locked[elem.getAttribute(Resizer.resizeAttr)] = true;
+  Resizer.unlock = (elem) => locked[elem.getAttribute(Resizer.resizeAttr)] = false;
+  Resizer.isLocked  = (elem) => locked[elem.getAttribute(Resizer.resizeAttr)];
+}
+
+Resizer.all = (elem, position) => {
+  new Resizer(elem, {y: 'top', position}, 'n-resize');
+  new Resizer(elem, {y: 'bottom', position}, 's-resize');
+  new Resizer(elem, {x: 'right', position}, 'e-resize');
+  new Resizer(elem, {x: 'left', position}, 'w-resize', position);
+  new Resizer(elem, {x: 'right', y: 'top', position}, 'ne-resize');
+  new Resizer(elem, {x: 'left', y: 'top', position}, 'nw-resize');
+  new Resizer(elem, {x: 'right', y: 'bottom', position}, 'se-resize');
+  new Resizer(elem, {x: 'left', y: 'bottom', position}, 'sw-resize');
+}
+;// ./src/index/popup-utils/resizer.js
+
+class DragDropResize {
+  constructor (props) {
+    props = props || {};
+    const id = Math.floor(Math.random() * 1000000);
+    const POPUP_CNT_ID = 'place-popup-cnt-id-' + id;
+    const POPUP_CONTENT_ID = 'place-popup-content-id-' + id;
+    const MAXIMIZE_BTN_ID = 'place-maximize-id-' + id;
+    const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
+    const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
+    const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
+    const template = new $t('place');
+    let lastMoveEvent, prevLocation, mouseDown, minLocation, selectElem,
+        currElem, hasMoved;
+    const instance = this;
+    const closeFuncs = [];
+
+    let width = '40vw';
+    let height = '20vh';
+    this.getDems = props.getDems || ( () => { return {width, height}; } );
+    this.setDems = props.setDems || ( (w, h) => { width = w; height = h; } );
+
+    this.hasMoved = () => hasMoved;
+    function onResizeEvent() {
+      const rect = popupCnt.getBoundingClientRect();
+      if (!Resizer.isLocked(popupCnt)) instance.setDems({width: rect.width, height: rect.height});
+    }
+
+    const defaultStyle = `
+      background-color: white;
+      position: ${props.position || 'absolute'};
+      overflow: hidden;
+      min-height: 20vh;
+      min-width: 30vw;
+      border: 1px solid;
+      padding: 3pt;
+      border-radius: 5pt;
+      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
+
+    this.close = () => {
+      getPopupElems().cnt.style.display = 'none';
+      Resizer.hide(popupCnt);
+      closeFuncs.forEach((func) => func());
+      instance.minimize();
+    }
+    this.hide = this.close;
+
+    this.show = () => {
+      if (instance.hidden()) {
+        const css = {display: 'block',
+        height: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().height,
+        width: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().width};
+        if (Number.isFinite(css.height)) css.height = css.height + 'px';
+        if (Number.isFinite(css.width)) css.width = css.width + 'px';
+
+        setCss(css);
+        if (!Resizer.isLocked(popupCnt)) Resizer.show(popupCnt);
+      }
+      return instance;
+    };
+
+    this.hidden = () => getPopupElems().cnt.style.display === 'none';
+
+    this.withinPopup = (offset) => {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.screenX < rect.right - offset && rect.left + offset < lastMoveEvent.screenX;
+        const withinY = lastMoveEvent.screenY < rect.bottom - offset && rect.top + offset < lastMoveEvent.screenY;
+        return withinX && withinY;
+      }
+      return false;
+    }
+
+    this.back = () => setCss(prevLocation);
+
+    function positionOnElement(elem) {
+      currElem = elem || currElem;
+      instance.show();
+      let rect = currElem.getBoundingClientRect();
+      let popRect = getPopupElems().cnt.getBoundingClientRect();
+
+      let top = `${rect.top}px`;
+      const position = {};
+      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
+      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.center = () =>{
+              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
+              left = left > 10 ? left : 10;
+              const leftMost = window.innerWidth - popRect.width - 10;
+              left = left < leftMost ? left : leftMost;
+              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
+              top = top > 10 ? top : 10;
+              const bottomMost = window.innerHeight - popRect.height - 10;
+              top = top < bottomMost ? top : bottomMost;
+              setCss({left: left + 'px', top: top + 'px'});
+              return position;};
+      position.maximize = instance.maximize.bind(position);
+      position.minimize = instance.minimize.bind(position);
+      if (window.innerHeight / 2 > rect.top) {
+        position.center().bottom();
+      } else {
+        position.center().top();
+      }
+
+      return position;
+    }
+
+    this.elem = positionOnElement;
+    this.select = () => {
+      if (window.getSelection().toString().trim()) {
+        selectElem = window.getSelection().getRangeAt(0);
+        currElem = selectElem;
+      }
+      positionOnElement(selectElem);
+    };
+    this.top = () => setCss({top:0,bottom:''});
+    this.left = () => setCss({right:'',left:0});
+    this.bottom = () => setCss({top:'',bottom:0});
+    this.right = () => setCss({right:0,left:''});
+
+    this.center = function () {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
+      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
+      setCss({top,left, right: '', bottom: ''});
+      return instance;
+    }
+
+    this.maximize = function () {
+      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
+      minLocation = prevLocation;
+      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
+      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      return this;
+    }
+
+    this.minimize = function () {
+      if (minLocation) {
+        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
+        setCss(minLocation);
+        prevLocation = minLocation;
+        minLocation = undefined;
+        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
+        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+      }
+      return this;
+    }
+
+    function setCss(rect) {
+      const popRect = getPopupElems().cnt.getBoundingClientRect();
+      const top = getPopupElems().cnt.style.top;
+      const bottom = getPopupElems().cnt.style.bottom;
+      const left = getPopupElems().cnt.style.left;
+      const right = getPopupElems().cnt.style.right;
+      const maxWidth = getPopupElems().cnt.style.maxWidth;
+      const maxHeight = getPopupElems().cnt.style.maxHeight;
+      const width = getPopupElems().cnt.style.width;
+      const height = getPopupElems().cnt.style.height;
+      styleUpdate(getPopupElems().cnt, rect);
+      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+      setTimeout(() => Resizer.position(popupCnt), 0);
+      return instance;
+    }
+    this.setCss = setCss;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      safeInnerHtml(html, getPopupElems().content);
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function isMaximized() {
+      return minLocation !== undefined;
+    }
+    this.isMaximized = isMaximized;
+
+    let lastClickTime;
+    let dragging;
+    function drag(e) {
+      const clickTime = new Date().getTime();
+      if (!isMaximized() && clickTime < lastClickTime + 400) {
+        backdrop.show();
+        Resizer.hide(popupCnt);
+        const rect = popupCnt.getBoundingClientRect();
+        dragging = {screenX: e.screenX, screenY: e.screenY, top: rect.top + window.scrollY, left: rect.left + window.scrollX};
+        DragDropResize.events.dragstart.trigger(getPopupElems().cnt);
+      }
+      lastClickTime = clickTime;
+    }
+
+    function stopDragging() {
+      dragging = undefined;
+      backdrop.hide();
+      Resizer.position(popupCnt);
+      DragDropResize.events.dragend.trigger(getPopupElems().cnt);
+      DragDropResize.events.drop.trigger(getPopupElems().cnt);
+      if (!Resizer.isLocked(popupCnt)) Resizer.show(popupCnt);
+    }
+
+    const tempElem = document.createElement('div');
+    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
+        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
+        hideClose: props.hideClose});
+    safeInnerHtml(tempHtml, tempElem);
+    tempElem.children[0].style = defaultStyle;
+    document.body.append(tempElem);
+
+    const popupContent = document.getElementById(POPUP_CONTENT_ID);
+    popupContent.style.overflow = 'auto';
+    const popupCnt = document.getElementById(POPUP_CNT_ID);
+    popupCnt.style = defaultStyle;
+    popupCnt.addEventListener(Resizer.events.resize.name, onResizeEvent);
+    document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
+    document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
+    document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
+    popupCnt.onmousedown = drag;
+    popupCnt.onclick = (e) => {
+      if (e.target.tagName !== 'A')
+      e.stopPropagation()
+    };
+
+    CssFile.apply('place');
+
+
+    function getPopupElems() {
+      return {cnt: popupCnt, content: popupContent};
+    }
+
+    let lastDragNotification = new Date().getTime()
+    function mouseMove(e) {
+      if (dragging) {
+        const dy = dragging.screenY - lastMoveEvent.screenY;
+        const dx = dragging.screenX - lastMoveEvent.screenX;
+        const rect = popupCnt.getBoundingClientRect();
+        popupCnt.style.top = dragging.top - dy + 'px';
+        popupCnt.style.left = dragging.left - dx + 'px';
+        const time = new Date().getTime();
+        if (lastDragNotification + 350 < time) {
+          DragDropResize.events.drag.trigger(getPopupElems().cnt);
+          lastDragNotification = time;
+        }
+      }
+      lastMoveEvent = e;
+    }
+
+    function on(eventName, func) {
+      getPopupElems().content.addEventListener(eventName, func);
+    }
+    this.on = on;
+
+    document.addEventListener('mousemove', mouseMove);
+    document.addEventListener('mousedown', (e) => mouseDown = e);
+    document.addEventListener('mouseup', () => mouseDown = undefined);
+    this.container = () => getPopupElems().cnt;
+    this.lockSize = () => Resizer.lock(popupCnt);
+    this.unlockSize = () => Resizer.unlock(popupCnt);
+
+    Resizer.all(popupCnt, props.position);
+    const backdrop = new CatchAll(popupCnt);
+    backdrop.on('mouseup', stopDragging);
+    backdrop.on('mousemove', mouseMove);
+    document.addEventListener('scroll', (e) => {console.log('scrolling'); mouseMove(e);});
+
+
+    Resizer.position(popupCnt);
+  }
+}
+
+DragDropResize.events = {};
+DragDropResize.events.drag = new CustomEvent ('drag')
+DragDropResize.events.dragend = new CustomEvent ('dragend')
+DragDropResize.events.dragstart = new CustomEvent ('dragstart')
+DragDropResize.events.drop = new CustomEvent ('drop')
+
+// drag	An element or text selection is being dragged (fired continuously every 350ms).
+// dragend	A drag operation is being ended (by releasing a mouse button or hitting the escape key).
+// dragstart	The user starts dragging an element or text selection.
+// drop	An element is dropped on a valid drop target.
+;// ./src/index/popup-utils/drag-drop.js
+
+class HoverResources {
+  constructor (props) {
+    props = props || {}
+    const instance = this;
+    const htmlFuncs = {};
+    let forceOpen = false;
+    let lockOpen = false;
+    let currFuncs, currElem;
+    let canClose = false;
+    let hoverOff = false;
+    let closeFuncs = [];
+
+    const popupCnt = new DragDropResize(props);
+    popupCnt.hide();
+
+    this.position = () => popupCnt;
+
+
+    this.close = () => {
+      if (!lockOpen) {
+        canClose = false;
+        popupCnt.close();
+        currElem = undefined;
+        closeFuncs.forEach((func) => func());
+      }
+    }
+
+    this.forceOpen = () => {
+      hoverOff = true; forceOpen = true; instance.show();
+    };
+    popupCnt.on('click', instance.forceOpen);
+    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.close();};
+    this.show = () => {
+      popupCnt.show();
+    };
+
+    function softClose() {
+      if (!props.clickClose && canClose && !forceOpen && !popupCnt.hidden() && !popupCnt.withinPopup(-10)) {
+        instance.close();
+      }
+    }
+
+    function dontHoldOpen(event) {
+      if (!canClose) popupCnt.withinPopup(10) && (canClose = true);
+      if (canClose) {
+        exitHover();
+      }
+    }
+
+    function getFunctions(elem) {
+      let foundFuncs;
+      const queryStrs = Object.keys(htmlFuncs);
+      queryStrs.forEach((queryStr) => {
+        if (elem.matches(queryStr)) {
+          if (foundFuncs) {
+            throw new Error('Multiple functions being invoked on one hover event');
+          } else {
+            foundFuncs = htmlFuncs[queryStr];
+          }
+        }
+      });
+      return foundFuncs;
+    }
+
+    function offHover(event) {
+      const elem = event.target;
+      const funcs = getFunctions(elem);
+      if (funcs) return;
+      dontHoldOpen(event);
+    }
+
+    function onHover(event) {
+      if (hoverOff || properties.get('hoverOff') || !properties.get('enabled')) return;
+      const elem = event.target;
+      if (!canClose) popupCnt.withinPopup(10) && (canClose = true);
+
+      const funcs = getFunctions(elem);
+      if (funcs) {
+        if ((!funcs.disabled || !funcs.disabled()) && currElem !== elem) {
+          currFuncs = funcs;
+          if (funcs && funcs.html) updateContent(funcs.html(elem));
+          popupCnt.elem(elem);
+          if (funcs && funcs.after) funcs.after();
+        }
+      }
+    }
+
+    function exitHover() {
+      setTimeout(softClose, 500);
+    }
+
+
+    function on(queryStr, funcObj) {
+      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
+      htmlFuncs[queryStr] = funcObj;
+    }
+    this.on = on;
+
+    this.onClose = (func) => closeFuncs.push(func);
+
+    function updateContent(html) {
+      popupCnt.updateContent(html);
+      if (currFuncs && currFuncs.after) currFuncs.after();
+      return instance;
+    }
+    this.updateContent = updateContent;
+
+    function startHover() {
+      document.addEventListener('mouseover', onHover);
+      document.addEventListener('mouseout', offHover);
+    }
+    this.startHover = startHover;
+
+    function stopHover() {
+      document.removeEventListener('mouseover', onHover);
+      document.removeEventListener('mouseout', offHover);
+    }
+    this.stopHover = stopHover;
+
+    this.container = popupCnt.container;
+    this.hasMoved = popupCnt.hasMoved;
+    this.lockSize = popupCnt.lockSize;
+    this.unlockSize = popupCnt.unlockSize;
+    this.lockOpen = () => lockOpen = true;
+    this.unlockOpen = () => lockOpen = false;
+
+    document.addEventListener('mousemove', softClose);
+    document.addEventListener('click', this.forceClose);
+    startHover();
+  }
+}
+
+afterLoad.push(() => new KeyShortCut(['c','e'], () => {
+  properties.toggle('hoverOff', true);
+}));
+;
+class User {
+  constructor() {
+    let user;
+    let status = 'expired';
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function () {
+      return status === 'active' && user !== undefined;
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = EPNTS.user.get(email);
+        Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = properties.get('user.credential');
+      if (cred !== null) {
+        properties.set('user.credential', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = EPNTS.credential.delete(cred);
+          Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = EPNTS.credential.status(credential);
+        Request.get(url, updateStatus);
+        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        Request.get(url, setUser);
+      } else if (credential === null) {
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = EPNTS.credential.add(user.id);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = EPNTS.credential.add(uId);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = EPNTS.user.add();
+      const body = {email, username};
+      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+  }
+}
+
+User = new User();
 ;
 class $t {
 	constructor(template, id) {
@@ -2212,10 +2784,7 @@ $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
 }
 $t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("HOVER_SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div class='ce-center'> <button id='ce-expl-voteup-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div class='ce-center'> ` + (get("dislikes")) + ` <br> <button id='ce-expl-votedown-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("HOVER_LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
-}
-$t.functions['hover-resources'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-relative'> <div class='ce-hover-max-min-abs-cnt'> <div class='ce-hover-max-min-cnt'> <button class='ce-upper-right-btn' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='ce-upper-right-btn' hidden id='` + (get("MINIMIZE_BTN_ID")) + `'> &minus; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'></div> </div> `
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
 }
 $t.functions['icon-menu/controls'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/menu.css"> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/AppMenu.js'></script> </body> </html> `
@@ -2226,20 +2795,20 @@ $t.functions['icon-menu/links/developer'] = function (get) {
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
 }
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
+}
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
+$t.functions['icon-menu/links/profile'] = function (get) {
+	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
 $t.functions['icon-menu/links/raw-text-tool'] = function (get) {
 	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
 }
 $t.functions['icon-menu/menu'] = function (get) {
 	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
-}
-$t.functions['icon-menu/links/profile'] = function (get) {
-	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
 $t.functions['icon-menu/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
@@ -2248,13 +2817,13 @@ $t.functions['icon-menu/settings'] = function (get) {
 	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <script type="text/javascript" src='/bin/short-cut-container.js'></script> <script type='text/javascript' src='/bin/debug-gui.js'></script> <script type='text/javascript' src='/bin/debug-gui-client.js'></script> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/Settings.js'></script> </body> </html> `
 }
 $t.functions['icon-menu/test'] = function (get) {
-	return `<!DOCTYPE html> <html> <head> </head> <body> <div id='control-ctn'> </div> </body> <script type="text/javascript" src='/CE.js'></script> </html> `
+	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div id='control-ctn'> one two three four five six </div> </body> <script type="text/javascript" src='/CE.js'></script> </html> `
+}
+$t.functions['place'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
-}
-$t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right' id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
 }
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
@@ -2263,7 +2832,7 @@ $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
-	return `<div class='ce-full'> <div class='ce-inline ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <h3>` + (get("words")) + `</h3> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> </div> `
+	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <h3>` + (get("words")) + `</h3> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -2290,28 +2859,46 @@ $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
 }
 $t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-width-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full-width' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 };// ./bin/$templates.js
 
 class HoverExplanations {
-  constructor () {
+  constructor (props) {
+    props = props || {};
     const template = new $t('hover-explanation');
     const instance = this;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     const  active = {expl: {}};
-    const hoverResource = new HoverResources();
+    const tag = 'hover-explanation';
+
     let switches = [];
     let disabled = false;
     let explRefs = {};
     let left;
     let explIds = [];
     let currIndex, currRef;
-    const tag = 'hover-explanation';
-    const HOVER_LOGIN_BTN_ID = 'ce-hover-login-btn-id';
-    const HOVER_SWITCH_LIST_ID = 'ce-hover-switch-list-id';
+    let lastEnabled = properties.get('enabled');
+
+    const id = Math.floor(Math.random() * 1000000);
+    const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
+    const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
+    const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
+    const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
+
+    const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
+    const setDems = (dems) => {
+      if (hoverExplanations === instance)
+        properties.set('hoverExplanationsDems', dems, true);
+    };
+
+    props.setDems = props.setDems || setDems;
+    props.getDems = props.getDems || getDems;
+    const hoverResource = new HoverResources(props);
+    hoverResource.container().addEventListener('drop', () => newHoverResource());
+    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
 
     this.close = () => hoverResource.close();
     this.disable = () => {disabled = true; instance.close()};
@@ -2320,7 +2907,7 @@ class HoverExplanations {
     this.letClose = () => hoverResource.forceClose();
 
     function getHtml(elemExplORef, index) {
-      currIndex = index || currIndex || 0;
+      currIndex = index === undefined ? currIndex || 0 : index;
       let ref;
       if (elemExplORef instanceof HTMLElement) {
         ref = elemExplORef.getAttribute('ref');
@@ -2350,7 +2937,7 @@ class HoverExplanations {
 
       const loggedIn = User.isLoggedIn();
       const scope = {
-        HOVER_LOGIN_BTN_ID, HOVER_SWITCH_LIST_ID,
+        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID,
         active, loggedIn,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
@@ -2362,35 +2949,35 @@ class HoverExplanations {
     }
     this.getHtml = getHtml;
 
-    function updateContent() {
-      const position = hoverResource.updateContent(getHtml());
+    function updateContent(expl, index) {
+      const position = hoverResource.updateContent(getHtml(expl, index));
       return position;
     }
 
     function switchFunc (index) {
       return () => {
-        hoverResource.updateContent(getHtml(undefined, index));
+        updateContent(undefined, index);
       };
     }
 
-    function display(expl, elem) {
-      hoverResource.updateContent(getHtml(expl));
-      return hoverResource.elem(elem);
+    function display(expl) {
+      updateContent(expl);
+      return hoverResource.position();
     }
     this.display = display;
 
-    function voteup() {Opinion.voteup(active.expl, updateContent);}
+    function voteup() {Opinion.voteup(active.expl, () => updateContent());}
 
-    function votedown() {Opinion.votedown(active.expl, updateContent);}
+    function votedown() {Opinion.votedown(active.expl, () => updateContent());}
 
     function setSwitches() {
       if (active.list.length > 1) {
-        switches = Array.from(document.getElementById(HOVER_SWITCH_LIST_ID).children);
+        switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
-      document.getElementById(HOVER_LOGIN_BTN_ID).onclick = User.openLogin;
-      document.getElementById('ce-expl-voteup-btn').addEventListener('click', voteup);
-      document.getElementById('ce-expl-votedown-btn').addEventListener('click', votedown);
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
+      document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
     }
 
     function sortByPopularity(expl1, expl2) {
@@ -2470,10 +3057,11 @@ class HoverExplanations {
       return Object.keys(uniq).sort(sortByLength);
     }
 
-    function set(explList) {
+    function set(explList, soft) {
+      explRefs = explList;
+      if (soft) return;
       removeAll();
       wrapList = [];
-      explRefs = explList;
       const wordList = Object.keys(explList).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
         const ref = wordList[index];
@@ -2506,398 +3094,77 @@ class HoverExplanations {
     this.wrapText = wrapText;
     this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
+    this.lockOpen = hoverResource.lockOpen;
+    this.unlockOpen = hoverResource.unlockOpen;
+
     function enableToggled(enabled) {
-      removeAll();
-      if (enabled) {
-        instance.wrapOne();
+      if (enabled !== lastEnabled) {
+        lastEnabled = enabled;
+        removeAll();
+        if (enabled) {
+          instance.wrapOne();
+        }
       }
     }
 
-    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    const newHoverResource = () => {
+        if(hoverResource) {
+          hoverResource.stopHover();
+          hoverResource.lockOpen();
+          hoverExplanations = new HoverExplanations();
+          hoverExplanations.set(explRefs, true);
+        }
+    }
+
     properties.onUpdate('enabled', enableToggled);
   }
 }
 
-HoverExplanations = new HoverExplanations();
-;// ./bin/$templates.js
+let hoverExplanations = new HoverExplanations();
+;
+class Expl {
+  constructor () {
+    let currEnv;
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      hoverExplanations.set(data.list);
+    }
 
-class DragDropResize {
-  constructor (zIncrement) {
-    const id = Math.floor(Math.random() * 1000000);
-    const zindex = (zIncrement || 0) + 999999;
-    const POPUP_CNT_ID = 'place-popup-cnt-id-' + id;
-    const POPUP_CONTENT_ID = 'place-popup-content-id-' + id;
-    const MAXIMIZE_BTN_ID = 'place-maximize-id-' + id;
-    const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
-    const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
-    const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
-    const RESIZER_COLLECT_NAME = 'DragDropResizeName' + id;
-    const minimumSize = 40;
-    const template = new $t('place');
-    let lastMoveEvent, prevLocation, mouseDown, minLocation;
-    const instance = this;
-
-    class Resizer {
-      constructor (axisObj, cursor, collectionName) {
-        if (collectionName) {
-          if (!Resizer.collections[collectionName]) {
-            Resizer.collections[collectionName] = [];
-          }
-          Resizer.collections[collectionName].push(this);
-        }
-        const instance = this;
-        const padding = 8;
-        let resize = false;
-        let lastPosition;
-
-        const attrs = Object.values(axisObj);
-        const top = attrs.indexOf('top') !== -1;
-        const bottom = attrs.indexOf('bottom') !== -1;
-        const left = attrs.indexOf('left') !== -1;
-        const right = attrs.indexOf('right') !== -1;
-
-        this.container = document.createElement('DIV');
-        this.container.style.cursor = cursor;
-        this.container.style.padding = padding/2 + 'px';
-        this.container.style.zIndex = zindex + 10;
-        this.container.style.position = 'absolute';
-        this.container.style.backgroundColor = 'transparent';
-        document.body.append(this.container);
-
-        function resizeCnt (event) {
-          if (resize) {
-            let dy = resize.clientY - event.clientY;
-            let dx = resize.clientX - event.clientX;
-            console.log('resizing');
-            if (axisObj.x) {
-              if (left) dx *= -1;
-              const newWidth = lastPosition.width - dx;
-              if (newWidth > minimumSize) {
-                if (left) {
-                  popupCnt.style.left = lastPosition.left + dx + 'px';
-                }
-                popupCnt.style.width = newWidth + 'px'
-              }
-            }
-            if (axisObj.y) {
-              if (top) dy *= -1;
-              const newWidth = lastPosition.height - dy;
-              if (newWidth > minimumSize) {
-                if (top) {
-                  popupCnt.style.top = lastPosition.top + dy + 'px';
-                }
-                popupCnt.style.height = newWidth + 'px'
-              }
-            }
-          }
-        }
-
-        this.container.onmousedown = (e) => {
-          resize = e;
-          Resizer.backdrop.hidden = false;
-          lastPosition = popupCnt.getBoundingClientRect();
-          e.stopPropagation();
-          e.preventDefault();
-        }
-
-        function stopResizing() {
-          if (resize) {
-            resize = undefined;
-            Resizer.positionCollection(collectionName);
-            Resizer.backdrop.hidden = true;
-          }
-        }
-
-        Resizer.backdrop.addEventListener('mouseup', stopResizing);
-        this.container.onmouseup = stopResizing;
-
-        this.container.onmousemove = resizeCnt;
-        Resizer.backdrop.addEventListener('mousemove', resizeCnt);
-        this.position = function () {
-          const rect = popupCnt.getBoundingClientRect();
-          if (top) {
-            instance.container.style.top = rect.top - padding + 'px';
-          } else if (!bottom) {
-            instance.container.style.top = rect.top + 'px';
-          }
-
-          if (bottom) {
-            instance.container.style.bottom = (window.innerHeight - rect.bottom) - padding + 'px';
-          } else if (!top) {
-            instance.container.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-          }
-
-          if (right) {
-            instance.container.style.right = (window.innerWidth - rect.right) - padding + 'px';
-          } else if (!left) {
-            instance.container.style.right = (window.innerWidth - rect.right) + 'px';
-          }
-
-          if (left) {
-            instance.container.style.left = rect.left - padding + 'px';
-          } else if (!right) {
-            instance.container.style.left = rect.left + 'px';
-          }
-        }
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env') || 'local';
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        EPNTS.setHost(env);
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
       }
     }
 
-    Resizer.backdrop = document.createElement('DIV');
-    Resizer.backdrop.style.position = 'absolute';
-    Resizer.backdrop.style.backgroundColor = 'transparent';
-    Resizer.backdrop.style.zIndex = zindex + 9
-    Resizer.backdrop.hidden = true;
-    Resizer.backdrop.style.top = 0;
-    Resizer.backdrop.style.bottom = 0;
-    Resizer.backdrop.style.right = 0;
-    Resizer.backdrop.style.left = 0;
-    document.body.append(Resizer.backdrop);
-
-    Resizer.collections = {};
-    Resizer.positionCollection = function (name) {
-      const collection = Resizer.collections[name];
-      if (collection) {
-        collection.forEach((item) => item.position());
-      }
-    }
-
-
-    function getWidth() {return '40vw';}
-    function getHeigth() {return '20vh';}
-
-    const defaultStyle = `
-      z-index: ${zindex};
-      background-color: white;
-      position: relative;
-      overflow: auto;
-      width: ${getWidth()};
-      height: ${getHeigth()};
-      border: 1px solid;
-      padding: 3pt;
-      border-radius: 5pt;
-      box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
-
-    this.close = () => {
-      getPopupElems().cnt.style.display = 'none';
-    }
-
-    this.show = () => {
-      setCss({display: 'block'})
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
     };
 
-    function isOpen() {
-      return getPopupElems().cnt.style.display === 'block';
-    }
-
-    function within(offset) {
-      const rect = getPopupElems().cnt.getBoundingClientRect();
-      if (lastMoveEvent) {
-        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
-        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
-        return withinX && withinY;
-      }
-      return true;
-    }
-
-    this.back = () => setCss(prevLocation);
-
-    function positionOnElement(elem) {
-      currElem = elem || currElem;
-      getPopupElems().cnt.style = defaultStyle;
-      instance.show();
-      let rect = currElem.getBoundingClientRect();
-      let popRect = getPopupElems().cnt.getBoundingClientRect();
-
-      let top = `${rect.top}px`;
-      const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
-      position.center = () =>{
-              let left = rect.left - (popRect.width / 2) + (rect.width / 2);
-              left = left > 10 ? left : 10;
-              const leftMost = window.innerWidth - popRect.width - 10;
-              left = left < leftMost ? left : leftMost;
-              let top = rect.top - (popRect.height / 2) + (rect.height / 2);
-              top = top > 10 ? top : 10;
-              const bottomMost = window.innerHeight - popRect.height - 10;
-              top = top < bottomMost ? top : bottomMost;
-              setCss({left: left + 'px', top: top + 'px'});
-              return position;};
-      position.maximize = instance.maximize.bind(position);
-      position.minimize = instance.minimize.bind(position);
-      if (window.innerHeight / 2 > rect.top) {
-        position.center().bottom();
-      } else {
-        position.center().top();
-      }
-
-      return position;
-    }
-
-    this.elem = positionOnElement;
-    this.select = () => {
-      if (window.getSelection().toString().trim()) {
-        selectElem = window.getSelection().getRangeAt(0);
-        currElem = selectElem;
-      }
-      positionOnElement(selectElem);
-    };
-    this.top = () => setCss({top:0,bottom:''});
-    this.left = () => setCss({right:'',left:0});
-    this.bottom = () => setCss({top:'',bottom:0});
-    this.right = () => setCss({right:0,left:''});
-
-    this.center = function () {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = `${(window.innerHeight / 2) - (popRect.height / 2)}px`;
-      const left = `${(window.innerWidth / 2) - (popRect.width / 2)}px`;
-      setCss({top,left, right: '', bottom: ''});
-      return instance;
-    }
-
-    this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
-      minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
-      return this;
-    }
-
-    this.minimize = function () {
-      if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: getWidth()})
-        setCss(minLocation);
-        prevLocation = minLocation;
-        minLocation = undefined;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
-      }
-      return this;
-    }
-
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      Resizer.positionCollection(RESIZER_COLLECT_NAME);
-      return instance;
-    }
-    this.setCss = setCss;
-
-    function on(queryStr, funcObj) {
-      if (htmlFuncs[queryStr] !== undefined) throw new Error('Assigning multiple functions to the same selector');
-      htmlFuncs[queryStr] = funcObj;
-    }
-    this.on = on;
-
-    this.onClose = (func) => closeFuncs.push(func);
-
-    function updateContent(html) {
-      safeInnerHtml(html, getPopupElems().content);
-      return instance;
-    }
-    this.updateContent = updateContent;
-
-    function isMaximized() {
-      return minLocation !== undefined;
-    }
-    this.isMaximized = isMaximized;
-
-    let lastClickTime;
-    let dragging;
-    function drag(e) {
-      const clickTime = new Date().getTime();
-      if (!isMaximized() && clickTime < lastClickTime + 400) {
-        const rect = popupCnt.getBoundingClientRect();
-        dragging = {clientX: e.clientX, clientY: e.clientY, top: rect.top, left: rect.left};
-        console.log('moveing');
-      }
-      lastClickTime = clickTime;
-    }
-
-    function stopDragging() {
-      console.log('NOT moveing');
-      dragging = undefined;
-      Resizer.positionCollection(RESIZER_COLLECT_NAME);
-    }
-
-    const tempElem = document.createElement('div');
-    const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
-        MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID});
-    safeInnerHtml(tempHtml, tempElem);
-    tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
-
-    const popupContent = document.getElementById(POPUP_CONTENT_ID);
-    const popupCnt = document.getElementById(POPUP_CNT_ID);
-    popupCnt.style = defaultStyle;
-    document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
-    document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
-    document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
-    popupCnt.onmousedown = drag;
-    popupCnt.onmouseup = stopDragging;
-    popupCnt.onclick = (e) => {
-      if (e.target.tagName !== 'A')
-      e.stopPropagation()
+    this.siteList = function (success, fail) {
     };
 
-    CssFile.apply('place');
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
 
 
-    function getPopupElems() {
-      return {cnt: popupCnt, content: popupContent};
-    }
-
-    function mouseMove(e) {
-      if (dragging) {
-        const dy = dragging.clientY - lastMoveEvent.clientY;
-        const dx = dragging.clientX - lastMoveEvent.clientX;
-        console.log('dragging');
-        const rect = popupCnt.getBoundingClientRect();
-        popupCnt.style.top = dragging.top - dy + 'px';
-        popupCnt.style.left = dragging.left - dx + 'px';
-      }
-      lastMoveEvent = e;
-    }
-
-    function resizeBlocks() {
-
-    }
-
-    document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mousedown', (e) => mouseDown = e);
-    document.addEventListener('mouseup', () => mouseDown = undefined);
-    this.container = () => getPopupElems().content;
-
-    new Resizer({y: 'top'}, 'n-resize', RESIZER_COLLECT_NAME);
-    new Resizer({y: 'bottom'}, 'n-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'right'}, 'e-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'left'}, 'e-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'right', y: 'top'}, 'ne-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'left', y: 'top'}, 'nw-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'right', y: 'bottom'}, 'se-resize', RESIZER_COLLECT_NAME);
-    new Resizer({x: 'left', y: 'bottom'}, 'sw-resize', RESIZER_COLLECT_NAME);
-
-    Resizer.positionCollection(RESIZER_COLLECT_NAME);
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
   }
 }
 
-new DragDropResize().center();
-;
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+Expl = new Expl();
 ;
 class Form {
   constructor() {
@@ -2941,134 +3208,10 @@ class Form {
 
 Form = new Form();
 ;
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = EPNTS.user.get(email);
-        Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = properties.get('user.credential');
-      if (cred !== null) {
-        properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = EPNTS.credential.delete(cred);
-          Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus);
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
-      } else if (credential === null) {
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = EPNTS.credential.add(user.id);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = EPNTS.credential.add(uId);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = EPNTS.user.add();
-      const body = {email, username};
-      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
 ;
 class Opinion {
   constructor() {
@@ -3085,14 +3228,19 @@ class Opinion {
     }
 
     function canVote (expl, favorable)  {
-      const userId = User.loggedIn().id;
-      if (expl.author && userId === expl.author.id) {
+      const user = User.loggedIn();
+      if (user) {
+        const userId = user.id;
+        if (expl.author && userId === expl.author.id) {
+          return false;
+        }
+        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+          return opinions[expl.id] !== favorable;
+        }
+        return userId !== undefined && amendments[expl.id] !== favorable;
+      } else {
         return false;
       }
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
     };
 
     function explOpinions(expl, favorable) {
@@ -3145,51 +3293,9 @@ class Opinion {
 
 Opinion = new Opinion();
 ;
-class Expl {
-  constructor () {
-    let currEnv;
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      HoverExplanations.set(data.list);
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env');
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        EPNTS.setHost(env);
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
-  }
-}
-
-Expl = new Expl();
-;
-const lookupHoverResource = new HoverResources(1, true);
+const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
+const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
+const lookupHoverResource = new HoverResources({clickClose: true, zIncrement: 1, getDems, setDems});
 
 class Tabs {
   constructor(updateHtml, props) {
@@ -3237,7 +3343,7 @@ class Tabs {
     }
 
     function switchTo(index) {
-      HoverExplanations.disable();
+      hoverExplanations.disable();
       if (index !== undefined && index !== currIndex) firstRender = true;
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
@@ -3245,8 +3351,8 @@ class Tabs {
       lookupHoverResource.updateContent(template.render(getScope()));
       setDems();
       setTimeout(setDems, 400);
-      lookupHoverResource.minimize();
-      lookupHoverResource.select();
+      lookupHoverResource.position().minimize();
+      lookupHoverResource.position().select();
       setOnclickMethods();
       activePage.afterOpen();
     }
@@ -3297,8 +3403,8 @@ class Tabs {
     }
 
     lookupHoverResource.onClose(() => {
-      HoverExplanations.enable();
-      HoverExplanations.letClose();
+      hoverExplanations.enable();
+      hoverExplanations.letClose();
     });
 
     this.add = add;
@@ -3307,141 +3413,6 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs(lookupHoverResource.updateContent);
-;class Explanations extends Page {
-  constructor(list) {
-    super();
-    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
-    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
-    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
-    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
-    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
-    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
-    let selected = [];
-    const instance = this;
-    let explanations = [];
-    let searchWords;
-    this.list = list ? list : [];
-    this.add = function (expl) {
-      this.list.push(expl);
-    }
-
-    function openAddPage() {
-      lookupTabs.open(AddInterface);
-    }
-
-    function forTags(func) {
-      const tags = document.getElementsByClassName('ce-expl-tag');
-      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
-    }
-
-    function selectUpdate() {
-      selected = [];
-      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
-      setExplanation();
-    }
-
-    const tagReg = /#[a-zA-Z0-9]*/g;
-    function byTags(expl) {
-      if (selected.length === 0) return true;
-      for (let index = 0; index < selected.length; index += 1) {
-        if (expl.content.match(tagReg).indexOf(`#${selected[index]}`) === -1) return false;
-      }
-      return true;
-    }
-
-
-    function addExpl(e) {
-      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
-      function addExplSuccessful() {
-        explanations.forEach((expl) => {
-          if(expl.id === explId)
-            HoverExplanations.add(expl);
-            setExplanation();
-        })
-      }
-      const url = EPNTS.siteExplanation.add(explId);
-      const siteUrl = window.location.href;
-      Request.post(url, {siteUrl}, addExplSuccessful);
-    }
-
-    function setTagOnclick() {
-      forTags((elem) => elem.onclick = selectUpdate);
-      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
-      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
-
-      const searchBtn = document.getElementById(SEARCH_BTN_ID);
-      searchBtn.onclick = () => {
-        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
-        words = words.toLowerCase().trim();
-        properties.set('searchWords', words);
-        instance.get();
-      };
-      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
-
-      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
-      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
-      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
-    }
-
-    function setExplanation(expls) {
-      if (expls !== undefined) {
-        explanations = expls;
-      }
-      lookupTabs.update();
-    }
-
-    function getScope() {
-      const scope = {};
-      const tagObj = {}
-      scope.explanations = explanations.filter(byTags);
-      scope.explanations.forEach(function (expl) {
-        const username = expl.author.username;
-        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = HoverExplanations.canApply(expl);
-        expl.rendered = textToHtml(expl.content);
-        const author = expl.author;
-        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
-        const tags = expl.content.match(tagReg) || [];
-        tags.forEach(function (tag) {
-          tagObj[tag.substr(1)] = true;
-        });
-      });
-
-      scope.allTags = Object.keys(tagObj);
-      scope.words = searchWords;
-      scope.loggedIn = User.isLoggedIn();
-      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
-      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
-      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
-      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
-      scope.selected = selected;
-      return scope;
-    }
-
-    function html () {
-      return template.render(scope);
-    }
-
-    this.html = () => template.render(getScope());
-    this.header= () => headerTemplate.render(getScope());
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
-    this.afterOpen = setTagOnclick;
-    this.beforeOpen = () => instance.get();
-
-    this.get = function () {
-      const newSearchWords = properties.get('searchWords');
-      if (newSearchWords !== searchWords) {
-        selected = [];
-        searchWords = newSearchWords;
-        const url = EPNTS.explanation.get(searchWords);
-        Request.get(url, setExplanation, () => setExplanation([]));
-      }
-    }
-  }
-}
-
-Explanations = new Explanations();
-lookupTabs.add(Explanations, 0);
 ;
 class MerriamWebster extends Page {
   constructor() {
@@ -3507,6 +3478,142 @@ class MerriamWebster extends Page {
 
 MerriamWebster = new MerriamWebster();
 lookupTabs.add(MerriamWebster, 1);
+;class Explanations extends Page {
+  constructor(list) {
+    super();
+    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
+    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
+    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
+    let selected = [];
+    const instance = this;
+    let explanations = [];
+    let searchWords;
+    this.list = list ? list : [];
+    this.add = function (expl) {
+      this.list.push(expl);
+    }
+
+    function openAddPage() {
+      lookupTabs.open(AddInterface);
+    }
+
+    function forTags(func) {
+      const tags = document.getElementsByClassName('ce-expl-tag');
+      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
+    }
+
+    function selectUpdate() {
+      selected = [];
+      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
+      setExplanation();
+    }
+
+    const tagReg = /#[a-zA-Z0-9]*/g;
+    function byTags(expl) {
+      if (selected.length === 0) return true;
+      for (let index = 0; index < selected.length; index += 1) {
+        const match = expl.content.match(tagReg);
+        if (match && match.indexOf(`#${selected[index]}`) === -1) return false;
+      }
+      return true;
+    }
+
+
+    function addExpl(e) {
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            hoverExplanations.add(expl);
+            setExplanation();
+        })
+      }
+      const url = EPNTS.siteExplanation.add(explId);
+      const siteUrl = window.location.href;
+      Request.post(url, {siteUrl}, addExplSuccessful);
+    }
+
+    function setTagOnclick() {
+      forTags((elem) => elem.onclick = selectUpdate);
+      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
+      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
+
+      const searchBtn = document.getElementById(SEARCH_BTN_ID);
+      searchBtn.onclick = () => {
+        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
+        words = words.toLowerCase().trim();
+        properties.set('searchWords', words);
+        instance.get();
+      };
+      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+
+      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
+      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+    }
+
+    function setExplanation(expls) {
+      if (expls !== undefined) {
+        explanations = expls;
+      }
+      lookupTabs.update();
+    }
+
+    function getScope() {
+      const scope = {};
+      const tagObj = {}
+      scope.explanations = explanations.filter(byTags);
+      scope.explanations.forEach(function (expl) {
+        const username = expl.author.username;
+        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
+        expl.canApply = hoverExplanations.canApply(expl);
+        expl.rendered = textToHtml(expl.content);
+        const author = expl.author;
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
+        const tags = expl.content.match(tagReg) || [];
+        tags.forEach(function (tag) {
+          tagObj[tag.substr(1)] = true;
+        });
+      });
+
+      scope.allTags = Object.keys(tagObj);
+      scope.words = searchWords;
+      scope.loggedIn = User.isLoggedIn();
+      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
+      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
+      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
+      scope.selected = selected;
+      return scope;
+    }
+
+    function html () {
+      return template.render(scope);
+    }
+
+    this.html = () => template.render(getScope());
+    this.header= () => headerTemplate.render(getScope());
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
+    this.afterOpen = setTagOnclick;
+    this.beforeOpen = () => instance.get();
+
+    this.get = function () {
+      const newSearchWords = properties.get('searchWords');
+      if (newSearchWords !== searchWords) {
+        selected = [];
+        searchWords = newSearchWords;
+        const url = EPNTS.explanation.get(searchWords);
+        Request.get(url, setExplanation, () => setExplanation([]));
+      }
+    }
+  }
+}
+
+Explanations = new Explanations();
+lookupTabs.add(Explanations, 0);
 ;
 class AddInterface extends Page {
   constructor () {
@@ -3515,17 +3622,20 @@ class AddInterface extends Page {
     const instance = this;
     let content = '';
     let words = '';
+    let url = '';
     let writingJs = false;
     const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
     let updatePending = false;
+    const editHoverExpl = new HoverExplanations({hideClose: true});
+    const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
 
     function getScope() {
       return {
         ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
         writingJs,
-        words: properties.get('searchWords')
+        words
       }
     }
 
@@ -3536,12 +3646,17 @@ class AddInterface extends Page {
     function initContent(userContent) {
       if (content === '' && (typeof userContent) === 'string') {
         content = userContent;
-        updateDisplay()
+        if (instance.inputElem !== undefined) {
+          instance.inputElem.value = content;
+          instance.inputElem.focus();
+          editHoverExpl.display({words, content: content},
+                dragDropResize.container());
+        }
       }
     }
 
     function addExplSuccessful(expl) {
-      HoverExplanations.add(expl);
+      hoverExplanations.add(expl);
       properties.set('userContent', '', true)
       content = '';
     }
@@ -3551,39 +3666,14 @@ class AddInterface extends Page {
       Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
     }
 
-    function updateDisplay () {
-      if (instance.inputElem !== undefined) {
-        instance.inputElem.value = content;
-        lookupHoverResource.minimize();
-        lookupHoverResource.setCss({maxHeight: '50%', width: '75%', height: '50%'})
-        lookupHoverResource.center().bottom();
-        HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-        HoverExplanations.keepOpen();
-        instance.inputElem.focus();
-      }
-    }
-
-    this.afterOpen = (newWords) => {
-      words = properties.get('searchWords');
-      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
-      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
-      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
-      instance.inputElem.addEventListener('keyup', onChange);
-      // instance.inputElem.addEventListener('blur', HoverExplanations.close);
-      instance.addExplBtn.addEventListener('click', addExplanation);
-      HoverExplanations.display({words, content}, lookupHoverResource.container()).center().top();
-      instance.updateDisplay();
-    }
-    instance.updateDisplay = updateDisplay;
-
     let ignoreChange = false;
     function onChange(event) {
       if (ignoreChange) { ignoreChange = false; return;}
       let isWritingjs = false;
       try {
         if ((typeof event.target.value) === 'string') {
-          HoverExplanations.display({words, content: event.target.value},
-                lookupHoverResource.container()).center().top();
+          editHoverExpl.display({words, content: event.target.value},
+                dragDropResize.container());
           content = event.target.value;
         }
       } catch (error) {
@@ -3593,18 +3683,50 @@ class AddInterface extends Page {
       }
       if (writingJs !== isWritingjs) {
         writingJs = isWritingjs;
-        lookupTabs.update();
       }
       properties.set('userContent', content, true)
-      updateDisplay();
     }
 
+    function bottomFull() {
+      return {width: '100vw', height: '75vh'};
+    }
+
+    function close() {
+      editHoverExpl.unlockOpen();
+      editHoverExpl.close();
+    }
+    this.close = close;
+
+    function open(w, u) {
+      words = w || words;
+      url = u || url;
+      dragDropResize.show()
+        .setCss(bottomFull())
+        .updateContent(instance.html())
+        .center().bottom();
+      instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+      instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
+      instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
+      instance.inputElem.addEventListener('keyup', onChange);
+      // instance.inputElem.addEventListener('blur', editHoverExpl.close);
+      instance.addExplBtn.addEventListener('click', addExplanation);
+
+
+      editHoverExpl.display({words, content}).elem(dragDropResize.container()).center().top();
+      editHoverExpl.lockOpen();
+    }
+    this.open = open;
+    this.toggle = () => dragDropResize.hidden() ? instance.open() : dragDropResize.close();
+
+    dragDropResize.onClose(close);
     properties.onUpdate('userContent', initContent);
   }
 }
 
+
 AddInterface = new AddInterface();
-lookupTabs.add(AddInterface, 2);
+AddInterface.open('poopLuck');
+new KeyShortCut('ca', AddInterface.toggle);
 ;
 return {afterLoad};
 }

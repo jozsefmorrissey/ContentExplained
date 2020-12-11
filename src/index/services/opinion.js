@@ -14,14 +14,19 @@ class Opinion {
     }
 
     function canVote (expl, favorable)  {
-      const userId = User.loggedIn().id;
-      if (expl.author && userId === expl.author.id) {
+      const user = User.loggedIn();
+      if (user) {
+        const userId = user.id;
+        if (expl.author && userId === expl.author.id) {
+          return false;
+        }
+        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+          return opinions[expl.id] !== favorable;
+        }
+        return userId !== undefined && amendments[expl.id] !== favorable;
+      } else {
         return false;
       }
-      if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-        return opinions[expl.id] !== favorable;
-      }
-      return userId !== undefined && amendments[expl.id] !== favorable;
     };
 
     function explOpinions(expl, favorable) {

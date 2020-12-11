@@ -35,7 +35,8 @@ class Explanations extends Page {
     function byTags(expl) {
       if (selected.length === 0) return true;
       for (let index = 0; index < selected.length; index += 1) {
-        if (expl.content.match(tagReg).indexOf(`#${selected[index]}`) === -1) return false;
+        const match = expl.content.match(tagReg);
+        if (match && match.indexOf(`#${selected[index]}`) === -1) return false;
       }
       return true;
     }
@@ -46,7 +47,7 @@ class Explanations extends Page {
       function addExplSuccessful() {
         explanations.forEach((expl) => {
           if(expl.id === explId)
-            HoverExplanations.add(expl);
+            hoverExplanations.add(expl);
             setExplanation();
         })
       }
@@ -88,7 +89,7 @@ class Explanations extends Page {
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = HoverExplanations.canApply(expl);
+        expl.canApply = hoverExplanations.canApply(expl);
         expl.rendered = textToHtml(expl.content);
         const author = expl.author;
         expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);

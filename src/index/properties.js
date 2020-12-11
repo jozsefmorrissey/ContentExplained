@@ -53,7 +53,7 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (keys, func) {
+    this.onUpdate = function (keys, func, skipInit) {
       keyDefinitionCheck(keys);
       if (!Array.isArray(keys)) {
         keys = [keys];
@@ -64,7 +64,7 @@ class Properties {
           updateFuncs[key] = [];
         }
         updateFuncs[key].push(func);
-        func(properties[key])
+        func(properties[key]);
       });
     }
 

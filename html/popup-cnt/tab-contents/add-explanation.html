@@ -1,14 +1,18 @@
 <div class='ce-full'>
-  <div class='ce-inline ce-full'>
+  <div class='ce-full'>
     <div class="ce-full" id='{{ADD_EDITOR_CNT_ID}}'>
       <div class='ce-center'>
-        <h3>{{words}}</h3>
+        <div class='ce-inline'>
+          <h3>{{words}}</h3>
+          <div>
+            <button id='{{SUBMIT_EXPL_BTN_ID}}'>Add&nbsp;To&nbsp;Url</button>
+          </div>
+        </div>
+      <div>
         <p{{writingJs ? '' : ' hidden'}} class='ce-error'>Stop tring to write JavaScript!</p>
       </div>
+      </div>
       <textarea id='{{ADD_EDITOR_ID}}' class='ce-full'></textarea>
-    </div>
-    <div>
-      <button id='{{SUBMIT_EXPL_BTN_ID}}'>Add&nbsp;To&nbsp;Url</button>
     </div>
   </div>
 </div>

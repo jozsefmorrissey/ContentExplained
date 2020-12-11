@@ -1,15 +1,13 @@
 
 class CustomEvent {
   constructor(name) {
-    const watchers = {};
+    const watchers = [];
+    this.name = name;
     this.on = function (func) {
       if ((typeof func) === 'function') {
-        if (watchers[name] === undefined) {
-          watchers[name] = [];
-        }
-        watchers[name].push(func);
+        watchers.push(func);
       } else {
-        throw new Error(`CustomEvent.on called without a function argument\n\t${func}`);
+        return 'on' + name;
       }
     }
 

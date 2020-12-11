@@ -1,5 +1,7 @@
 
-const lookupHoverResource = new HoverResources(1, true);
+const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
+const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
+const lookupHoverResource = new HoverResources({clickClose: true, zIncrement: 1, getDems, setDems});
 
 class Tabs {
   constructor(updateHtml, props) {
@@ -47,7 +49,7 @@ class Tabs {
     }
 
     function switchTo(index) {
-      HoverExplanations.disable();
+      hoverExplanations.disable();
       if (index !== undefined && index !== currIndex) firstRender = true;
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
@@ -55,8 +57,8 @@ class Tabs {
       lookupHoverResource.updateContent(template.render(getScope()));
       setDems();
       setTimeout(setDems, 400);
-      lookupHoverResource.minimize();
-      lookupHoverResource.select();
+      lookupHoverResource.position().minimize();
+      lookupHoverResource.position().select();
       setOnclickMethods();
       activePage.afterOpen();
     }
@@ -107,8 +109,8 @@ class Tabs {
     }
 
     lookupHoverResource.onClose(() => {
-      HoverExplanations.enable();
-      HoverExplanations.letClose();
+      hoverExplanations.enable();
+      hoverExplanations.letClose();
     });
 
     this.add = add;
