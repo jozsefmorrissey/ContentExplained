@@ -18,27 +18,31 @@ class HoverResources {
     this.position = () => popupCnt;
 
 
-    this.close = () => {
+    this.softClose = () => {
       if (!lockOpen) {
+        instance.close();
+      }
+    }
+
+    this.close = () => {
         canClose = false;
         popupCnt.close();
         currElem = undefined;
         closeFuncs.forEach((func) => func());
-      }
     }
 
     this.forceOpen = () => {
       hoverOff = true; forceOpen = true; instance.show();
     };
     popupCnt.on('click', instance.forceOpen);
-    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.close();};
+    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.softClose();};
     this.show = () => {
       popupCnt.show();
     };
 
     function softClose() {
       if (!props.clickClose && canClose && !forceOpen && !popupCnt.hidden() && !popupCnt.withinPopup(-10)) {
-        instance.close();
+        instance.softClose();
       }
     }
 

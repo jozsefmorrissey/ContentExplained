@@ -6,6 +6,7 @@ function search() {
     if (searchWords) {
       lookupHoverResource.show();
       if (searchWords !== properties.get('searchWords') && searchWords.length < 64) {
+        history.push(searchWords);
         properties.set('searchWords', searchWords);
         lookupTabs.update();
       }

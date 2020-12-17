@@ -1,13 +1,39 @@
 
 const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
 const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
-const lookupHoverResource = new HoverResources({clickClose: true, zIncrement: 1, getDems, setDems});
+
+function regLen(text, reg) {
+  const match = text.match(reg);
+  return match === null ? 0 : match.length;
+}
+const historyTemplate = new $t('history');
+const lookupHoverResource = new HoverResources({
+  clickClose: true,
+  zIncrement: 1,
+  hasPast: history.hasPast,
+  hasFuture: history.hasFuture,
+  back: () => lookupTabs.update(history.back()),
+  forward: () => lookupTabs.update(history.forward()),
+  historyDisplay: (filterText) => {
+    const histList = history.get();
+    let filtered = false;
+    if (filterText) {
+      filtered = true;
+      const filter = new RegExp(filterText.trim().replace(/\s{1,}/g, '|'), 'g');
+      histList.list.sort((h1, h2) => regLen(h2.elem, filter) - regLen(h1.elem, filter));
+    }
+
+    return historyTemplate.render({filtered, history: histList})
+  },
+  historyClick: (event) => lookupTabs.update(history.goTo(event.target.value)),
+  getDems, setDems});
 
 class Tabs {
-  constructor(updateHtml, props) {
+  constructor(props) {
     props = props || {};
     const uniqId = Math.floor(Math.random() * 100000);
     const template = new $t('tabs');
+    const navTemplate = new $t('popup-cnt/tabs-navigation');
     const CSS_CLASS = props.class || 'ce-tabs-list-item';
     const ACTIVE_CSS_CLASS = `${CSS_CLASS} ${props.activeClass || 'ce-tabs-active'}`;
     const LIST_CLASS = props.listClass || 'ce-tabs-list';
@@ -19,6 +45,7 @@ class Tabs {
     const HEADER_CNT_ID = 'ce-tab-header-cnt-id-' + uniqId;
     const instance = this;
     let firstRender = true;
+    let navContainer, headerContainer, bodyContainer;
     const pages = [];
     const positions = {};
     let currIndex;
@@ -37,16 +64,33 @@ class Tabs {
       }
       throw new Error(page.label() + 'does not exist');
     }
+    this.close = lookupHoverResource.close;
 
     function setOnclickMethods() {
-      document.getElementById(TAB_CNT_ID).onmouseup = (e) => {
-          e.stopPropagation()
-        };
       const listItems = document.getElementById(LIST_ID).children;
       for (let index = 0; index < listItems.length; index += 1) {
         listItems[index].onclick = switchFunc(index);
       }
     }
+
+    function updateNav() {
+      navContainer.innerHTML = navTemplate.render(
+        {
+          pages, activePage, LIST_CLASS, LIST_ID, CSS_CLASS, ACTIVE_CSS_CLASS,
+          LIST_CLASS, LIST_ID
+        });
+      setOnclickMethods();
+    }
+    function updateHead() {
+      headerContainer.innerHTML = activePage !== undefined ? activePage.header() : '';
+      setDems();
+    }
+    function updateBody() {
+      bodyContainer.innerHTML = activePage !== undefined ? activePage.html() : '';
+    }
+    this.updateNav = updateNav;
+    this.updateHead = updateHead;
+    this.updateBody = updateBody;
 
     function switchTo(index) {
       hoverExplanations.disable();
@@ -54,11 +98,13 @@ class Tabs {
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
       activePage.beforeOpen();
-      lookupHoverResource.updateContent(template.render(getScope()));
+      updateNav();
+      updateHead();
+      updateBody();
       setDems();
-      setTimeout(setDems, 400);
       lookupHoverResource.position().minimize();
       lookupHoverResource.position().select();
+      hoverExplanations.position().select().close();
       setOnclickMethods();
       activePage.afterOpen();
     }
@@ -77,14 +123,7 @@ class Tabs {
    }
 
     function getScope() {
-
-      const content = activePage !== undefined ? activePage.html() : '';
-      const header = activePage !== undefined ? activePage.header() : '';
-      return {
-        CSS_CLASS, ACTIVE_CSS_CLASS, LIST_CLASS, LIST_ID,  CNT_ID, TAB_CNT_ID,
-        NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID,
-        activePage, content, pages, header
-      }
+      return {CNT_ID, TAB_CNT_ID, NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID};
     }
 
     function sortByPosition(page1, page2) {
@@ -104,8 +143,24 @@ class Tabs {
       }
     }
 
-    function update(elem) {
-      switchTo(undefined);
+    function update(word) {
+      if (word === undefined) {
+        word = properties.get('searchWords');
+      } else {
+        properties.set('searchWords', word, true);
+      }
+      switchTo();
+    }
+
+    function init() {
+      lookupHoverResource.updateContent(template.render(getScope()));
+      document.getElementById(TAB_CNT_ID).onmouseup = (e) => {
+        e.stopPropagation()
+      };
+      navContainer = document.getElementById(NAV_CNT_ID);
+      headerContainer = document.getElementById(HEADER_CNT_ID);
+      bodyContainer = document.getElementById(CNT_ID);
+      updateNav();
     }
 
     lookupHoverResource.onClose(() => {
@@ -115,7 +170,8 @@ class Tabs {
 
     this.add = add;
     this.update = update;
+    init();
   }
 }
 
-const lookupTabs = new Tabs(lookupHoverResource.updateContent);
+const lookupTabs = new Tabs();

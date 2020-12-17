@@ -1,0 +1,6 @@
+<ul class='ce-width-full {{LIST_CLASS}}' id='{{LIST_ID}}'>
+  <li:t repeat='page in pages' {{page.hide() ? 'hidden' : ''}}
+    class='{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}'>
+    {{page.label()}}
+  </li:t>
+</ul>

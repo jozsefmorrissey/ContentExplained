@@ -10,6 +10,10 @@ class DragDropResize {
     const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
     const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
     const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
+    const BACK_BTN_ID = 'place-back-btn-id-' + id;
+    const FORWARD_BTN_ID = 'place-forward-btn-id-' + id;
+    const HISTORY_BTN_ID = 'place-history-btn-id-' + id;
+    const position = props.position || 'absolute';
     const template = new $t('place');
     let lastMoveEvent, prevLocation, mouseDown, minLocation, selectElem,
         currElem, hasMoved;
@@ -29,7 +33,7 @@ class DragDropResize {
 
     const defaultStyle = `
       background-color: white;
-      position: ${props.position || 'absolute'};
+      position: ${position};
       overflow: hidden;
       min-height: 20vh;
       min-width: 30vw;
@@ -43,11 +47,13 @@ class DragDropResize {
       Resizer.hide(popupCnt);
       closeFuncs.forEach((func) => func());
       instance.minimize();
+      histCnt.hidden = true;
     }
     this.hide = this.close;
 
     this.show = () => {
       if (instance.hidden()) {
+        updateControls();
         const css = {display: 'block',
         height: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().height,
         width: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().width};
@@ -56,6 +62,7 @@ class DragDropResize {
 
         setCss(css);
         if (!Resizer.isLocked(popupCnt)) Resizer.show(popupCnt);
+        updateHistZindex();
       }
       return instance;
     };
@@ -72,37 +79,64 @@ class DragDropResize {
       return false;
     }
 
+    function updateHistZindex() {
+      histCnt.style.zIndex = Number.parseInt(popupCnt.style.zIndex) + 1;
+    }
+
+    function getRelitiveRect(elem) {
+      let rect;
+      if (elem === undefined) {
+        rect = {top: 0, bottom: 0, right: 0, left: 0, width: 100, height: 100};
+      } else {
+        rect = elem.getBoundingClientRect();
+      }
+      if (props.position === 'fixed') return rect;
+
+      const absRect = {};
+      absRect.top = rect.top + window.scrollY;
+      absRect.bottom = rect.bottom + window.scrollY;
+      absRect.right = rect.right + window.scrollX;
+      absRect.left = rect.left + window.scrollX;
+      absRect.width = rect.width;
+      absRect.height = rect.height;
+      return absRect
+    }
+
     this.back = () => setCss(prevLocation);
 
-    function positionOnElement(elem) {
+    function positionOnElement(elem, container) {
       currElem = elem || currElem;
       instance.show();
-      let rect = currElem.getBoundingClientRect();
-      let popRect = getPopupElems().cnt.getBoundingClientRect();
+      let rect = getRelitiveRect(currElem);
+      let popRect = getRelitiveRect(container || getPopupElems().cnt);
+      let padding = 8;
 
       let top = `${rect.top}px`;
       const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.close = instance.close;
+      position.top = () =>{setCss({top: rect.top - popRect.height - padding + 'px'}, container); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + padding + 'px'}, container); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width - padding + 'px'}, container); return position;};
+      position.right = () =>{setCss({left: rect.right + padding + 'px'}, container); return position;};
       position.center = () =>{
               let left = rect.left - (popRect.width / 2) + (rect.width / 2);
-              left = left > 10 ? left : 10;
-              const leftMost = window.innerWidth - popRect.width - 10;
-              left = left < leftMost ? left : leftMost;
               let top = rect.top - (popRect.height / 2) + (rect.height / 2);
-              top = top > 10 ? top : 10;
-              const bottomMost = window.innerHeight - popRect.height - 10;
-              top = top < bottomMost ? top : bottomMost;
-              setCss({left: left + 'px', top: top + 'px'});
+              setCss({left: left + 'px', top: top + 'px'}, container);
               return position;};
+      position.inView = () =>{
+        let popRect = getRelitiveRect(container || getPopupElems().cnt);
+        const left = (popRect.left > 10 ? popRect.left : 10) + 'px';
+        const right = (popRect.right > 10 ? popRect.right : 10) + 'px';
+        const top = (popRect.top > 10 ? popRect.top : 10) + 'px';
+        const bottom = (popRect.bottom > 10 ? popRect.bottom : 10) + 'px';
+        setCss({left, right, top, bottom}, container);
+        return position;};
       position.maximize = instance.maximize.bind(position);
       position.minimize = instance.minimize.bind(position);
-      if (window.innerHeight / 2 > rect.top) {
-        position.center().bottom();
+      if (window.innerHeight / 2 > rect.top - window.scrollY) {
+        position.center().bottom().inView();
       } else {
-        position.center().top();
+        position.center().top().inView();
       }
 
       return position;
@@ -114,7 +148,7 @@ class DragDropResize {
         selectElem = window.getSelection().getRangeAt(0);
         currElem = selectElem;
       }
-      positionOnElement(selectElem);
+      return positionOnElement(selectElem);
     };
     this.top = () => setCss({top:0,bottom:''});
     this.left = () => setCss({right:'',left:0});
@@ -129,39 +163,54 @@ class DragDropResize {
       return instance;
     }
 
+    function showElem(id, show) {
+      document.getElementById(id).hidden = !show;
+    }
+
+    function updateControls() {
+      showElem(MINIMIZE_BTN_ID, isMaximized());
+      showElem(MAXIMIZE_BTN_ID, !isMaximized());
+      const hasPast = props.hasPast ? props.hasPast() : false;
+      showElem(BACK_BTN_ID, hasPast);
+      const hasFuture = props.hasPast ? props.hasFuture() : false;
+      showElem(FORWARD_BTN_ID, hasFuture);
+      showElem(HISTORY_BTN_ID, hasFuture || hasPast);
+
+    }
+
     this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
+      setCss({position: 'fixed', top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
       minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      updateControls();
       return this;
     }
 
     this.minimize = function () {
       if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
+        setCss({position, top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
         setCss(minLocation);
         prevLocation = minLocation;
         minLocation = undefined;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+        updateControls();
       }
       return this;
     }
 
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      setTimeout(() => Resizer.position(popupCnt), 0);
+    function setCss(rect, container) {
+      if (container === undefined) {
+        const popRect = getPopupElems().cnt.getBoundingClientRect();
+        const top = getPopupElems().cnt.style.top;
+        const bottom = getPopupElems().cnt.style.bottom;
+        const left = getPopupElems().cnt.style.left;
+        const right = getPopupElems().cnt.style.right;
+        const maxWidth = getPopupElems().cnt.style.maxWidth;
+        const maxHeight = getPopupElems().cnt.style.maxHeight;
+        const width = getPopupElems().cnt.style.width;
+        const height = getPopupElems().cnt.style.height;
+        prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+        setTimeout(() => Resizer.position(popupCnt), 0);
+      }
+      styleUpdate(container || getPopupElems().cnt, rect);
       return instance;
     }
     this.setCss = setCss;
@@ -193,6 +242,12 @@ class DragDropResize {
       lastClickTime = clickTime;
     }
 
+    function get(name) {
+      const prop = props[name];
+      if ((typeof prop) === 'function') return prop();
+      return prop;
+    }
+
     function stopDragging() {
       dragging = undefined;
       backdrop.hide();
@@ -205,6 +260,7 @@ class DragDropResize {
     const tempElem = document.createElement('div');
     const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
+        HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID,
         hideClose: props.hideClose});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
@@ -213,13 +269,68 @@ class DragDropResize {
     const popupContent = document.getElementById(POPUP_CONTENT_ID);
     popupContent.style.overflow = 'auto';
     const popupCnt = document.getElementById(POPUP_CNT_ID);
+    const histCnt = document.createElement('DIV');
+    const histFilter = document.createElement('input');
+    histFilter.placeholder = 'filter';
+    const histDisplayCnt = document.createElement('DIV');
+    histCnt.append(histFilter);
+    histCnt.append(histDisplayCnt);
+    histDisplayCnt.style.maxHeight = '40vh';
+    histDisplayCnt.style.overflow = 'auto';
+    histCnt.style.position = position;
+    histCnt.className = 'place-history-cnt';
+    document.body.append(histCnt);
     popupCnt.style = defaultStyle;
     popupCnt.addEventListener(Resizer.events.resize.name, onResizeEvent);
     document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
     document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
     document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
+    if (props.back) {
+      document.getElementById(BACK_BTN_ID).onclick = () => {
+        props.back();
+        updateControls();
+        event.stopPropagation();
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+      }
+    }
+    if (props.forward) {
+      document.getElementById(FORWARD_BTN_ID).onclick = () => {
+        props.forward();
+        updateControls();
+        event.stopPropagation();
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+      }
+    }
+    if (props.historyDisplay) {
+      const historyBtn = document.getElementById(HISTORY_BTN_ID);
+      historyBtn.onclick = (event) => {
+        histCnt.hidden = false;
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+        positionOnElement(historyBtn, histCnt);
+        updateHistZindex();
+        event.stopPropagation();
+      }
+      histCnt.onclick = (event) => {
+        event.stopPropagation();
+      }
+      histDisplayCnt.onclick = (event) => {
+        event.stopPropagation();
+        if ((typeof props.historyClick) === 'function') {
+          props.historyClick(event);
+          updateControls();
+          histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+          histFilter.focus();
+        }
+      }
+      histFilter.onkeyup = () => {
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+        histFilter.focus();
+      }
+    }
+
     popupCnt.onmousedown = drag;
     popupCnt.onclick = (e) => {
+      histCnt.hidden = true;
       if (e.target.tagName !== 'A')
       e.stopPropagation()
     };

@@ -1,0 +1,8 @@
+<div>
+  <ul class='ce-history-list'>
+    <li:t repeat='elem in history.list' value='{{elem.index}}'
+        class='{{!filtered && elem.index === history.currentPosition ? 'place-current-hist-loc' : ''}}'>
+      {{!filtered && elem.index === history.currentPosition ? '' : elem.elem}}
+    </li:t>
+  </ul>
+</div>

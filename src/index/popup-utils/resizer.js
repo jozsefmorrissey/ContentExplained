@@ -20,7 +20,7 @@ class Resizer {
         instance.container.style.zIndex = zIndex;
         elem.style.zIndex = zIndex;
         Resizer.backdrop.updateZindex(zIndex + 1);
-        instance.show();
+        instance.position();
       }
     }
     this.updateZindex = updateZindex;
@@ -36,6 +36,7 @@ class Resizer {
     const padding = 8;
     let resize = false;
     let lastPosition;
+    this.getPadding = () => padding;
 
     const attrs = Object.values(axisObj);
     const top = attrs.indexOf('top') !== -1;
@@ -47,7 +48,7 @@ class Resizer {
     this.container.style.cursor = cursor;
     this.container.style.padding = padding/2 + 'px';
     this.container.style.position = axisObj.position || 'absolute';
-    this.container.style.backgroundColor = 'black';
+    this.container.style.backgroundColor = 'transparent';
     Resizer.container.append(this.container);
 
     function getComputedSize(element, property) {
@@ -76,7 +77,7 @@ class Resizer {
           const newHeight = lastPosition.height - dy;
           if (newHeight > minHeight) {
             if (top) {
-              elem.style.top = lastPosition.top + dy + 'px';
+              elem.style.top = lastPosition.top + window.scrollY + dy + 'px';
             }
             elem.style.height = newHeight + 'px'
           }
@@ -101,6 +102,10 @@ class Resizer {
       }
     }
 
+    function isFixed() {
+      return axisObj.position && axisObj.position === 'fixed';
+    }
+
     this.container.addEventListener('click',
     (e) =>
     e.stopPropagation()
@@ -115,8 +120,8 @@ class Resizer {
       const width = document.documentElement.clientWidth;
       const rect = elem.getBoundingClientRect();
       const cntStyle = instance.container.style;
-      const scrollY =  window.scrollY;
-      const scrollX =  window.scrollX;
+      const scrollY =  isFixed() ? 0 : window.scrollY;
+      const scrollX =  isFixed() ? 0 : window.scrollX;
       if (top) {
         cntStyle.top = rect.top - padding + scrollY + 'px';
       } else if (!bottom) {
@@ -182,14 +187,17 @@ Resizer.onEach = function (elem, func) {
 }
 Resizer.hide = (elem) => Resizer.onEach(elem, 'hide');
 Resizer.show = (elem) => {
-    if (!Resizer.isLocked(elem)) Resizer.onEach(elem, 'show');
+    if (!Resizer.isLocked(elem)) {
+      Resizer.onEach(elem, 'show');
+      Resizer.updateZindex(elem);
+    }
 };
-Resizer.updateZindex = (elem) => {
-  const highestZIndex = Resizer.zIndex() - 2;
+Resizer.updateZindex = (elem, callback) => {
+  const highestZIndex = Resizer.zIndex() - 3;
   if (!elem.style.zIndex ||
       (elem.style.zIndex.match(/[0-9]{1,}/) &&
         highestZIndex > Number.parseInt(elem.style.zIndex))) {
-    Resizer.onEach(elem, 'updateZindex', highestZIndex + 3);
+    Resizer.onEach(elem, 'updateZindex', highestZIndex + 4);
   }
 }
 

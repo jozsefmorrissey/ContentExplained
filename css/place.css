@@ -1,3 +1,11 @@
+.place-history-cnt {
+  background: white;
+  width: fit-content;
+  height: fit-content;
+  border-style: groove;
+  border-radius: 10pt;
+}
+
 .place-btn {
   padding: 0 5px;
   border-radius: 3px;

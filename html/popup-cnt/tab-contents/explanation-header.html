@@ -1,19 +1,12 @@
 <div>
   <div class='ce-lookup-expl-heading-cnt'>
     <div class='ce-key-cnt'>
-      <input type='text' style='font-size: x-large;margin: 0;' value='{{words}}'
-            id='{{EXPL_SEARCH_INPUT_ID}}'>
+      <input type='text' style='font-size: x-large;margin: 0;'
+            id='{{EXPL_SEARCH_INPUT_ID}}' autocomplete="off">
       <button class='ce-words-search-btn' id='{{SEARCH_BTN_ID}}'>Search</button>
+      &nbsp;&nbsp;&nbsp;
+      <h3>{{words}}</h3>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    </div>
-    <div{{explanations.length > 0 ? '' : ' hidden'}}>
-      <div class='ce-expl-tag-cnt'>
-        <span:t repeat='tag in allTags'>
-          <input type='checkbox' class='ce-expl-tag' value='{{tag}}'
-              {{selected.indexOf(tag) === -1 ? '' : 'checked'}}>
-          <label>{{tag}}</label>
-        </span:t>
-      </div>
     </div>
   </div>
 </div>

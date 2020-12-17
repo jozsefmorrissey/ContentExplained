@@ -98,6 +98,7 @@ function elemSpacer(elem, pad) {
   elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   elem.style.height = elem.scrollHeight + 'px';
   elem.style.margin = 0;
+  elem.style.backgroundColor = 'white';
   elem.style.zIndex = 1;
   elem.after(spacer);
   elem.style.position = elem.getAttribute("position");

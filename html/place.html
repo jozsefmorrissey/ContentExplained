@@ -2,12 +2,19 @@
   <div class='place-max-min-cnt' id='{{MAX_MIN_CNT_ID}}' position='absolute'>
     <div class='place-full-width'>
       <div class='place-inline place-right'>
-        <button class='place-btn place-right'
-              id='{{MINIMIZE_BTN_ID}}' hidden>
+        <button class='place-btn place-right' id='{{BACK_BTN_ID}}'>
+          &pr;
+        </button>
+        <button class='place-btn place-right' id='{{HISTORY_BTN_ID}}'>
+          &equiv;
+        </button>
+        <button class='place-btn place-right' id='{{FORWARD_BTN_ID}}'>
+          &sc;
+        </button>
+        <button class='place-btn place-right' id='{{MINIMIZE_BTN_ID}}' hidden>
           &minus;
         </button>
-        <button class='place-btn place-right'
-          id='{{MAXIMIZE_BTN_ID}}'>
+        <button class='place-btn place-right' id='{{MAXIMIZE_BTN_ID}}'>
           &plus;
         </button>
         <button class='place-btn place-right'{{hideClose ? ' hidden' : ''}}

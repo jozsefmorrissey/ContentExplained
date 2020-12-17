@@ -3,7 +3,13 @@
       target='merriam-webster'>
     Merriam&nbsp;Webster&nbsp;'{{key}}'
   </a>
-  <div id='{{MERRIAM_WEB_SUG_CNT_ID}}'>
-    <span:t repeat='sug in suggestions' class='ce-linear-tab'>{{sug}}</span:t>
+  <br>
+  <input type="text" name="" value="" list='merriam-suggestions'
+      placeholder="Search" id='{{SEARCH_INPUT_ID}}'>
+  <datalist id='merriam-suggestions'>
+    <option:t value='{{sug}}' repeat='sug in suggestions'></option:t>
+  </datalist>
+  <div id='{{MERRIAM_WEB_SUG_CNT_ID}}'{{suggestions.length === 0 ? ' hidden': ''}}>
+    No Definition Found
   </div>
 </div>

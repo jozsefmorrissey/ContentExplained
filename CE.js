@@ -182,7 +182,9 @@ function DebugGuiClient(config, root, debug) {
   }
 
   this.addHeaderXhr = function (xhr) {
-    xhr.setRequestHeader('debug-gui', instance.toString());
+    if (debug) {
+      xhr.setRequestHeader('debug-gui', instance.toString());
+    }
   }
 
   function createCookie() {
@@ -546,6 +548,109 @@ const EPNTS = new Endpoints({
 }
 , 'local').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){};
+class Css {
+  constructor(identifier, value) {
+    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
+    this.string = value.trim().replace(/\s{1,}/g, ' ');
+    this.properties = [];
+    const addProp = (match, key, value) => this.properties.push({key, value});
+    this.string.replace(Css.propReg, addProp);
+    this.apply = function () {
+      const matchingElems = document.querySelectorAll(this.identifier);
+      for (let index = 0; index < matchingElems.length; index += 1) {
+        const elem = matchingElems[index];
+        for (let pIndex = 0; pIndex < this.properties.length; pIndex += 1) {
+          const prop = this.properties[pIndex];
+          elem.style[prop.key] = prop.value;
+        }
+      }
+    }
+  }
+}
+Css.propReg = /([a-zA-Z-0-9]{1,}):\s*([a-zA-Z-0-9%\(\),.\s]{1,})/g;
+
+class CssFile {
+  constructor(filename, string) {
+    string = string.replace(/\/\/.*/g, '')
+                  .replace(/\n/g, ' ')
+                  .replace(/\/\*.*?\*\//, '');
+    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
+    CssFile.files[filename] = this;
+    this.elems = [];
+    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.rawElems = string.match(new RegExp(reg, 'g'));
+    for (let index = 0; index < this.rawElems.length; index += 1) {
+      const rawElem = this.rawElems[index].match(reg);
+      this.elems.push(new Css(rawElem[1], rawElem[2]));
+    }
+
+    this.apply = function () {
+      for (let index = 0; index < this.elems.length; index += 1) {
+        this.elems[index].apply();
+      }
+    }
+
+    this.dump = function () {
+      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
+    }
+  }
+}
+
+CssFile.files = {};
+
+CssFile.apply = function () {
+  const args = Array.from(arguments);
+  const ids = Object.keys(CssFile.files);
+  for (let index = 0; index < ids.length; index += 1) {
+    const cssFile = CssFile.files[ids[index]];
+    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
+      cssFile.apply();
+    }
+  }
+}
+
+CssFile.dump = function () {
+  let dumpStr = '';
+  const args = Array.from(arguments);
+  const files = Object.values(CssFile.files);
+  for (let index = 0; index < files.length; index += 1) {
+    const cssFile = files[index];
+    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
+      dumpStr += cssFile.dump();
+    }
+  }
+  return dumpStr;
+}
+
+function cssAfterLoad() {
+  applyCss = CssFile.apply;
+}
+
+try {
+  afterLoad.push(cssAfterLoad);
+} catch (e) {}
+
+try{
+	exports.CssFile = CssFile;
+} catch (e) {}
+;// ./src/index/css.js
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+
+new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0;   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
+
+new CssFile('place', '.place-history-cnt {   background: white;   width: fit-content;   height: fit-content;   border-style: groove;   border-radius: 10pt; }  .place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 1%;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
+
+new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
+
+new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
+
+new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
+
+;
 class CustomEvent {
   constructor(name) {
     const watchers = [];
@@ -579,129 +684,6 @@ class CustomEvent {
     }
   }
 }
-;
-class Css {
-  constructor(identifier, value) {
-    this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
-    this.string = value.trim().replace(/\s{1,}/g, ' ');
-    this.properties = [];
-    const addProp = (match, key, value) => this.properties.push({key, value});
-    this.string.replace(Css.propReg, addProp);
-    this.apply = function () {
-      const matchingElems = document.querySelectorAll(this.identifier);
-      for (let index = 0; index < matchingElems.length; index += 1) {
-        const elem = matchingElems[index];
-        for (let pIndex = 0; pIndex < this.properties.length; pIndex += 1) {
-          const prop = this.properties[pIndex];
-          elem.style[prop.key] = prop.value;
-        }
-      }
-    }
-  }
-}
-Css.propReg = /([a-zA-Z-0-9]{1,}):\s*([a-zA-Z-0-9%\(\),.\s]{1,})/g;
-
-class CssFile {
-  constructor(filename, string) {
-    string = string.replace(/\/\/.*/g, '')
-                  .replace(/\n/g, ' ')
-                  .replace(/\/\*.*?\*\//, '');
-    const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
-    this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
-    this.rawElems = string.match(new RegExp(reg, 'g'));
-    for (let index = 0; index < this.rawElems.length; index += 1) {
-      const rawElem = this.rawElems[index].match(reg);
-      this.elems.push(new Css(rawElem[1], rawElem[2]));
-    }
-
-    this.apply = function () {
-      for (let index = 0; index < this.elems.length; index += 1) {
-        this.elems[index].apply();
-      }
-    }
-
-    this.dump = function () {
-      return `new CssFile('${this.filename}', '${string.replace(/'/, '\\\'')}');\n\n`;
-    }
-  }
-}
-
-CssFile.files = [];
-
-CssFile.apply = function () {
-  const args = Array.from(arguments);
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
-      cssFile.apply();
-    }
-  }
-}
-
-CssFile.dump = function () {
-  let dumpStr = '';
-  const args = Array.from(arguments);
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
-    if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
-      dumpStr += cssFile.dump();
-    }
-  }
-  return dumpStr;
-}
-
-function cssAfterLoad() {
-  applyCss = CssFile.apply;
-}
-
-try {
-  afterLoad.push(cssAfterLoad);
-} catch (e) {}
-
-try{
-	exports.CssFile = CssFile;
-} catch (e) {}
-;// ./src/index/css.js
-new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
-
-new CssFile('index', '.ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 7pt;   padding: 0 4pt;   font-size: x-small;   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('menu', 'menu {   display: grid;   padding: 5px; }  menuitem:hover {   background-color: #d8d8d8; } ');
-
-new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 0;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
-
-new CssFile('popup', '.ce-popup {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .ce-popup-shadow {   position: fixed;   left: 0;   top: 0;   width: 100%;   height: 100%;   text-align: center;   background:rgba(0,0,0,0.6);   padding: 20pt; } ');
-
-new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin: 0;   width: 100%; }  #ce-logout-btn {   position: absolute;   right: 50%;   bottom: 50%;   transform: translate(50%, 50%); }  #ce-profile-header-ctn {   display: inline-flex;   position: relative;   width: 100%; }  #ce-setting-cnt {   display: inline-flex;   height: 100%;   width: 100%; } #ce-setting-list {   list-style-type: none;   padding: 5pt; }  #ce-setting-list-cnt {   background-color: blue;   position: fixed;   height: 100vh; }  .ce-setting-list-item {   font-weight: 600;   font-size: medium;   color: aliceblue;   margin: 5pt 0;   padding: 0 10pt;   width: max-content; }  .ce-error-msg {   color: red; }  .ce-active-list-item {   background: dodgerblue;   border-radius: 15pt; }  #ce-login-cnt {   text-align: center;   width: 100%;   height: 100vh; }  #ce-login-center {   position: relative;   top: 50%;   transform: translate(0, -50%); } ');
-
-new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      padding: 0 4pt;   font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative;   top: 50%;   transform: translate(0, -50%); */ }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative; */   top: 50%;   transform: translate(0, -50%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {      /* padding: 0 4pt; */   font-size: x-small;   /* position: relative; */   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 99%;   height: 85%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 96%;   height: 85%;   margin: 2%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
-new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-upper-right-btn-cnt {   float: right;   display: inline-flex;   margin-right: 1%; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 0;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
-
-new CssFile('place', '.place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 1%;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
-
 ;function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -802,6 +784,7 @@ function elemSpacer(elem, pad) {
   elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
   elem.style.height = elem.scrollHeight + 'px';
   elem.style.margin = 0;
+  elem.style.backgroundColor = 'white';
   elem.style.zIndex = 1;
   elem.after(spacer);
   elem.style.position = elem.getAttribute("position");
@@ -1472,6 +1455,7 @@ function search() {
     if (searchWords) {
       lookupHoverResource.show();
       if (searchWords !== properties.get('searchWords') && searchWords.length < 64) {
+        history.push(searchWords);
         properties.set('searchWords', searchWords);
         lookupTabs.update();
       }
@@ -1598,7 +1582,7 @@ class Resizer {
         instance.container.style.zIndex = zIndex;
         elem.style.zIndex = zIndex;
         Resizer.backdrop.updateZindex(zIndex + 1);
-        instance.show();
+        instance.position();
       }
     }
     this.updateZindex = updateZindex;
@@ -1614,6 +1598,7 @@ class Resizer {
     const padding = 8;
     let resize = false;
     let lastPosition;
+    this.getPadding = () => padding;
 
     const attrs = Object.values(axisObj);
     const top = attrs.indexOf('top') !== -1;
@@ -1625,7 +1610,7 @@ class Resizer {
     this.container.style.cursor = cursor;
     this.container.style.padding = padding/2 + 'px';
     this.container.style.position = axisObj.position || 'absolute';
-    this.container.style.backgroundColor = 'black';
+    this.container.style.backgroundColor = 'transparent';
     Resizer.container.append(this.container);
 
     function getComputedSize(element, property) {
@@ -1654,7 +1639,7 @@ class Resizer {
           const newHeight = lastPosition.height - dy;
           if (newHeight > minHeight) {
             if (top) {
-              elem.style.top = lastPosition.top + dy + 'px';
+              elem.style.top = lastPosition.top + window.scrollY + dy + 'px';
             }
             elem.style.height = newHeight + 'px'
           }
@@ -1679,6 +1664,10 @@ class Resizer {
       }
     }
 
+    function isFixed() {
+      return axisObj.position && axisObj.position === 'fixed';
+    }
+
     this.container.addEventListener('click',
     (e) =>
     e.stopPropagation()
@@ -1693,8 +1682,8 @@ class Resizer {
       const width = document.documentElement.clientWidth;
       const rect = elem.getBoundingClientRect();
       const cntStyle = instance.container.style;
-      const scrollY =  window.scrollY;
-      const scrollX =  window.scrollX;
+      const scrollY =  isFixed() ? 0 : window.scrollY;
+      const scrollX =  isFixed() ? 0 : window.scrollX;
       if (top) {
         cntStyle.top = rect.top - padding + scrollY + 'px';
       } else if (!bottom) {
@@ -1760,14 +1749,17 @@ Resizer.onEach = function (elem, func) {
 }
 Resizer.hide = (elem) => Resizer.onEach(elem, 'hide');
 Resizer.show = (elem) => {
-    if (!Resizer.isLocked(elem)) Resizer.onEach(elem, 'show');
+    if (!Resizer.isLocked(elem)) {
+      Resizer.onEach(elem, 'show');
+      Resizer.updateZindex(elem);
+    }
 };
-Resizer.updateZindex = (elem) => {
-  const highestZIndex = Resizer.zIndex() - 2;
+Resizer.updateZindex = (elem, callback) => {
+  const highestZIndex = Resizer.zIndex() - 3;
   if (!elem.style.zIndex ||
       (elem.style.zIndex.match(/[0-9]{1,}/) &&
         highestZIndex > Number.parseInt(elem.style.zIndex))) {
-    Resizer.onEach(elem, 'updateZindex', highestZIndex + 3);
+    Resizer.onEach(elem, 'updateZindex', highestZIndex + 4);
   }
 }
 
@@ -1800,6 +1792,10 @@ class DragDropResize {
     const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
     const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
     const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
+    const BACK_BTN_ID = 'place-back-btn-id-' + id;
+    const FORWARD_BTN_ID = 'place-forward-btn-id-' + id;
+    const HISTORY_BTN_ID = 'place-history-btn-id-' + id;
+    const position = props.position || 'absolute';
     const template = new $t('place');
     let lastMoveEvent, prevLocation, mouseDown, minLocation, selectElem,
         currElem, hasMoved;
@@ -1819,7 +1815,7 @@ class DragDropResize {
 
     const defaultStyle = `
       background-color: white;
-      position: ${props.position || 'absolute'};
+      position: ${position};
       overflow: hidden;
       min-height: 20vh;
       min-width: 30vw;
@@ -1833,11 +1829,13 @@ class DragDropResize {
       Resizer.hide(popupCnt);
       closeFuncs.forEach((func) => func());
       instance.minimize();
+      histCnt.hidden = true;
     }
     this.hide = this.close;
 
     this.show = () => {
       if (instance.hidden()) {
+        updateControls();
         const css = {display: 'block',
         height: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().height,
         width: Resizer.isLocked(popupCnt) ? undefined : instance.getDems().width};
@@ -1846,6 +1844,7 @@ class DragDropResize {
 
         setCss(css);
         if (!Resizer.isLocked(popupCnt)) Resizer.show(popupCnt);
+        updateHistZindex();
       }
       return instance;
     };
@@ -1862,37 +1861,64 @@ class DragDropResize {
       return false;
     }
 
+    function updateHistZindex() {
+      histCnt.style.zIndex = Number.parseInt(popupCnt.style.zIndex) + 1;
+    }
+
+    function getRelitiveRect(elem) {
+      let rect;
+      if (elem === undefined) {
+        rect = {top: 0, bottom: 0, right: 0, left: 0, width: 100, height: 100};
+      } else {
+        rect = elem.getBoundingClientRect();
+      }
+      if (props.position === 'fixed') return rect;
+
+      const absRect = {};
+      absRect.top = rect.top + window.scrollY;
+      absRect.bottom = rect.bottom + window.scrollY;
+      absRect.right = rect.right + window.scrollX;
+      absRect.left = rect.left + window.scrollX;
+      absRect.width = rect.width;
+      absRect.height = rect.height;
+      return absRect
+    }
+
     this.back = () => setCss(prevLocation);
 
-    function positionOnElement(elem) {
+    function positionOnElement(elem, container) {
       currElem = elem || currElem;
       instance.show();
-      let rect = currElem.getBoundingClientRect();
-      let popRect = getPopupElems().cnt.getBoundingClientRect();
+      let rect = getRelitiveRect(currElem);
+      let popRect = getRelitiveRect(container || getPopupElems().cnt);
+      let padding = 8;
 
       let top = `${rect.top}px`;
       const position = {};
-      position.top = () =>{setCss({top: rect.top - popRect.height + 'px'}); return position;};
-      position.bottom = () =>{setCss({top: rect.bottom + 'px'}); return position;};
-      position.left = () =>{setCss({left: rect.left - popRect.width + 'px'}); return position;};
-      position.right = () =>{setCss({left: rect.right + 'px'}); return position;};
+      position.close = instance.close;
+      position.top = () =>{setCss({top: rect.top - popRect.height - padding + 'px'}, container); return position;};
+      position.bottom = () =>{setCss({top: rect.bottom + padding + 'px'}, container); return position;};
+      position.left = () =>{setCss({left: rect.left - popRect.width - padding + 'px'}, container); return position;};
+      position.right = () =>{setCss({left: rect.right + padding + 'px'}, container); return position;};
       position.center = () =>{
               let left = rect.left - (popRect.width / 2) + (rect.width / 2);
-              left = left > 10 ? left : 10;
-              const leftMost = window.innerWidth - popRect.width - 10;
-              left = left < leftMost ? left : leftMost;
               let top = rect.top - (popRect.height / 2) + (rect.height / 2);
-              top = top > 10 ? top : 10;
-              const bottomMost = window.innerHeight - popRect.height - 10;
-              top = top < bottomMost ? top : bottomMost;
-              setCss({left: left + 'px', top: top + 'px'});
+              setCss({left: left + 'px', top: top + 'px'}, container);
               return position;};
+      position.inView = () =>{
+        let popRect = getRelitiveRect(container || getPopupElems().cnt);
+        const left = (popRect.left > 10 ? popRect.left : 10) + 'px';
+        const right = (popRect.right > 10 ? popRect.right : 10) + 'px';
+        const top = (popRect.top > 10 ? popRect.top : 10) + 'px';
+        const bottom = (popRect.bottom > 10 ? popRect.bottom : 10) + 'px';
+        setCss({left, right, top, bottom}, container);
+        return position;};
       position.maximize = instance.maximize.bind(position);
       position.minimize = instance.minimize.bind(position);
-      if (window.innerHeight / 2 > rect.top) {
-        position.center().bottom();
+      if (window.innerHeight / 2 > rect.top - window.scrollY) {
+        position.center().bottom().inView();
       } else {
-        position.center().top();
+        position.center().top().inView();
       }
 
       return position;
@@ -1904,7 +1930,7 @@ class DragDropResize {
         selectElem = window.getSelection().getRangeAt(0);
         currElem = selectElem;
       }
-      positionOnElement(selectElem);
+      return positionOnElement(selectElem);
     };
     this.top = () => setCss({top:0,bottom:''});
     this.left = () => setCss({right:'',left:0});
@@ -1919,39 +1945,54 @@ class DragDropResize {
       return instance;
     }
 
+    function showElem(id, show) {
+      document.getElementById(id).hidden = !show;
+    }
+
+    function updateControls() {
+      showElem(MINIMIZE_BTN_ID, isMaximized());
+      showElem(MAXIMIZE_BTN_ID, !isMaximized());
+      const hasPast = props.hasPast ? props.hasPast() : false;
+      showElem(BACK_BTN_ID, hasPast);
+      const hasFuture = props.hasPast ? props.hasFuture() : false;
+      showElem(FORWARD_BTN_ID, hasFuture);
+      showElem(HISTORY_BTN_ID, hasFuture || hasPast);
+
+    }
+
     this.maximize = function () {
-      setCss({top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
+      setCss({position: 'fixed', top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
       minLocation = prevLocation;
-      document.getElementById(MAXIMIZE_BTN_ID).style.display = 'none';
-      document.getElementById(MINIMIZE_BTN_ID).style.display = 'block';
+      updateControls();
       return this;
     }
 
     this.minimize = function () {
       if (minLocation) {
-        setCss({top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
+        setCss({position, top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
         setCss(minLocation);
         prevLocation = minLocation;
         minLocation = undefined;
-        document.getElementById(MAXIMIZE_BTN_ID).style.display = 'block';
-        document.getElementById(MINIMIZE_BTN_ID).style.display = 'none';
+        updateControls();
       }
       return this;
     }
 
-    function setCss(rect) {
-      const popRect = getPopupElems().cnt.getBoundingClientRect();
-      const top = getPopupElems().cnt.style.top;
-      const bottom = getPopupElems().cnt.style.bottom;
-      const left = getPopupElems().cnt.style.left;
-      const right = getPopupElems().cnt.style.right;
-      const maxWidth = getPopupElems().cnt.style.maxWidth;
-      const maxHeight = getPopupElems().cnt.style.maxHeight;
-      const width = getPopupElems().cnt.style.width;
-      const height = getPopupElems().cnt.style.height;
-      styleUpdate(getPopupElems().cnt, rect);
-      prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
-      setTimeout(() => Resizer.position(popupCnt), 0);
+    function setCss(rect, container) {
+      if (container === undefined) {
+        const popRect = getPopupElems().cnt.getBoundingClientRect();
+        const top = getPopupElems().cnt.style.top;
+        const bottom = getPopupElems().cnt.style.bottom;
+        const left = getPopupElems().cnt.style.left;
+        const right = getPopupElems().cnt.style.right;
+        const maxWidth = getPopupElems().cnt.style.maxWidth;
+        const maxHeight = getPopupElems().cnt.style.maxHeight;
+        const width = getPopupElems().cnt.style.width;
+        const height = getPopupElems().cnt.style.height;
+        prevLocation = {top, bottom, left, right, maxWidth, maxHeight, width, height}
+        setTimeout(() => Resizer.position(popupCnt), 0);
+      }
+      styleUpdate(container || getPopupElems().cnt, rect);
       return instance;
     }
     this.setCss = setCss;
@@ -1983,6 +2024,12 @@ class DragDropResize {
       lastClickTime = clickTime;
     }
 
+    function get(name) {
+      const prop = props[name];
+      if ((typeof prop) === 'function') return prop();
+      return prop;
+    }
+
     function stopDragging() {
       dragging = undefined;
       backdrop.hide();
@@ -1995,6 +2042,7 @@ class DragDropResize {
     const tempElem = document.createElement('div');
     const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
+        HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID,
         hideClose: props.hideClose});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
@@ -2003,13 +2051,68 @@ class DragDropResize {
     const popupContent = document.getElementById(POPUP_CONTENT_ID);
     popupContent.style.overflow = 'auto';
     const popupCnt = document.getElementById(POPUP_CNT_ID);
+    const histCnt = document.createElement('DIV');
+    const histFilter = document.createElement('input');
+    histFilter.placeholder = 'filter';
+    const histDisplayCnt = document.createElement('DIV');
+    histCnt.append(histFilter);
+    histCnt.append(histDisplayCnt);
+    histDisplayCnt.style.maxHeight = '40vh';
+    histDisplayCnt.style.overflow = 'auto';
+    histCnt.style.position = position;
+    histCnt.className = 'place-history-cnt';
+    document.body.append(histCnt);
     popupCnt.style = defaultStyle;
     popupCnt.addEventListener(Resizer.events.resize.name, onResizeEvent);
     document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
     document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
     document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
+    if (props.back) {
+      document.getElementById(BACK_BTN_ID).onclick = () => {
+        props.back();
+        updateControls();
+        event.stopPropagation();
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+      }
+    }
+    if (props.forward) {
+      document.getElementById(FORWARD_BTN_ID).onclick = () => {
+        props.forward();
+        updateControls();
+        event.stopPropagation();
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+      }
+    }
+    if (props.historyDisplay) {
+      const historyBtn = document.getElementById(HISTORY_BTN_ID);
+      historyBtn.onclick = (event) => {
+        histCnt.hidden = false;
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+        positionOnElement(historyBtn, histCnt);
+        updateHistZindex();
+        event.stopPropagation();
+      }
+      histCnt.onclick = (event) => {
+        event.stopPropagation();
+      }
+      histDisplayCnt.onclick = (event) => {
+        event.stopPropagation();
+        if ((typeof props.historyClick) === 'function') {
+          props.historyClick(event);
+          updateControls();
+          histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+          histFilter.focus();
+        }
+      }
+      histFilter.onkeyup = () => {
+        histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
+        histFilter.focus();
+      }
+    }
+
     popupCnt.onmousedown = drag;
     popupCnt.onclick = (e) => {
+      histCnt.hidden = true;
       if (e.target.tagName !== 'A')
       e.stopPropagation()
     };
@@ -2091,27 +2194,31 @@ class HoverResources {
     this.position = () => popupCnt;
 
 
-    this.close = () => {
+    this.softClose = () => {
       if (!lockOpen) {
+        instance.close();
+      }
+    }
+
+    this.close = () => {
         canClose = false;
         popupCnt.close();
         currElem = undefined;
         closeFuncs.forEach((func) => func());
-      }
     }
 
     this.forceOpen = () => {
       hoverOff = true; forceOpen = true; instance.show();
     };
     popupCnt.on('click', instance.forceOpen);
-    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.close();};
+    this.forceClose = () => {hoverOff = false; forceOpen = false; instance.softClose();};
     this.show = () => {
       popupCnt.show();
     };
 
     function softClose() {
       if (!props.clickClose && canClose && !forceOpen && !popupCnt.hidden() && !popupCnt.withinPopup(-10)) {
-        instance.close();
+        instance.softClose();
       }
     }
 
@@ -2768,9 +2875,6 @@ try{
 } catch (e) {}
 ;// ./src/index/services/$t.js
 
-$t.functions['483114051'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("sug")) + `</span>`
-}
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
 }
@@ -2780,8 +2884,17 @@ $t.functions['755294900'] = function (get) {
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
 }
+$t.functions['1165578666'] = function (get) {
+	return `<option value='` + (get("sug")) + `' ></option>`
+}
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+}
+$t.functions['history'] = function (get) {
+	return `<div> <ul class='ce-history-list'> ` + (new $t('<li  value=\'{{elem.index}}\' class=\'{{!filtered && elem.index === history.currentPosition ? \'place-current-hist-loc\' : \'\'}}\'> {{!filtered && elem.index === history.currentPosition ? \'\' : elem.elem}} </li>').render(get('scope'), 'elem in history.list', get)) + ` </ul> </div> `
+}
+$t.functions['-2107865266'] = function (get) {
+	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
 }
 $t.functions['hover-explanation'] = function (get) {
 	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -2820,7 +2933,7 @@ $t.functions['icon-menu/test'] = function (get) {
 	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div id='control-ctn'> one two three four five six </div> </body> <script type="text/javascript" src='/CE.js'></script> </html> `
 }
 $t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -2840,17 +2953,14 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
-	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' value='` + (get("words")) + `' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `'> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> <div` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-expl-tag-cnt'> ` + (new $t('<span > <input type=\'checkbox\' class=\'ce-expl-tag\' value=\'{{tag}}\' {{selected.indexOf(tag) === -1 ? \'\' : \'checked\'}}> <label>{{tag}}</label> </span>').render(get('scope'), 'tag in allTags', get)) + ` </div> </div> </div> </div> `
-}
-$t.functions['-1828676604'] = function (get) {
-	return `<span > <input type='checkbox' class='ce-expl-tag' value='` + (get("tag")) + `' ` + (get("selected").indexOf(get("tag")) === -1 ? '' : 'checked') + `> <label>` + (get("tag")) + `</label> </span>`
-}
 $t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> </div> `
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
+	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-cnt'> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'> ` + (new $t('<span  class=\'ce-linear-tab\'>{{sug}}</span>').render(get('scope'), 'sug in suggestions', get)) + ` </div> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
+	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
 }
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
@@ -2858,11 +2968,14 @@ $t.functions['-1925646037'] = function (get) {
 $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
 }
-$t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='fixed' id='` + (get("NAV_CNT_ID")) + `'> <ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='fixed' id='` + (get("HEADER_CNT_ID")) + `'> ` + (get("header")) + ` </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> ` + (get("content")) + ` </div> </div> </div> `
+$t.functions['popup-cnt/tabs-navigation'] = function (get) {
+	return `<ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
+}
+$t.functions['tabs'] = function (get) {
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
 };// ./bin/$templates.js
 
 class HoverExplanations {
@@ -2897,8 +3010,11 @@ class HoverExplanations {
     props.setDems = props.setDems || setDems;
     props.getDems = props.getDems || getDems;
     const hoverResource = new HoverResources(props);
+
     hoverResource.container().addEventListener('drop', () => newHoverResource());
-    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    if (props.hover === undefined || props.hover === true) {
+      hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    }
 
     this.close = () => hoverResource.close();
     this.disable = () => {disabled = true; instance.close()};
@@ -3083,6 +3199,11 @@ class HoverExplanations {
       } else {
         explRefs[ref].push(expl);
       }
+      const elem = document.createElement(tag);
+      elem.setAttribute('ref', expl.searchWords);
+      updateContent(elem, explRefs[ref].length - 1);
+      hoverResource.position().elem();
+
       wrapList.push({ word: expl.words, ref });
       wrapOne();
       explIds.push(expl.id);
@@ -3096,6 +3217,7 @@ class HoverExplanations {
 
     this.lockOpen = hoverResource.lockOpen;
     this.unlockOpen = hoverResource.unlockOpen;
+    this.position = hoverResource.position;
 
     function enableToggled(enabled) {
       if (enabled !== lastEnabled) {
@@ -3208,6 +3330,49 @@ class Form {
 
 Form = new Form();
 ;
+class History {
+  constructor(len) {
+    len = len || 100;
+    let history = [];
+    let currentPosition = -1;
+    this.push = (elem) => {
+      if (elem !== history[currentPosition]) {
+        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
+        history = history.splice(currentPosition - len || 0, len);
+        currentPosition = history.length;
+        history.push(elem);
+        properties.set('ce-history', history, true);
+      }
+    };
+    this.index = () => currentPosition;
+    this.get = () => {
+      const histObject = {};
+      histObject.currentPosition = currentPosition;
+      histObject.list = [];
+      for (let index = history.length - 1; index > -1; index -= 1) {
+        histObject.list.push({index, elem: history[index]});
+      }
+      return histObject;
+    };
+    this.back = () => history[--currentPosition];
+    this.forward = () => history[++currentPosition];
+    this.goTo = (index) => history[currentPosition = index];
+    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
+    this.hasPast = () => currentPosition > 0;
+
+    const initialized = false;
+    function init(savedHistory) {
+      if (!initialized && Array.isArray(savedHistory)) {
+        history = savedHistory;
+        currentPosition = history.length - 1;
+      }
+    }
+    properties.onUpdate('ce-history', init);
+  }
+}
+
+const history = new History(1000);
+;
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
@@ -3295,13 +3460,39 @@ Opinion = new Opinion();
 ;
 const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
 const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
-const lookupHoverResource = new HoverResources({clickClose: true, zIncrement: 1, getDems, setDems});
+
+function regLen(text, reg) {
+  const match = text.match(reg);
+  return match === null ? 0 : match.length;
+}
+const historyTemplate = new $t('history');
+const lookupHoverResource = new HoverResources({
+  clickClose: true,
+  zIncrement: 1,
+  hasPast: history.hasPast,
+  hasFuture: history.hasFuture,
+  back: () => lookupTabs.update(history.back()),
+  forward: () => lookupTabs.update(history.forward()),
+  historyDisplay: (filterText) => {
+    const histList = history.get();
+    let filtered = false;
+    if (filterText) {
+      filtered = true;
+      const filter = new RegExp(filterText.trim().replace(/\s{1,}/g, '|'), 'g');
+      histList.list.sort((h1, h2) => regLen(h2.elem, filter) - regLen(h1.elem, filter));
+    }
+
+    return historyTemplate.render({filtered, history: histList})
+  },
+  historyClick: (event) => lookupTabs.update(history.goTo(event.target.value)),
+  getDems, setDems});
 
 class Tabs {
-  constructor(updateHtml, props) {
+  constructor(props) {
     props = props || {};
     const uniqId = Math.floor(Math.random() * 100000);
     const template = new $t('tabs');
+    const navTemplate = new $t('popup-cnt/tabs-navigation');
     const CSS_CLASS = props.class || 'ce-tabs-list-item';
     const ACTIVE_CSS_CLASS = `${CSS_CLASS} ${props.activeClass || 'ce-tabs-active'}`;
     const LIST_CLASS = props.listClass || 'ce-tabs-list';
@@ -3313,6 +3504,7 @@ class Tabs {
     const HEADER_CNT_ID = 'ce-tab-header-cnt-id-' + uniqId;
     const instance = this;
     let firstRender = true;
+    let navContainer, headerContainer, bodyContainer;
     const pages = [];
     const positions = {};
     let currIndex;
@@ -3331,16 +3523,33 @@ class Tabs {
       }
       throw new Error(page.label() + 'does not exist');
     }
+    this.close = lookupHoverResource.close;
 
     function setOnclickMethods() {
-      document.getElementById(TAB_CNT_ID).onmouseup = (e) => {
-          e.stopPropagation()
-        };
       const listItems = document.getElementById(LIST_ID).children;
       for (let index = 0; index < listItems.length; index += 1) {
         listItems[index].onclick = switchFunc(index);
       }
     }
+
+    function updateNav() {
+      navContainer.innerHTML = navTemplate.render(
+        {
+          pages, activePage, LIST_CLASS, LIST_ID, CSS_CLASS, ACTIVE_CSS_CLASS,
+          LIST_CLASS, LIST_ID
+        });
+      setOnclickMethods();
+    }
+    function updateHead() {
+      headerContainer.innerHTML = activePage !== undefined ? activePage.header() : '';
+      setDems();
+    }
+    function updateBody() {
+      bodyContainer.innerHTML = activePage !== undefined ? activePage.html() : '';
+    }
+    this.updateNav = updateNav;
+    this.updateHead = updateHead;
+    this.updateBody = updateBody;
 
     function switchTo(index) {
       hoverExplanations.disable();
@@ -3348,11 +3557,13 @@ class Tabs {
       currIndex = index === undefined ? currIndex || 0 : index;
       activePage = pages[currIndex];
       activePage.beforeOpen();
-      lookupHoverResource.updateContent(template.render(getScope()));
+      updateNav();
+      updateHead();
+      updateBody();
       setDems();
-      setTimeout(setDems, 400);
       lookupHoverResource.position().minimize();
       lookupHoverResource.position().select();
+      hoverExplanations.position().select().close();
       setOnclickMethods();
       activePage.afterOpen();
     }
@@ -3371,14 +3582,7 @@ class Tabs {
    }
 
     function getScope() {
-
-      const content = activePage !== undefined ? activePage.html() : '';
-      const header = activePage !== undefined ? activePage.header() : '';
-      return {
-        CSS_CLASS, ACTIVE_CSS_CLASS, LIST_CLASS, LIST_ID,  CNT_ID, TAB_CNT_ID,
-        NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID,
-        activePage, content, pages, header
-      }
+      return {CNT_ID, TAB_CNT_ID, NAV_CNT_ID, HEADER_CNT_ID, NAV_SPACER_ID};
     }
 
     function sortByPosition(page1, page2) {
@@ -3398,8 +3602,24 @@ class Tabs {
       }
     }
 
-    function update(elem) {
-      switchTo(undefined);
+    function update(word) {
+      if (word === undefined) {
+        word = properties.get('searchWords');
+      } else {
+        properties.set('searchWords', word, true);
+      }
+      switchTo();
+    }
+
+    function init() {
+      lookupHoverResource.updateContent(template.render(getScope()));
+      document.getElementById(TAB_CNT_ID).onmouseup = (e) => {
+        e.stopPropagation()
+      };
+      navContainer = document.getElementById(NAV_CNT_ID);
+      headerContainer = document.getElementById(HEADER_CNT_ID);
+      bodyContainer = document.getElementById(CNT_ID);
+      updateNav();
     }
 
     lookupHoverResource.onClose(() => {
@@ -3409,10 +3629,11 @@ class Tabs {
 
     this.add = add;
     this.update = update;
+    init();
   }
 }
 
-const lookupTabs = new Tabs(lookupHoverResource.updateContent);
+const lookupTabs = new Tabs();
 ;
 class MerriamWebster extends Page {
   constructor() {
@@ -3420,33 +3641,39 @@ class MerriamWebster extends Page {
     const instance = this;
     const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
     const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
+    const SEARCH_INPUT_ID = 'merriam-suggestion-search-input-id';
     let suggestions;
     let definitions;
     let key;
     this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
 
-    function openDictionary(word) {
-      return function() {
-        properties.set('searchWords', word);
-        instance.update();
-      }
+    function openDictionary(event) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      const word = searchInput.value.trim();
+      history.push(word);
+      properties.set('searchWords', word);
+      instance.update();
     }
 
     this.html = () => meriamTemplate.render({definitions});
-    this.header = () => meriamHeader.render({key, suggestions, MERRIAM_WEB_SUG_CNT_ID});
+    this.header = () => {
+      console.log('header called');
+      return meriamHeader.render(
+        {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
+          SEARCH_INPUT_ID})};
 
     function updateSuggestions(suggestionHtml) {
-      const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      const spans = sugCnt.querySelectorAll('span');
-      for (let index = 0; index < spans.length; index += 1) {
-        spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      }
+      // const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
+      // const spans = sugCnt.querySelectorAll('span');
+      // for (let index = 0; index < spans.length; index += 1) {
+      //   spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
+      // }
     }
     this.afterOpen = updateSuggestions;
 
     function success (data) {
       const elem = data[0];
-      if (elem.meta && elem.meta.stems) {
+      if (elem && elem.meta && elem.meta.stems) {
         data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
         definitions = data;
         suggestions = [];
@@ -3454,7 +3681,10 @@ class MerriamWebster extends Page {
         definitions = undefined;
         suggestions = data;
       }
-      lookupTabs.update();
+      lookupTabs.updateBody();
+      lookupTabs.updateHead();
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      searchInput.addEventListener('change', openDictionary);
     }
 
     function failure (error) {
@@ -3463,10 +3693,10 @@ class MerriamWebster extends Page {
 
     this.update = function () {
       const newKey = properties.get('searchWords');
-      if (newKey !== key && (typeof newKey) === 'string') {
+      if (newKey && newKey !== key && (typeof newKey) === 'string') {
         definitions = undefined;
         suggestions = undefined;
-        key = newKey.replace(/\s/g, '&nbsp;');
+        key = newKey;
         const url = EPNTS.merriam.search(key);
         Request.get(url, success, failure);
       }
@@ -3486,8 +3716,11 @@ lookupTabs.add(MerriamWebster, 1);
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
     const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const FILTER_INPUT_ID = 'ce-filter-input-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
+    let searchInput;
+    let inputIndex = 0;
     const instance = this;
     let explanations = [];
     let searchWords;
@@ -3496,8 +3729,10 @@ lookupTabs.add(MerriamWebster, 1);
       this.list.push(expl);
     }
 
-    function openAddPage() {
-      lookupTabs.open(AddInterface);
+    function openAddPage(event) {
+      AddInterface.open(searchWords, window.location.href);
+      lookupTabs.close();
+      event.stopPropagation();
     }
 
     function forTags(func) {
@@ -3511,14 +3746,39 @@ lookupTabs.add(MerriamWebster, 1);
       setExplanation();
     }
 
-    const tagReg = /#[a-zA-Z0-9]*/g;
-    function byTags(expl) {
-      if (selected.length === 0) return true;
-      for (let index = 0; index < selected.length; index += 1) {
-        const match = expl.content.match(tagReg);
-        if (match && match.indexOf(`#${selected[index]}`) === -1) return false;
+    function regScore(reg, text) {
+      let match = text.match(reg);
+      let score = (value) => match === null ? 0 : value;
+      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
+      return {score, length};
+    }
+
+    function byFilterValue(expl1, expl2) {
+      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
+                        .split(/\s{1,}/);
+      if (wordList.length === 1 && wordList[0] === '') {
+        return expl2.author.percent - expl1.author.percent;
       }
-      return true;
+      let matchCount1 = 0;
+      let matchCount2 = 0;
+      wordList.forEach((word) => {
+        if (word) {
+          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
+          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
+          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
+
+          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
+          matchCount1 += regScore(tagReg, expl1.content).score(10);
+          matchCount2 += regScore(tagReg, expl2.content).score(10);
+
+          const wordReg = new RegExp(word);
+          matchCount1 += regScore(wordReg, expl1.content).length();
+          matchCount2 += regScore(wordReg, expl2.content).length();
+        }
+      });
+      expl1.score = matchCount1;
+      expl2.score = matchCount2;
+      return matchCount2 - matchCount1;
     }
 
 
@@ -3542,30 +3802,39 @@ lookupTabs.add(MerriamWebster, 1);
       Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
 
       const searchBtn = document.getElementById(SEARCH_BTN_ID);
-      searchBtn.onclick = () => {
-        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
-        words = words.toLowerCase().trim();
-        properties.set('searchWords', words);
-        instance.get();
-      };
-      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+      if (searchBtn) {
+        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
+        searchBtn.onclick = () => {
+          let words = searchInput.value;
+          if (words) {
+            words = words.toLowerCase().trim();
+            properties.set('searchWords', words, true);
+            history.push(words);
+            instance.get();
+          }
+        };
+        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
 
-      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
-      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
-      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
+        searchInput.selectionStart = inputIndex;
+        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      }
     }
 
     function setExplanation(expls) {
       if (expls !== undefined) {
         explanations = expls;
       }
-      lookupTabs.update();
+      lookupTabs.updateHead();
+      lookupTabs.updateBody();
+      setTagOnclick();
     }
 
     function getScope() {
       const scope = {};
       const tagObj = {}
-      scope.explanations = explanations.filter(byTags);
+      scope.explanations = explanations.sort(byFilterValue);
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
@@ -3573,18 +3842,14 @@ lookupTabs.add(MerriamWebster, 1);
         expl.rendered = textToHtml(expl.content);
         const author = expl.author;
         expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
-        const tags = expl.content.match(tagReg) || [];
-        tags.forEach(function (tag) {
-          tagObj[tag.substr(1)] = true;
-        });
       });
 
-      scope.allTags = Object.keys(tagObj);
       scope.words = searchWords;
       scope.loggedIn = User.isLoggedIn();
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.FILTER_INPUT_ID = FILTER_INPUT_ID;
       scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
       return scope;
@@ -3628,7 +3893,7 @@ class AddInterface extends Page {
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
     let updatePending = false;
-    const editHoverExpl = new HoverExplanations({hideClose: true});
+    const editHoverExpl = new HoverExplanations({hideClose: true, position: 'fixed', hover: false});
     const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
 
     function getScope() {
@@ -3659,6 +3924,7 @@ class AddInterface extends Page {
       hoverExplanations.add(expl);
       properties.set('userContent', '', true)
       content = '';
+      dragDropResize.close();
     }
 
     function addExplanation() {
@@ -3725,7 +3991,7 @@ class AddInterface extends Page {
 
 
 AddInterface = new AddInterface();
-AddInterface.open('poopLuck');
+// AddInterface.open('poopLuck');
 new KeyShortCut('ca', AddInterface.toggle);
 ;
 return {afterLoad};

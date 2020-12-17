@@ -6,8 +6,11 @@ class Explanations extends Page {
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
     const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const FILTER_INPUT_ID = 'ce-filter-input-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
+    let searchInput;
+    let inputIndex = 0;
     const instance = this;
     let explanations = [];
     let searchWords;
@@ -16,8 +19,10 @@ class Explanations extends Page {
       this.list.push(expl);
     }
 
-    function openAddPage() {
-      lookupTabs.open(AddInterface);
+    function openAddPage(event) {
+      AddInterface.open(searchWords, window.location.href);
+      lookupTabs.close();
+      event.stopPropagation();
     }
 
     function forTags(func) {
@@ -31,14 +36,39 @@ class Explanations extends Page {
       setExplanation();
     }
 
-    const tagReg = /#[a-zA-Z0-9]*/g;
-    function byTags(expl) {
-      if (selected.length === 0) return true;
-      for (let index = 0; index < selected.length; index += 1) {
-        const match = expl.content.match(tagReg);
-        if (match && match.indexOf(`#${selected[index]}`) === -1) return false;
+    function regScore(reg, text) {
+      let match = text.match(reg);
+      let score = (value) => match === null ? 0 : value;
+      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
+      return {score, length};
+    }
+
+    function byFilterValue(expl1, expl2) {
+      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
+                        .split(/\s{1,}/);
+      if (wordList.length === 1 && wordList[0] === '') {
+        return expl2.author.percent - expl1.author.percent;
       }
-      return true;
+      let matchCount1 = 0;
+      let matchCount2 = 0;
+      wordList.forEach((word) => {
+        if (word) {
+          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
+          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
+          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
+
+          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
+          matchCount1 += regScore(tagReg, expl1.content).score(10);
+          matchCount2 += regScore(tagReg, expl2.content).score(10);
+
+          const wordReg = new RegExp(word);
+          matchCount1 += regScore(wordReg, expl1.content).length();
+          matchCount2 += regScore(wordReg, expl2.content).length();
+        }
+      });
+      expl1.score = matchCount1;
+      expl2.score = matchCount2;
+      return matchCount2 - matchCount1;
     }
 
 
@@ -62,30 +92,39 @@ class Explanations extends Page {
       Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
 
       const searchBtn = document.getElementById(SEARCH_BTN_ID);
-      searchBtn.onclick = () => {
-        let words = document.getElementById(EXPL_SEARCH_INPUT_ID).value;
-        words = words.toLowerCase().trim();
-        properties.set('searchWords', words);
-        instance.get();
-      };
-      onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+      if (searchBtn) {
+        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
+        searchBtn.onclick = () => {
+          let words = searchInput.value;
+          if (words) {
+            words = words.toLowerCase().trim();
+            properties.set('searchWords', words, true);
+            history.push(words);
+            instance.get();
+          }
+        };
+        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
 
-      document.getElementById(EXPL_SEARCH_INPUT_ID).focus()
-      document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
-      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
+        searchInput.selectionStart = inputIndex;
+        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      }
     }
 
     function setExplanation(expls) {
       if (expls !== undefined) {
         explanations = expls;
       }
-      lookupTabs.update();
+      lookupTabs.updateHead();
+      lookupTabs.updateBody();
+      setTagOnclick();
     }
 
     function getScope() {
       const scope = {};
       const tagObj = {}
-      scope.explanations = explanations.filter(byTags);
+      scope.explanations = explanations.sort(byFilterValue);
       scope.explanations.forEach(function (expl) {
         const username = expl.author.username;
         expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
@@ -93,18 +132,14 @@ class Explanations extends Page {
         expl.rendered = textToHtml(expl.content);
         const author = expl.author;
         expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
-        const tags = expl.content.match(tagReg) || [];
-        tags.forEach(function (tag) {
-          tagObj[tag.substr(1)] = true;
-        });
       });
 
-      scope.allTags = Object.keys(tagObj);
       scope.words = searchWords;
       scope.loggedIn = User.isLoggedIn();
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.FILTER_INPUT_ID = FILTER_INPUT_ID;
       scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
       return scope;

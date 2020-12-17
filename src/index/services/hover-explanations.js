@@ -32,8 +32,11 @@ class HoverExplanations {
     props.setDems = props.setDems || setDems;
     props.getDems = props.getDems || getDems;
     const hoverResource = new HoverResources(props);
+
     hoverResource.container().addEventListener('drop', () => newHoverResource());
-    hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    if (props.hover === undefined || props.hover === true) {
+      hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    }
 
     this.close = () => hoverResource.close();
     this.disable = () => {disabled = true; instance.close()};
@@ -218,6 +221,11 @@ class HoverExplanations {
       } else {
         explRefs[ref].push(expl);
       }
+      const elem = document.createElement(tag);
+      elem.setAttribute('ref', expl.searchWords);
+      updateContent(elem, explRefs[ref].length - 1);
+      hoverResource.position().elem();
+
       wrapList.push({ word: expl.words, ref });
       wrapOne();
       explIds.push(expl.id);
@@ -231,6 +239,7 @@ class HoverExplanations {
 
     this.lockOpen = hoverResource.lockOpen;
     this.unlockOpen = hoverResource.unlockOpen;
+    this.position = hoverResource.position;
 
     function enableToggled(enabled) {
       if (enabled !== lastEnabled) {

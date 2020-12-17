@@ -12,7 +12,7 @@ class AddInterface extends Page {
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
     let updatePending = false;
-    const editHoverExpl = new HoverExplanations({hideClose: true});
+    const editHoverExpl = new HoverExplanations({hideClose: true, position: 'fixed', hover: false});
     const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
 
     function getScope() {
@@ -43,6 +43,7 @@ class AddInterface extends Page {
       hoverExplanations.add(expl);
       properties.set('userContent', '', true)
       content = '';
+      dragDropResize.close();
     }
 
     function addExplanation() {
@@ -109,5 +110,5 @@ class AddInterface extends Page {
 
 
 AddInterface = new AddInterface();
-AddInterface.open('poopLuck');
+// AddInterface.open('poopLuck');
 new KeyShortCut('ca', AddInterface.toggle);

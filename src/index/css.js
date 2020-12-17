@@ -26,7 +26,7 @@ class CssFile {
                   .replace(/\n/g, ' ')
                   .replace(/\/\*.*?\*\//, '');
     const reg = /([^{]*?)\s*?\{([^}]*)\}/;
-    CssFile.files.push(this);
+    CssFile.files[filename] = this;
     this.elems = [];
     this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
     this.rawElems = string.match(new RegExp(reg, 'g'));
@@ -47,12 +47,13 @@ class CssFile {
   }
 }
 
-CssFile.files = [];
+CssFile.files = {};
 
 CssFile.apply = function () {
   const args = Array.from(arguments);
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
+  const ids = Object.keys(CssFile.files);
+  for (let index = 0; index < ids.length; index += 1) {
+    const cssFile = CssFile.files[ids[index]];
     if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
       cssFile.apply();
     }
@@ -62,8 +63,9 @@ CssFile.apply = function () {
 CssFile.dump = function () {
   let dumpStr = '';
   const args = Array.from(arguments);
-  for (let index = 0; index < CssFile.files.length; index += 1) {
-    const cssFile = CssFile.files[index];
+  const files = Object.values(CssFile.files);
+  for (let index = 0; index < files.length; index += 1) {
+    const cssFile = files[index];
     if (args.length === 0 || args.indexOf(cssFile.filename) !== -1) {
       dumpStr += cssFile.dump();
     }
