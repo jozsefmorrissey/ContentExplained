@@ -12,6 +12,7 @@ shell.cat('./src/index/ExprDef.js', './src/index/services/\\$t.js')
 
 function HachyImport(url, dest) {
   const curlCmd = `curl -X GET --insecure '${url}'`;
+  console.log(curlCmd)
   const code = shell.exec(curlCmd, {silent: true}).stdout;
   if (code !== '') {
     fs.writeFile(dest, code, () =>
@@ -129,14 +130,17 @@ const cssDumpLoc = './bin/$css.js';
 
 const htmlBundler = new HtmlBundler(htmlDumpLoc);
 const cssBundler = new CssBundler(cssDumpLoc);
-const ceJsBundler = new JsBundler('CE', [])
-const settingJsBundler = new JsBundler('Settings', [])
-const appMenuJsBundler = new JsBundler('AppMenu', [])
+const ceJsBundler = new JsBundler('extension/CE', []);
+const backgroundJsBundler = new JsBundler('extension/Background', []);
+const settingJsBundler = new JsBundler('extension/Settings', []);
+const appMenuJsBundler = new JsBundler('extension/AppMenu', []);
 
 
 
 new Watcher(htmlBundler.change, htmlBundler.write).add('./html');
 new Watcher(cssBundler.change, cssBundler.write).add('./css/');
+new Watcher(backgroundJsBundler.change, backgroundJsBundler.write)
+                      .add('./src/manual/background.js');
 new Watcher(ceJsBundler.change, ceJsBundler.write)
                       .add('./bin/debug-gui-client.js')
                       .add('./constants/global.js')
@@ -158,6 +162,8 @@ new Watcher(settingJsBundler.change, settingJsBundler.write)
                             .add('./src/index/services/$t.js')
                             .add('./bin/$templates.js')
                             .add('./src/index/dom-tools.js')
+                            .add('./src/index/custom-event.js')
+                            .add('./src/index/events/events.js')
                             .add('./src/settings');
 
 new Watcher(appMenuJsBundler.change, appMenuJsBundler.write)

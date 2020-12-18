@@ -4,8 +4,9 @@ const shell = require('shelljs');
 const { Bundler } = require('../bundler');
 
 class JsBundler extends Bundler {
-  constructor(id, externals) {
+  constructor(file, externals) {
     super();
+    const id = file.replace(/^.*\/([^\/]*)$/, "$1");
     externals.push('afterLoad');
     const jsFiles = {};
     const afterFiles = {};
@@ -100,9 +101,16 @@ class JsBundler extends Bundler {
             console.log(item.filename)
             addAfterFiles(item.filename);
       });
-      bundle += `\nreturn {${externals.join()}};\n}\n${id} = ${id}()\n${id}.afterLoad.forEach((item) => {item();});`;
+      bundle += `\nreturn {${externals.join()}};
+        }
+        try {
+          ${id} = ${id}();
+          ${id}.afterLoad.forEach((item) => {item();});
+        } catch (e) {
+            console.log(e);
+        }`;
       console.log(`Writing ./${id}.js`);
-      fs.writeFile(`./${id}.js`, bundle, () => {});
+      fs.writeFile(`./${file}.js`, bundle, () => {});
     }
 
     this.write = write;

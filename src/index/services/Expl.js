@@ -12,7 +12,6 @@ class Expl {
       const env = properties.get('env') || 'local';
       if (enabled && env !== currEnv) {
         currEnv = env;
-        EPNTS.setHost(env);
         const url = EPNTS.siteExplanation.get();
         Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
       }

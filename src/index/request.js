@@ -1,3 +1,4 @@
+// ./src/index/properties.js
 
 dg.setRoot('ce-ui');
 
@@ -86,3 +87,21 @@ Request = {
 
 Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
 Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
+
+properties.onUpdate(['env', 'debug'], () => {
+  const env = properties.get('env');
+  if (properties.get('debug')) EPNTS.setHost(env);
+});
+properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
+  const debug = properties.get('debug');
+  const enabled = properties.get('enabled');
+  const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
+  const id = properties.get('debugGuiId');
+  if (debug && enabled) {
+    const root = 'context-explained-ui';
+    const cookieExists = document.cookie.match(/DebugGui=/);
+    dg.updateConfig({root, host, id, debug: true});
+  } else if (dg) {
+    dg.updateConfig({debug: false});
+  }
+});

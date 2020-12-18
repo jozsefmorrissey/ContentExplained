@@ -31,22 +31,6 @@ function search() {
   }
 
   document.addEventListener( "contextmenu", checkHighlight);
-  properties.onUpdate('env', EPNTS.setHost);
 }
-
-
-properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
-  const debug = properties.get('debug');
-  const enabled = properties.get('enabled');
-  const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
-  const id = properties.get('debugGuiId');
-  if (debug && enabled) {
-    const root = 'context-explained-ui';
-    const cookieExists = document.cookie.match(/DebugGui=/);
-    dg.updateConfig({root, host, id, debug: true});
-  } else if (dg) {
-    dg.updateConfig({debug: false});
-  }
-});
 
 afterLoad.push(search);

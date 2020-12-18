@@ -1,4 +1,4 @@
-let Settings = function () {
+let AppMenu = function () {
 const afterLoad = []
 
 function DebugGuiClient(config, root, debug) {
@@ -407,13 +407,6 @@ if (!DebugGuiClient.inBrowser) {
   }
   var dg = DebugGuiClient.browser('default');
 }
-;const MERRIAM_WEB_DEF_CNT_ID = 'ce-merriam-webster-def-cnt';
-const MERRIAM_WEB_SUG_CNT_ID = 'ce-merriam-webster-suggestion-cnt';
-const HISTORY_CNT_ID = 'ce-history-cnt';
-const ADD_EDITOR_ID = 'ce-add-editor-id';
-const CONTEXT_EXPLANATION_CNT_ID = 'ce-content-explanation-cnt';
-const WIKI_CNT_ID = 'ce-wikapedia-cnt';
-const RAW_TEXT_CNT_ID = 'ce-raw-text-cnt';
 ;
 class Properties {
   constructor () {
@@ -456,8 +449,10 @@ class Properties {
         const key = keys[index];
         const value = values[key];
         if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
+          if (value.newValue !== value.oldValue) {
+            instance.set(key, value.newValue);
+          }
+        } else if (value !== properties[key]) {
           instance.set(key, value);
         }
       }
@@ -494,432 +489,6 @@ class Properties {
 }
 
 const properties = new Properties();
-;
-dg.setRoot('ce-ui');
-
-Request = {
-    onStateChange: function (success, failure, id) {
-      return function () {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            const serverId = this.getResponseHeader('ce-server-id');
-            const savedServerId = properties.get('ceServerId');
-            if (serverId && serverId !== savedServerId) {
-              properties.set('ceServerId', serverId, true);
-              console.log('triggerededede')
-              CE_SERVER_UPDATE.trigger();
-            }
-
-            try {
-              resp = JSON.parse(this.responseText);
-            } catch (e){
-              resp = this.responseText;
-            }
-            if (success) {
-              success(resp);
-            }
-          } else if (failure) {
-            const errorMsgMatch = this.responseText.match(Request.errorMsgReg);
-            if (errorMsgMatch) {
-              this.errorMsg = errorMsgMatch[1].trim();
-            }
-            const errorCodeMatch = this.responseText.match(Request.errorCodeReg);
-            if (errorCodeMatch) {
-              this.errorCode = errorCodeMatch[1];
-
-            }
-            failure(this);
-          }
-          var resp = this.responseText;
-          dg.value(id || Request.id(), 'response url', this.responseURL);
-          dg.value(id || Request.id(), 'response', resp);
-        }
-      }
-    },
-
-    id: function (url, method) {
-      return `request.${method}.${url.replace(/\./g, ',')}`;
-    },
-
-    get: function (url, success, failure) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      const id = Request.id(url, 'GET');
-      dg.value(id, 'url', url);
-      dg.value(id, 'method', 'get');
-      dg.addHeaderXhr(xhr);
-      xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Authorization', properties.get('user.credential'));
-      xhr.send();
-      return xhr;
-    },
-
-    hasBody: function (method) {
-      return function (url, body, success, failure) {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        const id = Request.id(url, method);
-        dg.value(id, 'url', url);
-        dg.value(id, 'method', method);
-        dg.value(id, 'body', body);
-        dg.addHeaderXhr(xhr);
-        xhr.onreadystatechange =  Request.onStateChange(success, failure, id);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', properties.get('user.credential'));
-        xhr.send(JSON.stringify(body));
-        return xhr;
-      }
-    },
-
-    post: function () {Request.hasBody('POST')(...arguments)},
-    delete: function () {Request.hasBody('DELETE')(...arguments)},
-    options: function () {Request.hasBody('OPTIONS')(...arguments)},
-    head: function () {Request.hasBody('HEAD')(...arguments)},
-    put: function () {Request.hasBody('PUT')(...arguments)},
-    connect: function () {Request.hasBody('CONNECT')(...arguments)},
-}
-
-Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
-Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
-;
-class Endpoints {
-  constructor(config, host) {
-    const instance = this;
-    host = host || '';
-    this.setHost = (newHost) => {
-      if ((typeof newHost) === 'string') {
-        host = config._envs[newHost] || newHost;
-      }
-    };
-    this.setHost(host);
-    this.getHost = (env) => env === undefined ? host : config._envs[env];
-
-    const endPointFuncs = {setHost: this.setHost, getHost: this.getHost};
-    this.getFuncObj = function () {return endPointFuncs;};
-
-
-    function build(str) {
-      const pieces = str.split(/:[a-zA-Z0-9]*/g);
-      const labels = str.match(/:[a-zA-Z0-9]*/g) || [];
-      return function () {
-        let values = [];
-        if (arguments[0] === null || (typeof arguments[0]) !== 'object') {
-          values = arguments;
-        } else {
-          const obj = arguments[0];
-          labels.map((value) => values.push(obj[value.substr(1)] !== undefined ? obj[value.substr(1)] : value))
-        }
-        let endpoint = '';
-        for (let index = 0; index < pieces.length; index += 1) {
-          const arg = values[index];
-          let value = '';
-          if (index < pieces.length - 1) {
-            value = arg !== undefined ? encodeURIComponent(arg) : labels[index];
-          }
-          endpoint += pieces[index] + value;
-        }
-        return `${host}${endpoint}`;
-      }
-    }
-
-    function configRecurse(currConfig, currFunc) {
-      const keys = Object.keys(currConfig);
-      for (let index = 0; index < keys.length; index += 1) {
-        const key = keys[index];
-        const value = currConfig[key];
-        if (key.indexOf('_') !== 0) {
-          if (value instanceof Object) {
-            currFunc[key] = {};
-            configRecurse(value, currFunc[key]);
-          } else {
-            currFunc[key] = build(value);
-          }
-        } else {
-          currFunc[key] = value;
-        }
-      }
-    }
-
-    configRecurse(config, endPointFuncs);
-  }
-}
-
-try {
-  exports.EPNTS = new Endpoints(require('../public/json/endpoints.json')).getFuncObj();
-} catch (e) {}
-
-const EPNTS = new Endpoints({
-  "_envs": {
-    "local": "https://localhost:3001/content-explained",
-    "dev": "https://dev.jozsefmorrissey.com/content-explained",
-    "prod": "https://node.jozsefmorrissey.com/content-explained"
-  },
-  "user": {
-    "add": "/user",
-    "get": "/user/:idsOemail",
-    "login": "/user/login",
-    "update": "/user/update/:updateSecret",
-    "requestUpdate": "/user/update/request"
-  },
-  "credential": {
-    "add": "/credential/add/:userId",
-    "activate": "/credential/activate/:id/:userId/:activationSecret",
-    "delete": "/credential/:idOauthorization",
-    "activationUrl": "/credential/activation/url/:activationSecret",
-    "get": "/credential/:userId",
-    "status": "/credential/status/:authorization"
-  },
-  "site": {
-    "add": "/site",
-    "get": "/site/get"
-  },
-  "explanation": {
-    "add": "/explanation",
-    "author": "/explanation/author/:authorId",
-    "get": "/explanation/:words",
-    "update": "/explanation"
-  },
-  "siteExplanation": {
-    "add": "/site/explanation/:explanationId",
-    "get": "/site/explanation"
-  },
-  "opinion": {
-    "like": "/like/:explanationId/:siteId",
-    "dislike": "/dislike/:explanationId/:siteId",
-    "bySite": "/opinion/:siteId/:userId"
-  },
-  "endpoints": {
-    "json": "/html/endpoints.json",
-    "EPNTS": "/EPNTS/:env"
-  },
-  "images": {
-    "logo": "/images/icons/logo.png",
-    "wiki": "/images/icons/wikapedia.png",
-    "txt": "/images/icons/txt.png",
-    "merriam": "/images/icons/Merriam-Webster.png"
-  },
-  "merriam": {
-    "search": "/merriam/webster/:searchText"
-  },
-  "_secure": [
-    "user.update",
-    "credential.get",
-    "credential.delete",
-    "site.add",
-    "explanation.add",
-    "explanation.update",
-    "siteExplanation.add",
-    "opinion.like",
-    "opinion.dislike"
-  ]
-}
-, 'local').getFuncObj();
-try {exports.EPNTS = EPNTS;}catch(e){};
-class KeyShortCut {
-  constructor(keys, func) {
-    KeyShortCut.cuts.push(this);
-    var currentKeys = {};
-
-    function keysPressed() {
-      for (let index = 0; index < keys.length; index += 1) {
-        if (!currentKeys[keys[index]]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    this.keyDownListener = (e) => {
-        currentKeys[e.key] = true;
-        if (keysPressed()) func();
-    }
-
-    this.keyUpListener = (e) => delete currentKeys[e.key];
-  }
-}
-
-KeyShortCut.cuts = [];
-
-KeyShortCut.callOnAll = function (func, e) {
-  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
-    KeyShortCut.cuts[index][func](e);
-  }
-}
-
-document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
-document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
-;
-class User {
-  constructor() {
-    let user;
-    let status = 'expired';
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = EPNTS.user.get(email);
-        Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = properties.get('user.credential');
-      if (cred !== null) {
-        properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = EPNTS.credential.delete(cred);
-          Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus);
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
-      } else if (credential === null) {
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = EPNTS.credential.add(user.id);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = EPNTS.credential.add(uId);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = EPNTS.user.add();
-      const body = {email, username};
-      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
-;
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            Request.get(url, success, fail);
-          } else {
-            Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
 ;
 let idCount = 0;
 class ExprDef {
@@ -1726,11 +1295,11 @@ $t.functions['place'] = function (get) {
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
 }
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
-}
 $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <h3>` + (get("words")) + `</h3> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
@@ -1741,11 +1310,11 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -1764,6 +1333,36 @@ $t.functions['-888280636'] = function (get) {
 }
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
+}
+$t.functions['test'] = function (get) {
+	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> </head> <body> <div id='control-ctn'> one two three four five six </div> </body> <script type="text/javascript" src='/CE.js'></script> </html> `
+}
+$t.functions['settings'] = function (get) {
+	return `<!DOCTYPE html> <html lang="en" dir="ltr"> <head> <meta charset="utf-8"> <title>CE Settings</title> <link rel="stylesheet" href="/css/index.css"> <link rel="stylesheet" href="/css/settings.css"> <link rel="stylesheet" href="/css/lookup.css"> <link rel="stylesheet" href="/css/hover-resource.css"> <script type="text/javascript" src='/bin/short-cut-container.js'></script> <script type='text/javascript' src='/bin/debug-gui.js'></script> <script type='text/javascript' src='/bin/debug-gui-client.js'></script> </head> <body> <div class='ce-setting-cnt'> <div id='ce-setting-list-cnt'> <ul id='ce-setting-list'></ul> </div> <div id='ce-setting-cnt'></div> </div> <script type="text/javascript" src='/Settings.js'></script> </body> </html> `
+}
+$t.functions['raw-text-input'] = function (get) {
+	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
+}
+$t.functions['menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
+}
+$t.functions['controls'] = function (get) {
+	return `<!DOCTYPE html> <html> <head> <link rel="stylesheet" href="/css/menu.css"> </head> <body> <div id='control-ctn'> </div> <script type="text/javascript" src='/AppMenu.js'></script> </body> </html> `
+}
+$t.functions['links/developer'] = function (get) {
+	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
+}
+$t.functions['links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
+}
+$t.functions['links/profile'] = function (get) {
+	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
+}
+$t.functions['links/login'] = function (get) {
+	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
+}
+$t.functions['links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
 };function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -1906,419 +1505,48 @@ function textToHtml(text) {
               .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
                       '<a target=\'blank\' href="$2">$1</a>');
 }
-;class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.template = function() {throw new Error('Must implement template()');}
-    this.scope = function () {return {};};
-    this.onOpen = function () {};
-    this.onClose = function () {};
-    this.beforeOpen = function () {};
-    this.hide = function() {return false;}
-  }
-}
-;function loggedIn() {
-  const user = properties.get('user');
-  return !(user === null || user === undefined);
-}
-
-function propertyUpdate(key, value) {
-  return function (event) {
-    properties.set(key, event.target.value, true)
-  };
-}
-
-
-class Settings {
-  constructor(page) {
-    const CSS_CLASS = 'ce-setting-list-item';
-    const ACTIVE_CSS_CLASS = `${CSS_CLASS} ce-active-list-item`;
-    const LIST_ID = 'ce-setting-list';
-    const CNT_ID = 'ce-setting-cnt';
-    this.pageName = function () {return page.constructor.name;}
-    this.getPage = () => page;
-    const instance = this;
-    const li = document.createElement('li');
-    const settingsCnt = document.getElementById(CNT_ID);
-    const settingsList = document.getElementById(LIST_ID);
-
-    function isActive() {
-      return Settings.activePage() === instance.pageName();
-    }
-
-    this.hidden = () => page.hide();
-    this.activate = function (force) {
-      if (force || isActive()) {
-        if (Settings.active) Settings.active.getPage().onClose();
-        page.beforeOpen();
-        Settings.active = instance;
-        window.location.href = `${window.location.href
-            .replace(Settings.urlReg, '$3')}#${instance.pageName()}`;
-        li.className = ACTIVE_CSS_CLASS;
-        const html = new $t(page.template()).render(page.scope());
-        safeInnerHtml(html, settingsCnt);
-        page.onOpen();
-        properties.set('settingsPage', instance.pageName());
-      }
-      instance.updateMenu();
-    }
-
-    this.updateMenu = function() {
-      if (!isActive()) {
-        li.className = CSS_CLASS;
-      }
-      if (instance.hidden()) {
-        li.setAttribute('hidden', true);
-      } else {
-        li.removeAttribute('hidden');
-      }
-      li.innerText = page.label();
-      const listWidth = settingsList.clientWidth;
-      const padding = 10;
-      const settingCntPadding = listWidth + padding;
-      const settingCntWidth = window.outerWidth - (listWidth + (2 * padding));
-      settingsCnt.style = `padding-left: ${settingCntPadding}px;
-        width: ${settingCntWidth}px`;
-    }
-
-    this.isPage = function (p) {return p === page;}
-    function open () {window.location.href = `#${page.constructor.name}`;}
-
-    this.onOpen = function () {}
-
-    li.addEventListener('click', open);
-    settingsList.append(li);
-    Settings.settings[page.constructor.name] = this;
-    this.updateMenu();
-    if (isActive()) this.activate();
-  }
-}
-
-Settings.settings = {};
-Settings.urlReg = /(^((.*?)#)(.*)$)/;
-Settings.activePage = function () {
-  const pageName = window.location.href.replace(Settings.urlReg, '$4');
-  return pageName.indexOf('://') === -1 ? pageName :
-        Object.keys(Settings.settings)[0];
-}
-Settings.updateMenus = function (page) {
-  if (document.readyState !== "complete") return;
-
-  const settingsPages = Object.values(Settings.settings);
-  if (settingsPages.length) {
-    let activeIndex = 0;
-    Settings.settings[Settings.activePage()].activate(true);
-    while (Settings.active === undefined || Settings.active.hidden()) {
-      settingsPages[activeIndex++].activate(true);
-    }
-    for (let index = 0; index < settingsPages.length; index += 1) {
-      const setting = settingsPages[index];
-      setting.activate();
-    }
-  }
-}
-
-
-window.onhashchange = function () {
-  Settings.updateMenus();
-};
-window.onload = () => document.addEventListener(User.updateEvent(), Settings.updateMenus);
-
-function getInnerState(page) {
-  var stateReg = new RegExp(`^.*?#${page}:(.*)$`);
-  if (window.location.href.match(stateReg)) {
-    return window.location.href.replace(stateReg, "$1")
-  }
-}
 ;
-class Developer extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const ENV_SELECT_ID = 'ce-env-select-id';
-    const DG_HOST_INPUT_ID = 'ce-dg-host-input';
-    const DG_ID_INPUT_ID = 'ce-dg-id-input';
-    let show = false;
-    this.label = function () {return 'Developer';};
-    this.hide = function () {return !show;}
-    this.scope = () => {
-      const envs = Object.keys(EPNTS._envs);
-      const currEnv = properties.get('env');
-      const debugGuiHost = properties.get('debugGuiHost') || 'https://node.jozsefmorrissey.com/debug-gui';
-      const debugGuiId = properties.get('debugGuiId');
-      return {ENV_SELECT_ID, DG_HOST_INPUT_ID, DG_ID_INPUT_ID,
-              envs, currEnv, debugGuiHost, debugGuiId};
-    };
-    this.template = function() {return 'icon-menu/links/developer';}
-    function envUpdate(event) {properties.set('env', event.target.value, true)};
-    this.onOpen = () => {
-      document.getElementById(ENV_SELECT_ID).onchange = propertyUpdate('env');
-      document.getElementById(DG_HOST_INPUT_ID).onchange = propertyUpdate('debugGuiHost');
-      document.getElementById(DG_ID_INPUT_ID).onchange = propertyUpdate('debugGuiId');
-    }
-
-    new KeyShortCut('dev', () => {
-      show = !show;
-      if (show) {
-        properties.set('debug', true, true);
-        Settings.settings[instance.constructor.name].activate(true);
-      } else {
-        properties.set('debug', false, true);
-        Settings.updateMenus();
-      }
-    });
-
-    this.updateDebug = (debug) => {show = debug; Settings.updateMenus();}
-  }
-}
-const developerPage = new Developer();
-const developerSettings = new Settings(developerPage);
-properties.onUpdate('debug', developerPage.updateDebug);
-;
-class FavoriteLists extends Page {
-  constructor() {
-    super();
-    this.label = function () {return 'Favorite Lists';};
-    this.hide = function () {return !User.isLoggedIn();}
-    this.template = function() {return 'icon-menu/links/favorite-lists';}
-  }
-}
-new Settings(new FavoriteLists());
-;
-class Login extends Page {
-  constructor() {
-    super();
-    const scope = {
-      LOGIN: 'Login',
-      CREATE: 'create',
-      CHECK: 'check',
-      EMAIL_INPUT: 'ce-email-input',
-      USERNAME_INPUT: 'ce-username-input',
-      LOGIN_BTN_ID: 'ce-login-btn',
-      REGISTER_BTN_ID: 'ce-register-btn',
-      RESEND_BTN_ID: 'ce-resend-btn',
-      LOGOUT_BTN_ID: 'ce-remove-btn',
-    };
-    const instance = this;
-    let user, secret;
-    scope.state = scope.LOGIN;
-    this.label = function () {return 'Login';};
-    this.template = function() {return 'icon-menu/links/login';};
-    this.hide = function () {return User.isLoggedIn();};
-    this.scope = function () {return scope;};
-
-    function setState(state) {
+function stateOnLoad() {
+  let eventCount = 0;
+  const SETTINGS_TAB_ID = 'ce-settings-tab-id';
+  const menuTemplate = new $t('icon-menu/menu');
+  document.addEventListener('DOMContentLoaded', function () {
+    function toggleEnable(onOff) {
       return function () {
-        scope.state = state;
-        Settings.updateMenus();
+        properties.set('enabled', onOff, true);
       }
     }
 
-    function setError(error) {
-      switch (scope.state) {
-        case scope.LOGIN:
-          if (error.status === 404) {
-            setState(scope.REGISTER)();
-          } else if (error) {
-            scope.errorMsg = error;
-          } else {
-            scope.errorMsg = 'Server Error';
-          }
-          break;
-        case scope.REGISTER:
-          scope.errorMsg = 'Username Taken';
-          break;
-        default:
-          scope.errorMsg = 'Server Error';
-      }
-
-      Settings.updateMenus();
-    }
-
-    let lastStatus = 'expired';
-    let lastUser;
-    function credentialUpdated(e) {
-      if (User && User.status() !== lastStatus) {
-        lastStatus = User.status();
-        lastUser = user;
-        switch (lastStatus) {
-          case 'active':
-          profileSetting.activate();
-          break;
-          case 'pending':
-          setState(scope.CHECK)();
-          break;
-          case 'expired':
-          setState(scope.LOGIN)();
-          break;
-          default:
-          console.error('Unknown user status')
-        }
+    function openPage(page) {
+      return function() {
+        window.open(chrome.extension.getURL(page), SETTINGS_TAB_ID);
       }
     }
 
-    function setUser(user) {
-      User.addCredential(user.id);
+    function displayMenu() {
+      const hoverOff = properties.get('hoverOff');
+      const enabled = properties.get('enabled');
+      const loggedIn = properties.get('user.status') === 'active';
+      const logInOutPage = `/html/settings.html#${loggedIn ? 'Profile' : 'Login'}`;
+      safeInnerHtml(menuTemplate.render({ enabled, hoverOff, loggedIn }), document.getElementById('control-ctn'));
+      document.getElementById('login-btn').addEventListener('click', openPage(logInOutPage));
+      document.getElementById('enable-btn').addEventListener('click', () => properties.toggle('enabled', true));
+      document.getElementById('hover-btn').addEventListener('click', () => properties.toggle('hoverOff', true));
+      document.getElementById('ce-settings').addEventListener('click', openPage("/html/settings.html"));
     }
 
-    function getUser () {
-      scope.email = document.getElementById(scope.EMAIL_INPUT).value;
-      User.get(scope.email, setUser, setError);
-    }
-
-    function register () {
-      scope.username = document.getElementById(scope.USERNAME_INPUT).value;
-      User.register(scope.email, scope.username);
-    }
-
-    function onEnter(id, func) {
-      const elem = document.getElementById(id);
-      if (elem !== null) {
-        elem.addEventListener('keypress', (e) => {
-          if(e.key === 'Enter') func()
-        });
-      }
-    }
-
-    function resetErrorCall(func) {
-      return function () {scope.errorMsg = undefined; func();}
-    }
-
-    this.onOpen = function () {
-      credentialUpdated();
-      const loginBtn = document.getElementById(scope.LOGIN_BTN_ID);
-      const registerBtn = document.getElementById(scope.REGISTER_BTN_ID);
-      const resendBtn = document.getElementById(scope.RESEND_BTN_ID);
-      const logoutBtn = document.getElementById(scope.LOGOUT_BTN_ID);
-
-
-      registerBtn.addEventListener("click", resetErrorCall(register));
-      loginBtn.addEventListener("click", resetErrorCall(getUser));
-      resendBtn.addEventListener("click", resetErrorCall(User.addCredential));
-      logoutBtn.addEventListener("click", resetErrorCall(User.logout));
-
-      onEnter(scope.EMAIL_INPUT, resetErrorCall(getUser));
-      onEnter(scope.USERNAME_INPUT, resetErrorCall(register));
-    }
-    document.addEventListener(User.errorEvent(), setError);
-  }
+    properties.set('SETTINGS_TAB_ID', SETTINGS_TAB_ID);
+    properties.onUpdate(['enabled', 'hoverOff', 'user.status'], displayMenu);
+  });
 }
-new Settings(new Login());
-;
-class Profile extends Page {
-  constructor() {
-    super();
-    const scope = {
-      LOGOUT_BTN_ID: 'ce-logout-btn',
-      UPDATE_BTN_ID: 'ce-update-btn',
-      USERNAME_INPUT_ID: 'ce-username-input',
-      CURRENT_EMAIL_INPUT_ID: 'ce-current-email-input',
-      NEW_EMAIL_INPUT_ID: 'ce-new-email-input',
-      UPDATE_FORM_ID: 'ce-update-form'
-    };
-    const updateEmailSent = 'Email sent: you must confirm changes';
-    this.label = function () {return 'Profile';};
-    this.template = function() {return 'icon-menu/links/profile';}
-    this.hide = function () {return !User.isLoggedIn();}
-    this.scope = function () {return scope;};
-    this.beforeOpen = function () {
-      if (!this.hide()) {
-        let user = User.loggedIn();
-        scope.id = user.id;
-        scope.username = user.username;
-        scope.likes = user.likes;
-        scope.dislikes = user.dislikes;
-      }
-    }
 
-    function setError(errMsg) {
-      return function (err) {
-        scope.importantMessage = errMsg || err.errorMsg
-        console.info(err);
-        Settings.updateMenus();
-      }
-    }
-
-    function update() {
-      let body = {user: {}};
-      body.originalEmail = document.getElementById(scope.CURRENT_EMAIL_INPUT_ID).value;
-      body.user.id = User.loggedIn().id;
-      body.user.username = document.getElementById(scope.USERNAME_INPUT_ID).value || undefined;
-      body.user.email = document.getElementById(scope.NEW_EMAIL_INPUT_ID).value || undefined;
-      const url = EPNTS.user.requestUpdate();
-      Request.post(url, body, setError(updateEmailSent), setError());
-    }
-
-    this.onOpen = function () {
-      document.getElementById(scope.LOGOUT_BTN_ID).addEventListener("click", User.logout);
-
-      Form.onSubmit(scope.UPDATE_FORM_ID, update);
-      // document.getElementById(scope.UPDATE_BTN_ID).addEventListener("click", update);
-    }
-  }
-}
-const profileSetting = new Settings(new Profile());
-;
-class RawTextTool extends Page {
-  constructor() {
-    super();
-    const scope = {
-      TAB_SPACING_INPUT_ID: 'ce-tab-spcing-input-cnt-id',
-      RAW_TEXT_INPUT_ID: 'ce-raw-text-input-id',
-      RAW_TEXT_CNT_ID: 'ce-raw-text-input-cnt-id',
-      tabSpacing: 4
-    }
-    const rawInputTemplate = new $t('icon-menu/raw-text-input');
-    const RawSCC = ShortCutContainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
-
-    function textToHtml(text, spacing, tabSpacing) {
-      if (text === undefined) return '';
-      const space = new Array(spacing).fill('&nbsp;').join('');
-      const tab = new Array(tabSpacing).fill('&nbsp;').join('');
-      return text.replace(/\n/g, '<br>')
-                  .replace(/\t/g, tab)
-                  .replace(/\s/g, space);
-    }
-
-    // function pulled from https://jsfiddle.net/2wAzx/13/
-    function enableTab(el) {
-      el.onkeydown = function(e) {
-        if (e.keyCode === 9) {
-          var val = this.value,
-              start = this.selectionStart,
-              end = this.selectionEnd;
-          this.value = val.substring(0, start) + '\t' + val.substring(end);
-          this.selectionStart = this.selectionEnd = start + 1;
-          return false;
-        }
-      };
-    }
-
-    this.scope = () => scope;
-    this.label = function () {return 'Raw Text Tool';};
-    this.template = function() {return 'icon-menu/links/raw-text-tool';};
-    this.onOpen = function () {
-      document.getElementById(scope.TAB_SPACING_INPUT_ID).onchange =
-            (event) => scope.tabSpacing = Number.parseInt(event.target.value);
-      const textArea = document.getElementById(scope.RAW_TEXT_INPUT_ID);
-      enableTab(textArea);
-      const container = document.getElementById(scope.RAW_TEXT_CNT_ID);
-      const html = textToHtml(event.target.value, 1, scope.tabSpacing);
-      textArea.onkeyup = (event) => safeInnerHtml(html, container)
-      RawSCC.unlock();
-      RawSCC.show();
-      RawSCC.lock();
-    };
-    this.onClose = function () {
-      RawSCC.unlock();
-      RawSCC.hide();
-      RawSCC.lock();
-    };
-  }
-}
-new Settings(new RawTextTool());
+stateOnLoad();
 ;
 return {afterLoad};
-}
-Settings = Settings()
-Settings.afterLoad.forEach((item) => {item();});
+        }
+        try {
+          AppMenu = AppMenu();
+          AppMenu.afterLoad.forEach((item) => {item();});
+        } catch (e) {
+            console.log(e);
+        }

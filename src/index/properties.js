@@ -40,8 +40,10 @@ class Properties {
         const key = keys[index];
         const value = values[key];
         if (value && value.newValue !== undefined) {
-          instance.set(key, values[key].newValue);
-        } else {
+          if (value.newValue !== value.oldValue) {
+            instance.set(key, value.newValue);
+          }
+        } else if (value !== properties[key]) {
           instance.set(key, value);
         }
       }
