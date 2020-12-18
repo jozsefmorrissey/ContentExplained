@@ -72,8 +72,8 @@ class DragDropResize {
     this.withinPopup = (offset) => {
       const rect = getPopupElems().cnt.getBoundingClientRect();
       if (lastMoveEvent) {
-        const withinX = lastMoveEvent.screenX < rect.right - offset && rect.left + offset < lastMoveEvent.screenX;
-        const withinY = lastMoveEvent.screenY < rect.bottom - offset && rect.top + offset < lastMoveEvent.screenY;
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
         return withinX && withinY;
       }
       return false;
@@ -232,11 +232,16 @@ class DragDropResize {
     let dragging;
     function drag(e) {
       const clickTime = new Date().getTime();
-      if (!isMaximized() && clickTime < lastClickTime + 400) {
+      console.log(clickTime, lastClickTime, clickTime < lastClickTime + 500);
+      if (!isMaximized() && clickTime < lastClickTime + 500) {
+        console.log('dragging!');
         backdrop.show();
         Resizer.hide(popupCnt);
         const rect = popupCnt.getBoundingClientRect();
-        dragging = {screenX: e.screenX, screenY: e.screenY, top: rect.top + window.scrollY, left: rect.left + window.scrollX};
+        dragging = {clientX: e.clientX + window.scrollX,
+                    clientY: e.clientY + window.scrollY,
+                    top: rect.top + window.scrollY,
+                    left: rect.left + window.scrollX};
         DragDropResize.events.dragstart.trigger(getPopupElems().cnt);
       }
       lastClickTime = clickTime;
@@ -306,7 +311,7 @@ class DragDropResize {
       historyBtn.onclick = (event) => {
         histCnt.hidden = false;
         histDisplayCnt.innerHTML = props.historyDisplay(histFilter.value);
-        positionOnElement(historyBtn, histCnt);
+        positionOnElement(historyBtn, histCnt).center().bottom();
         updateHistZindex();
         event.stopPropagation();
       }
@@ -343,20 +348,23 @@ class DragDropResize {
     }
 
     let lastDragNotification = new Date().getTime()
+    let lastMove = new Date().getTime()
     function mouseMove(e) {
-      if (dragging) {
-        const dy = dragging.screenY - lastMoveEvent.screenY;
-        const dx = dragging.screenX - lastMoveEvent.screenX;
+      const time = new Date().getTime();
+      lastMoveEvent = {clientX: e.clientX + window.scrollX,
+                      clientY: e.clientY + window.scrollY};
+      if (dragging && lastMove < time + 100) {
+        console.log('moving')
+        const dy = dragging.clientY - lastMoveEvent.clientY;
+        const dx = dragging.clientX - lastMoveEvent.clientX;
         const rect = popupCnt.getBoundingClientRect();
         popupCnt.style.top = dragging.top - dy + 'px';
         popupCnt.style.left = dragging.left - dx + 'px';
-        const time = new Date().getTime();
         if (lastDragNotification + 350 < time) {
           DragDropResize.events.drag.trigger(getPopupElems().cnt);
           lastDragNotification = time;
         }
       }
-      lastMoveEvent = e;
     }
 
     function on(eventName, func) {
@@ -375,7 +383,7 @@ class DragDropResize {
     const backdrop = new CatchAll(popupCnt);
     backdrop.on('mouseup', stopDragging);
     backdrop.on('mousemove', mouseMove);
-    document.addEventListener('scroll', (e) => {console.log('scrolling'); mouseMove(e);});
+    // document.addEventListener('scroll', (e) => mouseMove(e));
 
 
     Resizer.position(popupCnt);

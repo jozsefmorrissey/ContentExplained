@@ -1,0 +1,41 @@
+<div>
+  <div id='ce-profile-header-ctn'>
+    <h1>{{username}}</h1>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <div>
+        <button id='{{LOGOUT_BTN_ID}}' type="submit">Logout</button>
+    </div>
+  </div>
+  <h3>{{importantMessage}}</h3>
+  <form id={{UPDATE_FORM_ID}}>
+    <div>
+      <label for="{{USERNAME_INPUT_ID}}">New Username:</label>
+      <input class='ce-float-right' id='{{USERNAME_INPUT_ID}}'
+            type="text" name="username" value="">
+      <br><br>
+      <label for="{{NEW_EMAIL_INPUT_ID}}">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+      <input class='ce-float-right' id='{{NEW_EMAIL_INPUT_ID}}'
+            type="email" name="email" value="">
+    </div>
+    <br><br><br>
+    <div>
+      <label for="{{CURRENT_EMAIL_INPUT_ID}}">Confirm Current Email:</label>
+      <input required class='ce-float-right' id='{{CURRENT_EMAIL_INPUT_ID}}'
+              type="email" name="currentEmail" value="">
+    </div>
+    <br>
+    <div class="ce-center">
+      <button id='{{UPDATE_BTN_ID}}' type="submit" name="button">Update</button>
+    </div>
+  </form>
+
+  <div>
+    <label>Likes:</label>
+    <b>{{likes}}</b>
+  </div>
+  <br>
+  <div>
+    <label>DisLikes:</label>
+    <b>{{dislikes}}</b>
+  </div>
+</div>

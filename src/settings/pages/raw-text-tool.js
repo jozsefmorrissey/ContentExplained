@@ -8,7 +8,7 @@ class RawTextTool extends Page {
       RAW_TEXT_CNT_ID: 'ce-raw-text-input-cnt-id',
       tabSpacing: 4
     }
-    const rawInputTemplate = new $t('icon-menu/raw-text-input');
+    const rawInputTemplate = new $t('icon-menu/links/raw-text-input');
     const RawSCC = ShortCutContainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
 
     function textToHtml(text, spacing, tabSpacing) {

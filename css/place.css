@@ -2,6 +2,8 @@
   background: white;
   width: fit-content;
   height: fit-content;
+  width: min-content;
+  height: min-content;
   border-style: groove;
   border-radius: 10pt;
 }
