@@ -1,10 +1,16 @@
 This is my first browser extension.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To install locally:
+### To install locally:
+
+#### FireFox
 <pre>
-Settings -> Web Developer -> Remote Debugging -> This FireFox -> Load Temporary Add-on...
+Hamberger -> Web Developer -> Remote Debugging -> This FireFox -> Load Temporary Add-on...
 </pre>
 
+#### chrome/chromium
+<pre>
+  ThreeDot -> Settings -> Exztensions -> Load Unpacked
+</pre>
 
 Server Updates:
 rebooting the server will change the serverId this values is sent in all
@@ -28,4 +34,4 @@ thier...
 ### Install
 npm install
 ### Build Process
-  node ./watch.js [local|dev|prod]
+  node ./watch.js prod

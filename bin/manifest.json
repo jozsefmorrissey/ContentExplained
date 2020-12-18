@@ -1,0 +1,48 @@
+{
+  "manifest_version": 2,
+  "name": "ContrextExplained",
+  "version": "1.2",
+
+  "description": "Allows for the addition and modification of keywords. That are inserted into a webpage to further Explain the Content better.",
+
+  "icons": {
+    "48": "./icons/logo.png"
+  },
+
+  "options_ui": {
+    "page": "./html/settings.html",
+    "open_in_tab": true
+  },
+
+  "web_accessible_resources": [
+    "/html/settings.html",
+    "/html/controls.html",
+    "/html/test.html"
+  ],
+
+  "browser_action": {
+    "browser_style": false,
+    "default_icon": "./icons/logo.png",
+    "default_title": "Content Explianed",
+    "default_popup": "./html/controls.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["./CE.js"],
+      "css": ["./css/index.css",
+              "./css/hover-resource.css",
+              "./css/lookup.css"]
+    }
+  ],
+
+  "background": {
+    "scripts": ["./Background.js"]
+  },
+  "permissions": [
+    "storage",
+    "<all_urls>"
+  ]
+
+}

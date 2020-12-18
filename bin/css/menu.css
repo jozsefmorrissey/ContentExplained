@@ -1,0 +1,8 @@
+menu {
+  display: grid;
+  padding: 5px;
+}
+
+menuitem:hover {
+  background-color: #d8d8d8;
+}

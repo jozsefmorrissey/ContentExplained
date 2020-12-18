@@ -2,7 +2,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 const { Mutex, Semaphore } = require('async-mutex');
 
-const { EPNTS } = require('./bin/EPNTS');
+const { EPNTS } = require('./bin/hacky/EPNTS');
 const env = process.argv[2];
 const host = EPNTS._envs[env];
 
@@ -15,15 +15,15 @@ function HachyImport(url, dest) {
   console.log(curlCmd)
   const code = shell.exec(curlCmd, {silent: true}).stdout;
   if (code !== '') {
-    fs.writeFile(dest, code, () =>
-        console.warn(`HackyImport: \n\t${dest}\n\t${url}`));
+    fs.writeFile(`./bin/hacky/${dest}`, code, () =>
+        console.warn(`HackyImport: \n\t./bin/hacky/${dest}\n\t${url}`));
   }
 }
 
-HachyImport(`${host}/EPNTS/${env}`, './bin/EPNTS.js');
-HachyImport('https://localhost:3001/debug-gui/js/debug-gui-client.js', './bin/debug-gui-client.js');
-HachyImport('https://localhost:3001/debug-gui/js/debug-gui.js', './bin/debug-gui.js');
-HachyImport('https://localhost:3001/js/short-cut-container.js', './bin/short-cut-container.js');
+HachyImport(`${host}/EPNTS/${env}`, 'EPNTS.js');
+HachyImport('https://localhost:3001/debug-gui/js/debug-gui-client.js', 'debug-gui-client.js');
+HachyImport('https://localhost:3001/debug-gui/js/debug-gui.js', 'debug-gui.js');
+HachyImport('https://localhost:3001/js/short-cut-container.js', 'short-cut-container.js');
 
 
 class Watcher {
@@ -110,6 +110,7 @@ class Watcher {
       fileOdir = fileOdir.trim().replace(/^(.*?)\/*$/, '$1');
       positions[fileOdir] = position++;
       const stat = fs.stat(fileOdir, function(err, stats) {
+        console.log(fileOdir)
         stats.name = fileOdir;
         if (stats.isDirectory() || stats.isFile()){
           watch(stats);
@@ -125,15 +126,15 @@ const { HtmlBundler } = require('./building/bundlers/html.js');
 const { CssBundler } = require('./building/bundlers/css.js');
 const { JsBundler } = require('./building/bundlers/js.js');
 
-const htmlDumpLoc = './bin/$templates.js';
-const cssDumpLoc = './bin/$css.js';
+const htmlDumpLoc = './bin/dump/$templates.js';
+const cssDumpLoc = './bin/dump/$css.js';
 
 const htmlBundler = new HtmlBundler(htmlDumpLoc);
 const cssBundler = new CssBundler(cssDumpLoc);
-const ceJsBundler = new JsBundler('extension/CE', []);
-const backgroundJsBundler = new JsBundler('extension/Background', []);
-const settingJsBundler = new JsBundler('extension/Settings', []);
-const appMenuJsBundler = new JsBundler('extension/AppMenu', []);
+const ceJsBundler = new JsBundler('bin/CE', []);
+const backgroundJsBundler = new JsBundler('bin/Background', []);
+const settingJsBundler = new JsBundler('bin/Settings', []);
+const appMenuJsBundler = new JsBundler('bin/AppMenu', []);
 
 
 
@@ -142,35 +143,35 @@ new Watcher(cssBundler.change, cssBundler.write).add('./css/');
 new Watcher(backgroundJsBundler.change, backgroundJsBundler.write)
                       .add('./src/manual/background.js');
 new Watcher(ceJsBundler.change, ceJsBundler.write)
-                      .add('./bin/debug-gui-client.js')
+                      .add('./bin/hacky/debug-gui-client.js')
                       .add('./constants/global.js')
-                      .add('./bin/EPNTS.js')
+                      .add('./bin/hacky/EPNTS.js')
                       .add('./src/index/')
-                      .add('./bin/$css.js')
-                      .add('./bin/$templates.js');
+                      .add('./bin/dump/$css.js')
+                      .add('./bin/dump/$templates.js');
 
 new Watcher(settingJsBundler.change, settingJsBundler.write)
-                            .add('./bin/debug-gui-client.js')
+                            .add('./bin/hacky/debug-gui-client.js')
                             .add('./constants/global.js')
                             .add('./src/index/properties.js')
                             .add('./src/index/request.js')
-                            .add('./bin/EPNTS.js')
+                            .add('./bin/hacky/EPNTS.js')
                             .add('./src/index/key-short-cut.js')
                             .add('./src/index/services/user.js')
                             .add('./src/index/services/form.js')
                             .add('./src/index/ExprDef.js')
                             .add('./src/index/services/$t.js')
-                            .add('./bin/$templates.js')
+                            .add('./bin/dump/$templates.js')
                             .add('./src/index/dom-tools.js')
                             .add('./src/index/custom-event.js')
                             .add('./src/index/events/events.js')
                             .add('./src/settings');
 
 new Watcher(appMenuJsBundler.change, appMenuJsBundler.write)
-                            .add('./bin/debug-gui-client.js')
+                            .add('./bin/hacky/debug-gui-client.js')
                             .add('./src/index/properties.js')
                             .add('./src/index/ExprDef.js')
                             .add('./src/index/services/$t.js')
-                            .add('./bin/$templates.js')
+                            .add('./bin/dump/$templates.js')
                             .add('./src/index/dom-tools.js')
                             .add('./src/app-menu/state.js');

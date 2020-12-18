@@ -28,7 +28,6 @@ function stateOnLoad() {
       document.getElementById('ce-settings').addEventListener('click', openPage("/html/settings.html"));
     }
 
-    properties.set('SETTINGS_TAB_ID', SETTINGS_TAB_ID);
     properties.onUpdate(['enabled', 'hoverOff', 'user.status'], displayMenu);
   });
 }

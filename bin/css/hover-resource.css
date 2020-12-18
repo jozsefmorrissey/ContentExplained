@@ -1,0 +1,102 @@
+hover-explanation {
+  border-radius: 10pt;
+  background-color: rgba(150, 162, 249, 0.56);
+}
+
+hover-explanation:hover {
+  font-weight: bolder;
+}
+
+.ce-hover-max-min-cnt {
+  position: fixed;
+}
+
+.ce-hover-max-min-abs-cnt {
+  position: absolute;
+  right: 22px;
+  z-index: 2;
+}
+
+.ce-upper-right-btn {
+  padding: 0 5px;
+  border-radius: 3px;
+  margin: 1px;
+  background-color: transparent;
+  color: black;
+  border-color: gray;
+  border-width: .5px;
+  background-color: whitesmoke;
+}
+
+#ce-hover-display-cnt-id {
+  padding: 0 10pt;
+  width: 100%;
+}
+
+#ce-hover-switch-list-id {
+  margin: 0;
+}
+
+.ce-hover-list {
+  list-style: none;
+  font-size: medium;
+  color: blue;
+  font-weight: 600;
+  padding: 0 10pt;
+}
+
+.ce-hover-list.active {
+  background-color: #ada5a5;
+  border-radius: 10pt;
+}
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+
+  border-bottom: 15px solid black;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+
+  border-top: 20px solid #f00;
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 60px solid transparent;
+  border-bottom: 60px solid transparent;
+
+  border-left: 60px solid green;
+}
+
+.arrow-left {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+
+  border-right:10px solid blue;
+}
+
+#event-catcher-id {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+
+.pop-out {
+  border: 1px solid;
+  border-radius: 5pt;
+  padding: 10px;
+  box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;
+}

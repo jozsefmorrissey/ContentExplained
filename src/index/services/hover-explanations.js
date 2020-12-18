@@ -1,4 +1,4 @@
-// ./bin/$templates.js
+// ./bin/dump/$templates.js
 
 class HoverExplanations {
   constructor (props) {
