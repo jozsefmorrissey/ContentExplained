@@ -1,27 +1,28 @@
 This is my first browser extension.
 
-### To install locally:
+## To install locally:
 
-#### FireFox
+### FireFox
 <pre>
 Hamberger -> Web Developer -> Remote Debugging -> This FireFox -> Load Temporary Add-on...
 </pre>
 
-#### chrome/chromium
+### chrome/chromium
 <pre>
-  ThreeDot -> Settings -> Exztensions -> Load Unpacked
+ThreeDot -> Settings -> Exztensions -> Load Unpacked
 </pre>
 
-Server Updates:
-rebooting the server will change the serverId this values is sent in all
-responses as a ce-server-id header. Changing this value will notify all running
-applications that the server has been updated. Which will cause them to update
-thier...
-<ul>
-  <li>endpoints</li>
-</ul>
+## Source Code for Specific Version
 
-##Firefox policy requirments
+### Git
+<pre>
+git clone https://github.com/jozsefmorrissey/ContentExplained.git
+git checkout v[version]
+</pre>
+  -- bin folder contains built extension
+### Zip
+  https://node.jozsefmorrissey.com/content-explained/versions/[version].zip
+## Developemet
 
 ### Build Requirements
   should work with any os however have tested
@@ -30,8 +31,16 @@ thier...
   requried installations
     - node (8.10.0)
     - npm (3.5.2)
-  installed
 ### Install
 npm install
 ### Build Process
-  node ./watch.js prod
+  node ./watch.js [local|dev|prod]
+
+## On the fly server updates:
+rebooting the server will change the serverId this values is sent in all
+responses as a ce-server-id header. Changing this value will notify all running
+applications that the server has been updated. Which will cause them to update
+thier...
+<ul>
+  <li>endpoints</li>
+</ul>
