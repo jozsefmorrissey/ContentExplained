@@ -546,42 +546,8 @@ const EPNTS = new Endpoints({
     "opinion.dislike"
   ]
 }
-, 'prod').getFuncObj();
+, 'local').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){};
-class CustomEvent {
-  constructor(name) {
-    const watchers = [];
-    this.name = name;
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        watchers.push(func);
-      } else {
-        return 'on' + name;
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-;
 class Css {
   constructor(identifier, value) {
     this.identifier = identifier.trim().replace(/\s{1,}/g, ' ');
@@ -668,7 +634,7 @@ try{
 	exports.CssFile = CssFile;
 } catch (e) {}
 ;// ./src/index/css.js
-new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
+new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   padding: 0;   margin: 0;   margin-right: 5pt; }  .ce-hover-list-elem {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list-elem.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
 new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0;   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
 
@@ -684,6 +650,40 @@ new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin:
 
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
+;
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
+      } else {
+        return 'on' + name;
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
 ;function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -1797,12 +1797,13 @@ class DragDropResize {
     const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
     const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
     const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
+    const MOVE_BTN_ID = 'place-MOVE-btn-id-' + id;
     const BACK_BTN_ID = 'place-back-btn-id-' + id;
     const FORWARD_BTN_ID = 'place-forward-btn-id-' + id;
     const HISTORY_BTN_ID = 'place-history-btn-id-' + id;
     const position = props.position || 'absolute';
     const template = new $t('place');
-    let lastMoveEvent, prevLocation, mouseDown, minLocation, selectElem,
+    let lastMoveEvent, prevLocation, minLocation, selectElem,
         currElem, hasMoved;
     const instance = this;
     const closeFuncs = [];
@@ -1824,6 +1825,7 @@ class DragDropResize {
       overflow: hidden;
       min-height: 20vh;
       min-width: 30vw;
+      display: none;
       border: 1px solid;
       padding: 3pt;
       border-radius: 5pt;
@@ -1877,13 +1879,13 @@ class DragDropResize {
       } else {
         rect = elem.getBoundingClientRect();
       }
-      if (props.position === 'fixed') return rect;
 
       const absRect = {};
-      absRect.top = rect.top + window.scrollY;
-      absRect.bottom = rect.bottom + window.scrollY;
-      absRect.right = rect.right + window.scrollX;
-      absRect.left = rect.left + window.scrollX;
+      const scrollOffset = getScrollOffset();
+      absRect.top = rect.top + scrollOffset.y;
+      absRect.bottom = rect.bottom + scrollOffset.y;
+      absRect.right = rect.right + scrollOffset.x;
+      absRect.left = rect.left + scrollOffset.x;
       absRect.width = rect.width;
       absRect.height = rect.height;
       return absRect
@@ -2015,23 +2017,30 @@ class DragDropResize {
     }
     this.isMaximized = isMaximized;
 
-    let lastClickTime;
-    let dragging;
-    function drag(e) {
-      const clickTime = new Date().getTime();
-      console.log(clickTime, lastClickTime, clickTime < lastClickTime + 500);
-      if (!isMaximized() && clickTime < lastClickTime + 500) {
-        console.log('dragging!');
-        backdrop.show();
-        Resizer.hide(popupCnt);
-        const rect = popupCnt.getBoundingClientRect();
-        dragging = {clientX: e.clientX + window.scrollX,
-                    clientY: e.clientY + window.scrollY,
-                    top: rect.top + window.scrollY,
-                    left: rect.left + window.scrollX};
-        DragDropResize.events.dragstart.trigger(getPopupElems().cnt);
+    function getScrollOffset() {
+      let x,y;
+      if (props.position === 'fixed') {
+        y = 0;
+        x = 0;
+      } else {
+        y = window.scrollY;
+        x = window.scrollX;
       }
-      lastClickTime = clickTime;
+      return {x, y}
+    }
+
+    let moving;
+    function move(e) {
+      console.log('moving!');
+      backdrop.show();
+      Resizer.hide(popupCnt);
+      const rect = popupCnt.getBoundingClientRect();
+      const scrollOffset = getScrollOffset();
+      moving = {clientX: e.clientX + scrollOffset.x,
+                  clientY: e.clientY + scrollOffset.y,
+                  top: rect.top + scrollOffset.y,
+                  left: rect.left + scrollOffset.x};
+      DragDropResize.events.dragstart.trigger(getPopupElems().cnt);
     }
 
     function get(name) {
@@ -2040,8 +2049,8 @@ class DragDropResize {
       return prop;
     }
 
-    function stopDragging() {
-      dragging = undefined;
+    function stopMoving() {
+      moving = undefined;
       backdrop.hide();
       Resizer.position(popupCnt);
       DragDropResize.events.dragend.trigger(getPopupElems().cnt);
@@ -2052,7 +2061,7 @@ class DragDropResize {
     const tempElem = document.createElement('div');
     const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
-        HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID,
+        HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID, MOVE_BTN_ID,
         hideClose: props.hideClose});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
@@ -2067,9 +2076,10 @@ class DragDropResize {
     const histDisplayCnt = document.createElement('DIV');
     histCnt.append(histFilter);
     histCnt.append(histDisplayCnt);
-    histDisplayCnt.style.maxHeight = '40vh';
+    histDisplayCnt.style.maxHeight = '20vh';
     histDisplayCnt.style.overflow = 'auto';
     histCnt.style.position = position;
+    histCnt.hidden = true;
     histCnt.className = 'place-history-cnt';
     document.body.append(histCnt);
     popupCnt.style = defaultStyle;
@@ -2077,6 +2087,7 @@ class DragDropResize {
     document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
     document.getElementById(MINIMIZE_BTN_ID).onclick = instance.minimize;
     document.getElementById(CLOSE_BTN_ID).onclick = instance.close;
+    document.getElementById(MOVE_BTN_ID).onclick = move;
     if (props.back) {
       document.getElementById(BACK_BTN_ID).onclick = () => {
         props.back();
@@ -2120,7 +2131,6 @@ class DragDropResize {
       }
     }
 
-    popupCnt.onmousedown = drag;
     popupCnt.onclick = (e) => {
       histCnt.hidden = true;
       if (e.target.tagName !== 'A')
@@ -2138,15 +2148,16 @@ class DragDropResize {
     let lastMove = new Date().getTime()
     function mouseMove(e) {
       const time = new Date().getTime();
-      lastMoveEvent = {clientX: e.clientX + window.scrollX,
-                      clientY: e.clientY + window.scrollY};
-      if (dragging && lastMove < time + 100) {
+      const scrollOffset = getScrollOffset();
+      lastMoveEvent = {clientX: e.clientX + scrollOffset.x,
+                      clientY: e.clientY + scrollOffset.y};
+      if (moving && lastMove < time + 100) {
         console.log('moving')
-        const dy = dragging.clientY - lastMoveEvent.clientY;
-        const dx = dragging.clientX - lastMoveEvent.clientX;
+        const dy = moving.clientY - lastMoveEvent.clientY;
+        const dx = moving.clientX - lastMoveEvent.clientX;
         const rect = popupCnt.getBoundingClientRect();
-        popupCnt.style.top = dragging.top - dy + 'px';
-        popupCnt.style.left = dragging.left - dx + 'px';
+        popupCnt.style.top = moving.top - dy + 'px';
+        popupCnt.style.left = moving.left - dx + 'px';
         if (lastDragNotification + 350 < time) {
           DragDropResize.events.drag.trigger(getPopupElems().cnt);
           lastDragNotification = time;
@@ -2159,19 +2170,14 @@ class DragDropResize {
     }
     this.on = on;
 
-    document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mousedown', (e) => mouseDown = e);
-    document.addEventListener('mouseup', () => mouseDown = undefined);
     this.container = () => getPopupElems().cnt;
     this.lockSize = () => Resizer.lock(popupCnt);
     this.unlockSize = () => Resizer.unlock(popupCnt);
 
     Resizer.all(popupCnt, props.position);
     const backdrop = new CatchAll(popupCnt);
-    backdrop.on('mouseup', stopDragging);
+    backdrop.on('click', stopMoving);
     backdrop.on('mousemove', mouseMove);
-    // document.addEventListener('scroll', (e) => mouseMove(e));
-
 
     Resizer.position(popupCnt);
   }
@@ -2897,8 +2903,14 @@ $t.functions['755294900'] = function (get) {
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
 }
+$t.functions['906579606'] = function (get) {
+	return `<li class='ce-hover-list-elem` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `&nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
+}
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
+}
+$t.functions['1266551310'] = function (get) {
+	return `<option value='` + (get("words")) + `' ></option>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
@@ -2910,16 +2922,16 @@ $t.functions['-2107865266'] = function (get) {
 	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
 }
 $t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `'> ` + (new $t('<li class=\'ce-hover-list{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> </div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> <div class='ce-center'> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> </div> </div> </div> `
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
 }
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
-}
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
 }
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
@@ -2937,7 +2949,7 @@ $t.functions['icon-menu/menu'] = function (get) {
 	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MOVE_BTN_ID")) + `'> &Colon; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -2949,7 +2961,7 @@ $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
-	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <h3>` + (get("words")) + `</h3> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `'>Add&nbsp;To&nbsp;Url</button> </div> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
+	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") === undefined ? '': 'hidden') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") === undefined ? 'hidden': '') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -3001,6 +3013,7 @@ class HoverExplanations {
 
     const id = Math.floor(Math.random() * 1000000);
     const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
+    const EDIT_BTN_ID = 'ce-hover-expl-edit-btn-id-' + id;
     const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
     const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
     const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
@@ -3056,9 +3069,11 @@ class HoverExplanations {
       active.list.sort(sortByPopularity);
 
       const loggedIn = User.isLoggedIn();
+      const authored = loggedIn && active.expl.author &&
+              User.loggedIn().id === active.expl.author.id;
       const scope = {
-        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID,
-        active, loggedIn,
+        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
+        active, loggedIn, authored,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),
@@ -3096,6 +3111,10 @@ class HoverExplanations {
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
       document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      document.getElementById(EDIT_BTN_ID).onclick = () => {
+        setTimeout(instance.close, 0);
+        AddInterface.open(active.expl);
+      }
       document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
       document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
     }
@@ -3196,6 +3215,25 @@ class HoverExplanations {
       wrapOne();
     }
 
+    function update(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [];
+      }
+      const list = explRefs[ref];
+      let index = 0;
+      for (; index < list.length; index += 1) {
+        if (list[index].id === expl.id) {
+          list[index] = expl;
+          updateContent(ref, index).show();
+          return;
+        }
+      }
+      list.push(expl);
+      updateContent(ref, index).show();
+    }
+    this.update = update;
+
     function add(expl) {
       const ref = expl.searchWords;
       if (explRefs[ref] === undefined) {
@@ -3248,48 +3286,6 @@ class HoverExplanations {
 
 let hoverExplanations = new HoverExplanations();
 ;
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            Request.get(url, success, fail);
-          } else {
-            Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-;
 class Expl {
   constructor () {
     let currEnv;
@@ -3332,6 +3328,48 @@ class Expl {
 }
 
 Expl = new Expl();
+;
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            Request.get(url, success, fail);
+          } else {
+            Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
 ;
 class History {
   constructor(len) {
@@ -3414,12 +3452,12 @@ class Opinion {
     function explOpinions(expl, favorable) {
       const attr = favorable ? 'likes' : 'dislikes';
       if (amendments[expl.id] === undefined) {
-        return expl[attr];
+        return expl[attr] || 0;
       }
       let value = expl[attr];
       if (opinions[expl.id] === favorable) value--;
       if (amendments[expl.id] === favorable) value++;
-      return value;
+      return value || 0;
     }
 
     this.canLike = (expl) => canVote(expl, true);
@@ -3665,14 +3703,13 @@ class MerriamWebster extends Page {
         {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
           SEARCH_INPUT_ID})};
 
-    function updateSuggestions(suggestionHtml) {
-      // const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      // const spans = sugCnt.querySelectorAll('span');
-      // for (let index = 0; index < spans.length; index += 1) {
-      //   spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      // }
+    function afterOpen(suggestionHtml) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      searchInput.addEventListener('change', openDictionary);
+      searchInput.focus();
     }
-    this.afterOpen = updateSuggestions;
+
+    this.afterOpen = afterOpen;
 
     function success (data) {
       const elem = data[0];
@@ -3686,8 +3723,7 @@ class MerriamWebster extends Page {
       }
       lookupTabs.updateBody();
       lookupTabs.updateHead();
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      searchInput.addEventListener('change', openDictionary);
+      afterOpen();
     }
 
     function failure (error) {
@@ -3719,7 +3755,6 @@ lookupTabs.add(MerriamWebster, 1);
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
     const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
-    const FILTER_INPUT_ID = 'ce-filter-input-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
     let searchInput;
@@ -3816,6 +3851,7 @@ lookupTabs.add(MerriamWebster, 1);
             instance.get();
           }
         };
+        searchInput.addEventListener('keyup', lookupTabs.updateBody)
         onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
 
         document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
@@ -3852,7 +3888,6 @@ lookupTabs.add(MerriamWebster, 1);
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
-      scope.FILTER_INPUT_ID = FILTER_INPUT_ID;
       scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
       return scope;
@@ -3889,21 +3924,28 @@ class AddInterface extends Page {
     const template = new $t('popup-cnt/tab-contents/add-explanation');
     const instance = this;
     let content = '';
+    let id = '';
     let words = '';
     let url = '';
     let writingJs = false;
+    let editedWords = [];
+    let changingTarget = false;
+    let expl;
     const ADD_EDITOR_CNT_ID = 'ce-add-editor-cnt-id';
     const ADD_EDITOR_ID = 'ce-add-editor-id';
     const SUBMIT_EXPL_BTN_ID = 'ce-add-editor-add-expl-btn-id';
+    const UPDATE_EXPL_BTN_ID = 'ce-add-editor-update-expl-btn-id';
+    const WORDS_INPUT_ID = 'ce-add-editor-words-input-id';
     let updatePending = false;
     const editHoverExpl = new HoverExplanations({hideClose: true, position: 'fixed', hover: false});
     const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
 
     function getScope() {
+      const u = url === window.location.href ? undefined : url;
       return {
-        ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID,
-        writingJs,
-        words
+        ADD_EDITOR_CNT_ID, ADD_EDITOR_ID, SUBMIT_EXPL_BTN_ID, WORDS_INPUT_ID,
+        UPDATE_EXPL_BTN_ID,
+        writingJs, words, content, url: u, id, editedWords
       }
     }
 
@@ -3911,22 +3953,50 @@ class AddInterface extends Page {
     this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
     this.html = () => template.render(getScope());
 
-    function initContent(userContent) {
-      if (content === '' && (typeof userContent) === 'string') {
-        content = userContent;
-        if (instance.inputElem !== undefined) {
-          instance.inputElem.value = content;
-          instance.inputElem.focus();
-          editHoverExpl.display({words, content: content},
-                dragDropResize.container());
+    function initContent(w) {
+        words = w || words;
+        const userContent = properties.get('userContent') || {};
+        editedWords = Object.keys(userContent);
+        if (userContent[words] !== undefined) {
+          content = userContent[words].content;
+          url = userContent[words].url;
+          id = userContent[words].id;
+        } else {
+          content = '';
+          url = window.location.href;
+          id = undefined;
         }
+
+        if (instance.addExplBtn !== undefined) {
+          instance.addExplBtn.hidden = id !== undefined;
+          instance.updateExplBtn.hidden = id === undefined;
+        }
+    }
+
+    function save() {
+      let userContent = properties.get('userContent');
+      if ((typeof userContent) !== 'object') userContent = {};
+      console.log('saving');
+      if (content) {
+        userContent[words] = {content, url, id};
+      } else {
+        delete userContent[words];
       }
+      properties.set('userContent', userContent, true)
     }
 
     function addExplSuccessful(expl) {
       hoverExplanations.add(expl);
-      properties.set('userContent', '', true)
       content = '';
+      save();
+      dragDropResize.close();
+    }
+
+    function updateExplSuccessful() {
+      expl.content = content;
+      hoverExplanations.update(expl);
+      content = '';
+      save();
       dragDropResize.close();
     }
 
@@ -3935,9 +4005,29 @@ class AddInterface extends Page {
       Request.post(url, {words, content, siteUrl: window.location.href}, addExplSuccessful);
     }
 
+    function updateExplanation() {
+      const url = EPNTS.explanation.update();
+      Request.put(url, {content, id: expl.id}, updateExplSuccessful);
+    }
+
+    let pendingSave = false;
+    let lastSave = new Date().getTime();
+    function autoSave() {
+      const time = new Date().getTime();
+      if (time - 15000 > lastSave) {
+        save();
+        lastSave = time;
+      } else if (!pendingSave) {
+        console.log('pending')
+        pendingSave = true;
+        setTimeout(() => { pendingSave = false; autoSave() }, 15000);
+      }
+    }
+
     let ignoreChange = false;
     function onChange(event) {
-      if (ignoreChange) { ignoreChange = false; return;}
+      if (changingTarget) return;
+      if (ignoreChange) { ignoreChange = false; return; }
       let isWritingjs = false;
       try {
         if ((typeof event.target.value) === 'string') {
@@ -3953,7 +4043,7 @@ class AddInterface extends Page {
       if (writingJs !== isWritingjs) {
         writingJs = isWritingjs;
       }
-      properties.set('userContent', content, true)
+      autoSave();
     }
 
     function bottomFull() {
@@ -3966,19 +4056,41 @@ class AddInterface extends Page {
     }
     this.close = close;
 
-    function open(w, u) {
-      words = w || words;
-      url = u || url;
+    function editTargetUpdate(e) {
+      changingTarget = true;
+      save();
+      initContent(e.target.value);
+      instance.inputElem.value = content;
+      editHoverExpl.display({words, content});
+    }
+
+    function open(w, urlOid) {
+      if ((typeof w) === 'string') {
+        initContent(w);
+        url = urlOid || url;
+      } else if (w instanceof Object) {
+        expl = w;
+        id = expl.id;
+        words = expl.words;
+        initContent(words);
+        content = content || expl.content;
+      }
       dragDropResize.show()
         .setCss(bottomFull())
         .updateContent(instance.html())
         .center().bottom();
       instance.inputElem = document.getElementById(ADD_EDITOR_ID);
+      instance.inputElem.value = content;
       instance.inputCnt = document.getElementById(ADD_EDITOR_CNT_ID);
       instance.addExplBtn = document.getElementById(SUBMIT_EXPL_BTN_ID);
+      instance.updateExplBtn = document.getElementById(UPDATE_EXPL_BTN_ID);
+      instance.wordsInput = document.getElementById(WORDS_INPUT_ID);
+      instance.wordsInput.addEventListener('keyup', editTargetUpdate);
       instance.inputElem.addEventListener('keyup', onChange);
+      instance.inputElem.addEventListener('focus', () => changingTarget = false);
       // instance.inputElem.addEventListener('blur', editHoverExpl.close);
       instance.addExplBtn.addEventListener('click', addExplanation);
+      instance.updateExplBtn.addEventListener('click', updateExplanation);
 
 
       editHoverExpl.display({words, content}).elem(dragDropResize.container()).center().top();
@@ -3988,7 +4100,6 @@ class AddInterface extends Page {
     this.toggle = () => dragDropResize.hidden() ? instance.open() : dragDropResize.close();
 
     dragDropResize.onClose(close);
-    properties.onUpdate('userContent', initContent);
   }
 }
 

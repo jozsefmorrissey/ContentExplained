@@ -21,7 +21,10 @@ git checkout v[version]
 </pre>
   -- bin folder contains built extension
 ### Zip
-  https://node.jozsefmorrissey.com/content-explained/versions/[version].zip
+    https://node.jozsefmorrissey.com/content-explained/versions/[version].zip
+#### Latest
+      https://node.jozsefmorrissey.com/content-explained/versions/1.2.zip
+
 ## Developemet
 
 ### Build Requirements
@@ -44,3 +47,10 @@ thier...
 <ul>
   <li>endpoints</li>
 </ul>
+
+
+# TODO
+- Add commenting
+- Add tab compression
+- clean css....(Big Job)
+- siteid generalization...

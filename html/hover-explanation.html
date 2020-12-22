@@ -1,8 +1,8 @@
 <div>
   <div class="ce-inline ce-width-full">
     <div class="">
-      <ul id='{{SWITCH_LIST_ID}}'>
-        <li:t class='ce-hover-list{{expl.id === active.expl.id ? " active": ""}}'
+      <ul id='{{SWITCH_LIST_ID}}' class='ce-hover-list'>
+        <li:t class='ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}'
               repeat='expl in active.list'>
           {{expl.words}}&nbsp;<b class='ce-small-text'>({{expl.popularity}}%)</b>
         </li:t>
@@ -26,11 +26,14 @@
       <div class=''>
         <div>{{content}}</div>
       </div>
+      <div class='ce-center'>
+        <button {{loggedIn ? ' hidden' : ''}} id='{{LOGIN_BTN_ID}}'>
+          Login
+        </button>
+        <button {{authored ? '' : ' hidden'}} id='{{EDIT_BTN_ID}}'>
+          Edit
+        </button>
+      </div>
     </div>
-  </div>
-  <div class='ce-center'>
-    <button {{loggedIn ? ' hidden' : ''}} id='{{LOGIN_BTN_ID}}'>
-      Login
-    </button>
   </div>
 </div>

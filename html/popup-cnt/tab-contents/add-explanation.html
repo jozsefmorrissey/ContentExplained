@@ -3,10 +3,22 @@
     <div class="ce-full" id='{{ADD_EDITOR_CNT_ID}}'>
       <div class='ce-center'>
         <div class='ce-inline'>
-          <h3>{{words}}</h3>
+          <input type='text' value='{{words}}' list='ce-edited-words'
+              id='{{WORDS_INPUT_ID}}' autocomplete="off">
+          <datalist id='ce-edited-words'>
+            <option:t value='{{words}}' repeat='words in editedWords'></option:t>
+          </datalist>
           <div>
-            <button id='{{SUBMIT_EXPL_BTN_ID}}'>Add&nbsp;To&nbsp;Url</button>
+            <button id='{{SUBMIT_EXPL_BTN_ID}}' {{id === undefined ? '': 'hidden'}}>
+              Add&nbsp;To&nbsp;Url
+            </button>
+            <button id='{{UPDATE_EXPL_BTN_ID}}' {{id === undefined ? 'hidden': ''}}>
+              Update
+            </button>
           </div>
+          <a href='{{url}}'{{url ? '' : ' hidden'}} target='_blank'>
+            {{url.length < 20 ? url : url.substr(0, 17) + '...'}}
+          </a>
         </div>
       <div>
         <p{{writingJs ? '' : ' hidden'}} class='ce-error'>Stop tring to write JavaScript!</p>

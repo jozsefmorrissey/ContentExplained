@@ -130,5 +130,5 @@ const EPNTS = new Endpoints({
     "opinion.dislike"
   ]
 }
-, 'prod').getFuncObj();
+, 'local').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){}

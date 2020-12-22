@@ -26,14 +26,13 @@ class MerriamWebster extends Page {
         {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
           SEARCH_INPUT_ID})};
 
-    function updateSuggestions(suggestionHtml) {
-      // const sugCnt = document.getElementById(MERRIAM_WEB_SUG_CNT_ID);
-      // const spans = sugCnt.querySelectorAll('span');
-      // for (let index = 0; index < spans.length; index += 1) {
-      //   spans[index].addEventListener('click', openDictionary(spans[index].innerText.trim()));
-      // }
+    function afterOpen(suggestionHtml) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      searchInput.addEventListener('change', openDictionary);
+      searchInput.focus();
     }
-    this.afterOpen = updateSuggestions;
+
+    this.afterOpen = afterOpen;
 
     function success (data) {
       const elem = data[0];
@@ -47,8 +46,7 @@ class MerriamWebster extends Page {
       }
       lookupTabs.updateBody();
       lookupTabs.updateHead();
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      searchInput.addEventListener('change', openDictionary);
+      afterOpen();
     }
 
     function failure (error) {

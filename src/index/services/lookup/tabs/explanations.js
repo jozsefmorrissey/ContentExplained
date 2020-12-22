@@ -6,7 +6,6 @@ class Explanations extends Page {
     const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
     const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
     const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
-    const FILTER_INPUT_ID = 'ce-filter-input-id';
     const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
     let selected = [];
     let searchInput;
@@ -103,6 +102,7 @@ class Explanations extends Page {
             instance.get();
           }
         };
+        searchInput.addEventListener('keyup', lookupTabs.updateBody)
         onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
 
         document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
@@ -139,7 +139,6 @@ class Explanations extends Page {
       scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
       scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
       scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
-      scope.FILTER_INPUT_ID = FILTER_INPUT_ID;
       scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
       scope.selected = selected;
       return scope;

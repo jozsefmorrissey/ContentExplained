@@ -19,6 +19,7 @@ class HoverExplanations {
 
     const id = Math.floor(Math.random() * 1000000);
     const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
+    const EDIT_BTN_ID = 'ce-hover-expl-edit-btn-id-' + id;
     const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
     const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
     const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
@@ -74,9 +75,11 @@ class HoverExplanations {
       active.list.sort(sortByPopularity);
 
       const loggedIn = User.isLoggedIn();
+      const authored = loggedIn && active.expl.author &&
+              User.loggedIn().id === active.expl.author.id;
       const scope = {
-        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID,
-        active, loggedIn,
+        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
+        active, loggedIn, authored,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),
@@ -114,6 +117,10 @@ class HoverExplanations {
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
       }
       document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      document.getElementById(EDIT_BTN_ID).onclick = () => {
+        setTimeout(instance.close, 0);
+        AddInterface.open(active.expl);
+      }
       document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
       document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
     }
@@ -213,6 +220,25 @@ class HoverExplanations {
       }
       wrapOne();
     }
+
+    function update(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [];
+      }
+      const list = explRefs[ref];
+      let index = 0;
+      for (; index < list.length; index += 1) {
+        if (list[index].id === expl.id) {
+          list[index] = expl;
+          updateContent(ref, index).show();
+          return;
+        }
+      }
+      list.push(expl);
+      updateContent(ref, index).show();
+    }
+    this.update = update;
 
     function add(expl) {
       const ref = expl.searchWords;

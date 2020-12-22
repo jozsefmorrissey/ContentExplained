@@ -32,12 +32,12 @@ class Opinion {
     function explOpinions(expl, favorable) {
       const attr = favorable ? 'likes' : 'dislikes';
       if (amendments[expl.id] === undefined) {
-        return expl[attr];
+        return expl[attr] || 0;
       }
       let value = expl[attr];
       if (opinions[expl.id] === favorable) value--;
       if (amendments[expl.id] === favorable) value++;
-      return value;
+      return value || 0;
     }
 
     this.canLike = (expl) => canVote(expl, true);
