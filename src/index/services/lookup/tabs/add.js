@@ -34,7 +34,7 @@ class AddInterface extends Page {
     this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
     this.html = () => template.render(getScope());
 
-    function initContent(w) {
+    function initContent(w, clean) {
         words = w || words;
         const userContent = properties.get('userContent') || {};
         editedWords = Object.keys(userContent);
@@ -42,7 +42,7 @@ class AddInterface extends Page {
           content = userContent[words].content;
           url = userContent[words].url;
           id = userContent[words].id;
-        } else {
+        } else if (clean) {
           content = '';
           url = window.location.href;
           id = undefined;
@@ -140,20 +140,20 @@ class AddInterface extends Page {
     function editTargetUpdate(e) {
       changingTarget = true;
       save();
-      initContent(e.target.value);
+      initContent(e.target.value, true);
       instance.inputElem.value = content;
       editHoverExpl.display({words, content});
     }
 
     function open(w, urlOid) {
       if ((typeof w) === 'string') {
-        initContent(w);
+        initContent(w, true);
         url = urlOid || url;
       } else if (w instanceof Object) {
         expl = w;
         id = expl.id;
-        words = expl.words;
         initContent(words);
+        words = expl.words;
         content = content || expl.content;
       }
       dragDropResize.show()

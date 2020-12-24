@@ -9,10 +9,10 @@
             <option:t value='{{words}}' repeat='words in editedWords'></option:t>
           </datalist>
           <div>
-            <button id='{{SUBMIT_EXPL_BTN_ID}}' {{id === undefined ? '': 'hidden'}}>
+            <button id='{{SUBMIT_EXPL_BTN_ID}}' {{id ? 'hidden' : ''}}>
               Add&nbsp;To&nbsp;Url
             </button>
-            <button id='{{UPDATE_EXPL_BTN_ID}}' {{id === undefined ? 'hidden': ''}}>
+            <button id='{{UPDATE_EXPL_BTN_ID}}' {{id ? '' : 'hidden'}}>
               Update
             </button>
           </div>

@@ -118,6 +118,9 @@ const EPNTS = new Endpoints({
   "merriam": {
     "search": "/merriam/webster/:searchText"
   },
+  "comment": {
+    "add": "/comment/add"
+  },
   "_secure": [
     "user.update",
     "credential.get",
@@ -127,7 +130,8 @@ const EPNTS = new Endpoints({
     "explanation.update",
     "siteExplanation.add",
     "opinion.like",
-    "opinion.dislike"
+    "opinion.dislike",
+    "comment.add"
   ]
 }
 , 'local').getFuncObj();

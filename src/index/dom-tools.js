@@ -140,3 +140,9 @@ function textToHtml(text) {
               .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
                       '<a target=\'blank\' href="$2">$1</a>');
 }
+
+function strToHtml(str) {
+  const container = document.createElement('div');
+  container.innerHTML = safeInnerHtml(str);
+  return container.children[0];
+}

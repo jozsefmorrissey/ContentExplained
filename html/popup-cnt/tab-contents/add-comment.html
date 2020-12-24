@@ -1,0 +1,22 @@
+<div class='ce-comment-cnt-class{{color ? ' colored' : ''}}' id='{{ROOT_ELEM_ID}}'>
+  <div>
+    {{comment ? comment.value : ''}}
+  </div>
+  <div id='{{COMMENTS_CNT_ID}}'{{showComments && commentHtml ? '' : ' hidden'}}>
+    {{commentHtml}}
+  </div>
+  <div class='ce-center'>
+    <div hidden id='{{ADD_CNT_ID}}'>
+      <textarea type='text'
+          id='{{TEXT_AREA_INPUT_ID}}'
+          explanation-id='{{explanation.id}}'
+          comment-id='{{comment.id}}'></textarea>
+      <button class='ce-comment-submit-btn-class' textarea-id='{{TEXT_AREA_INPUT_ID}}'>
+        Submit
+      </button>
+    </div>
+    <div id='{{CONTROLS_CNT_ID}}'>
+      {{controlsHtml()}}
+    </div>
+  </div>
+</div>

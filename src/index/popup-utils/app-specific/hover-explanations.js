@@ -80,6 +80,7 @@ class HoverExplanations {
       const scope = {
         LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
         active, loggedIn, authored,
+        commentHtml: Comment.for(hoverResource.container(), active.expl).html(),
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),

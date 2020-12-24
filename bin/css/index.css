@@ -14,6 +14,17 @@
   border-width: .5px;
 }
 
+.ce-comment-cnt-class {
+    background-color: grey;
+    margin: 5pt 0pt 5pt 5pt;
+    padding: 5pt 1pt 5pt 5pt;
+    border-radius: 5pt;
+}
+
+.ce-comment-cnt-class.colored {
+  background-color: white;
+}
+
 .ce-history-list>li:hover {
   padding: 0 10pt;
   background-color: #a9a9a973;
@@ -52,6 +63,21 @@
 
 .ce-error {
   color: red;
+}
+
+.ce-comment-control-cnt-class {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+}
+
+.ce-comment-control-cnt-class>li {
+  margin-left: 10pt;
+}
+
+.ce-comment-control-cnt-class>li>button {
+  padding: 0 5pt;
 }
 
 .ce-padding {

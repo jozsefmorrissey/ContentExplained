@@ -1,0 +1,6 @@
+<ul class='ce-comment-control-cnt-class' id='{{TOGGLE_MENU_ID}}'>
+  <li:t repeat='toggle in toggles'><button toggle-id='{{toggle.id}}'
+        {{toggle.disabled ? ' hidden disabled' : ''}}>
+    {{toggle.showing ? toggle.hide.text : toggle.show.text}}
+  </button></li:t>
+</ul>
