@@ -102,7 +102,6 @@ class Tabs {
       updateHead();
       updateBody();
       setDems();
-      lookupHoverResource.position().minimize();
       lookupHoverResource.position().select();
       hoverExplanations.position().select().close();
       setOnclickMethods();

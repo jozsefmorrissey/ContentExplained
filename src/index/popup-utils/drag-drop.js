@@ -6,7 +6,9 @@ class DragDropResize {
     const id = Math.floor(Math.random() * 1000000);
     const POPUP_CNT_ID = 'place-popup-cnt-id-' + id;
     const POPUP_CONTENT_ID = 'place-popup-content-id-' + id;
+    const POPUP_CONTENT_CNT_ID = 'place-popup-content-cnt-id-' + id;
     const MAXIMIZE_BTN_ID = 'place-maximize-id-' + id;
+    const POPUP_HEADER_CNT_ID = 'place-header-cnt-id-' + id;
     const MINIMIZE_BTN_ID = 'place-minimize-id-' + id;
     const MAX_MIN_CNT_ID = 'place-max-min-id-' + id;
     const CLOSE_BTN_ID = 'place-close-btn-id-' + id;
@@ -37,7 +39,7 @@ class DragDropResize {
       position: ${position};
       overflow: hidden;
       min-height: 20vh;
-      min-width: 30vw;
+      min-width: 50vw;
       display: none;
       border: 1px solid;
       padding: 3pt;
@@ -48,7 +50,7 @@ class DragDropResize {
       getPopupElems().cnt.style.display = 'none';
       Resizer.hide(popupCnt);
       closeFuncs.forEach((func) => func());
-      instance.minimize();
+      middleSize();
       histCnt.hidden = true;
     }
     this.hide = this.close;
@@ -170,7 +172,7 @@ class DragDropResize {
     }
 
     function updateControls() {
-      showElem(MINIMIZE_BTN_ID, isMaximized());
+      showElem(MINIMIZE_BTN_ID, isMaximized || props.tabText !== undefined);
       showElem(MAXIMIZE_BTN_ID, !isMaximized());
       const hasPast = props.hasPast ? props.hasPast() : false;
       showElem(BACK_BTN_ID, hasPast);
@@ -180,20 +182,43 @@ class DragDropResize {
 
     }
 
+    function middleSize() {
+      if (minLocation) {
+        setCss({position, transform: 'unset', top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
+        setCss(minLocation);
+        showElem(POPUP_HEADER_CNT_ID, false);
+        showElem(POPUP_CONTENT_CNT_ID, true);
+        prevLocation = minLocation;
+        minLocation = undefined;
+        updateControls();
+        return true;
+      }
+      return false;
+    }
+
     this.maximize = function () {
-      setCss({position: 'fixed', top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
-      minLocation = prevLocation;
-      updateControls();
+      if (!middleSize()) {
+        setCss({position: 'fixed', top: 0, bottom: 0, right: 0, left:0, maxWidth: 'unset', maxHeight: 'unset', width: 'unset', height: '95vh'})
+        minLocation = prevLocation;
+        updateControls();
+      }
       return this;
     }
 
     this.minimize = function () {
-      if (minLocation) {
-        setCss({position, top: 'unset', bottom: 'unset', right: 'unset', left: 'unset', width: instance.getDems().width})
-        setCss(minLocation);
-        prevLocation = minLocation;
-        minLocation = undefined;
-        updateControls();
+      if (!middleSize() && props.tabText) {
+        console.log('tab-it')
+        tabHeader.innerText = props.tabText();
+        showElem(POPUP_HEADER_CNT_ID, true);
+        showElem(POPUP_CONTENT_CNT_ID, false);
+        setCss({left: 0, right: 0, bottom: 0, maxWidth: 'unset', maxHeight: 'unset', minWidth: 'unset',
+                minHeight: 'unset', width: 'fit-content', height: 'fit-content',
+                transform: 'rotate(90deg)'});
+        minLocation = prevLocation;
+        const rect = popupCnt.getBoundingClientRect();
+        const left = (rect.width - rect.height)/2 + 'px';
+        setCss({left});
+        DragDropResize.events.tabbed.trigger(getPopupElems().cnt);
       }
       return this;
     }
@@ -275,6 +300,7 @@ class DragDropResize {
     const tempHtml = template.render({POPUP_CNT_ID, POPUP_CONTENT_ID,
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
         HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID, MOVE_BTN_ID,
+        POPUP_HEADER_CNT_ID, POPUP_CONTENT_CNT_ID,
         hideClose: props.hideClose});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
@@ -284,6 +310,8 @@ class DragDropResize {
     popupContent.style.overflow = 'auto';
     const popupCnt = document.getElementById(POPUP_CNT_ID);
     const histCnt = document.createElement('DIV');
+    const tabHeader = document.getElementById(POPUP_HEADER_CNT_ID);
+    tabHeader.onclick = this.maximize;
     const histFilter = document.createElement('input');
     histFilter.placeholder = 'filter';
     const histDisplayCnt = document.createElement('DIV');
@@ -397,10 +425,11 @@ class DragDropResize {
 }
 
 DragDropResize.events = {};
-DragDropResize.events.drag = new CustomEvent ('drag')
-DragDropResize.events.dragend = new CustomEvent ('dragend')
-DragDropResize.events.dragstart = new CustomEvent ('dragstart')
-DragDropResize.events.drop = new CustomEvent ('drop')
+DragDropResize.events.drag = new CustomEvent ('drag');
+DragDropResize.events.dragend = new CustomEvent ('dragend');
+DragDropResize.events.dragstart = new CustomEvent ('dragstart');
+DragDropResize.events.drop = new CustomEvent ('drop');
+DragDropResize.events.tabbed = new CustomEvent ('tabbed');
 
 // drag	An element or text selection is being dragged (fired continuously every 350ms).
 // dragend	A drag operation is being ended (by releasing a mouse button or hitting the escape key).

@@ -32,9 +32,11 @@ class HoverExplanations {
 
     props.setDems = props.setDems || setDems;
     props.getDems = props.getDems || getDems;
+    props.tabText = () => active.expl.words;
     const hoverResource = new HoverResources(props);
 
     hoverResource.container().addEventListener('drop', () => newHoverResource());
+    hoverResource.container().addEventListener('tabbed', () => newHoverResource());
     if (props.hover === undefined || props.hover === true) {
       hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
     }
@@ -279,7 +281,7 @@ class HoverExplanations {
     }
 
     const newHoverResource = () => {
-        if(hoverResource) {
+        if(hoverExplanations === instance) {
           hoverResource.stopHover();
           hoverResource.lockOpen();
           hoverExplanations = new HoverExplanations();
