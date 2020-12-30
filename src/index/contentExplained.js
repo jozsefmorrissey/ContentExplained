@@ -1,14 +1,18 @@
 // ./src/index/properties.js
 
+const lengthLimit = 64;
 function search() {
   function lookup(searchWords) {
     searchWords = searchWords.trim().toLowerCase();
     if (searchWords) {
       lookupHoverResource.show();
-      if (searchWords !== properties.get('searchWords') && searchWords.length < 64) {
+      if (searchWords !== properties.get('searchWords'))
+      if(searchWords.length < lengthLimit) {
         history.push(searchWords);
         properties.set('searchWords', searchWords);
         lookupTabs.update();
+      } else if (searchWords.length > lengthLimit) {
+        alert('Sorry you have exceeded the character limit of ' + lengthLimit);
       }
     }
   }
