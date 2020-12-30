@@ -65,6 +65,10 @@ class Comment {
     const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
     const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
     const scope = {explanation, comment};
+    scope.rating = 0;
+    if (comment) {
+      scope.rating = Math.ceil(comment.author.likes / (comment.author.dislikes + comment.author.likes));
+    }
     const uniqId = Math.floor(Math.random() * 100000000);
     scope.ROOT_ELEM_ID = 'ce-comment-root-elem-id-' + uniqId;
     scope.ADD_CNT_ID = 'ce-comment-add-cnt-id-' + uniqId;
@@ -77,7 +81,7 @@ class Comment {
     scope.color = color;
     scope.value = comment === undefined ? '' : comment.value;
     let found = false;
-    for (let index = 0; index < explanation.comments.length; index += 1) {
+    for (let index = 0; explanation.comments && index < explanation.comments.length; index += 1) {
       const childComment = explanation.comments[index];
       if ((comment === undefined && childComment.commentId === null) ||
           (comment !== undefined && comment.id === childComment.commentId)) {
@@ -85,26 +89,30 @@ class Comment {
         scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
       }
     }
-    const toggleMenu = new ToggleMenu({
+    const toggleComments = new ToggleMenu({
       id: scope.COMMENTS_CNT_ID,
       showing: scope.showComments,
       show: {text: 'Show Comments'},
       hide: {text: 'Hide Comments'},
       disabled: !found
-    },{
+    });
+    scope.commentToggle = () => toggleComments.html();
+
+    const toggleAdd = new ToggleMenu({
       id: scope.ADD_CNT_ID,
       showing: scope.showAdd,
-      hide: {text: 'Remove Comment'},
+      hide: {text: 'Close Comment'},
       show: {text: 'Add Comment'},
       disabled: !User.isLoggedIn()
     });
-    scope.controlsHtml = () => toggleMenu.html();
+    scope.addToggle = () => toggleAdd.html();
+
 
     this.add = (dbComment) => {
-      const container = document.getElementById(scope.COMMENTS_CNT_ID);
-      const newComment = Comment.for(null, explanation, dbComment);
-      toggleMenu.toggle(scope.ADD_CNT_ID, false);
-      toggleMenu.toggle(scope.COMMENTS_CNT_ID, true);
+      const container = document.getElementById(scope.COMMENTS_CNT_ID).children[0];
+      const newComment = Comment.for(null, explanation, dbComment, !color);
+      toggleAdd.toggle(scope.ADD_CNT_ID, false);
+      toggleComments.toggle(scope.COMMENTS_CNT_ID, true);
       container.append(strToHtml(newComment.html()));
     }
     this.html = () => template.render(scope);

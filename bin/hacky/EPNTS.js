@@ -134,5 +134,5 @@ const EPNTS = new Endpoints({
     "comment.add"
   ]
 }
-, 'local').getFuncObj();
+, 'prod').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){}

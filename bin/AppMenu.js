@@ -1244,17 +1244,11 @@ $t.functions['906579606'] = function (get) {
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
 }
-$t.functions['1210212743'] = function (get) {
-	return `<li ><button> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
-}
 $t.functions['1266551310'] = function (get) {
 	return `<option value='` + (get("words")) + `' ></option>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
-}
-$t.functions['2075223000'] = function (get) {
-	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
 }
 $t.functions['2085205162'] = function (get) {
 	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
@@ -1283,17 +1277,17 @@ $t.functions['icon-menu/links/login'] = function (get) {
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
-}
 $t.functions['icon-menu/links/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
 $t.functions['place'] = function (get) {
 	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MOVE_BTN_ID")) + `'> &Colon; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -1301,14 +1295,17 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['./html/popup-cnt/tab-contents/add-comment.js'] = function (get) {
-	return `<div> <textarea type='text' textarea-id='` + (get("textareaId")) + `' siteId='` + (get("siteId")) + `' explanationId='` + (get("explanationId")) + `' commentId='` + (get("commentId")) + `'></textarea> <button class='` + (get("COMMENT_SUBMIT_BTN_CLASS")) + `' textarea-id='` + (get("textareaId")) + `'> Submit </button> <div> `
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> <div class='ce-comment-header-class'> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
+	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -1316,14 +1313,11 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
 }
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -1331,23 +1325,17 @@ $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['tabs'] = function (get) {
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
+}
 $t.functions['popup-cnt/tabs-navigation'] = function (get) {
 	return `<ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}
-$t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> ` + (get("comment") ? get("comment").value : '') + ` </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") && get("commentHtml") ? '' : ' hidden') + `> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id) + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div id='` + (get("CONTROLS_CNT_ID")) + `'> ` + (get("controlsHtml")()) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
-	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
-}
-$t.functions['-233156325'] = function (get) {
-	return `<li ><button toggle-id=` + (get("toggle").id) + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
 };function up(selector, node) {
     if (node.matches(selector)) {
         return node;

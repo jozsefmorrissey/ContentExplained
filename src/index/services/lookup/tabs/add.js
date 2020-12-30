@@ -76,6 +76,7 @@ class AddInterface extends Page {
     function updateExplSuccessful() {
       expl.content = content;
       hoverExplanations.update(expl);
+      hoverExplanations.forceOpen();
       content = '';
       save();
       dragDropResize.close();

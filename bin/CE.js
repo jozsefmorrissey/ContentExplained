@@ -550,7 +550,7 @@ const EPNTS = new Endpoints({
     "comment.add"
   ]
 }
-, 'local').getFuncObj();
+, 'prod').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){};
 class Css {
   constructor(identifier, value) {
@@ -654,6 +654,284 @@ new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin:
 
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
+;
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
+      } else {
+        return 'on' + name;
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+;function up(selector, node) {
+    if (node.matches(selector)) {
+        return node;
+    } else {
+        return lookUp(selector, node.parentNode);
+    }
+}
+
+
+function down(selector, node) {
+    function recurse (currNode, distance) {
+      if (currNode.matches(selector)) {
+        return { node: currNode, distance };
+      } else {
+        let found = { distance: Number.MAX_SAFE_INTEGER };
+        for (let index = 0; index < currNode.children.length; index += 1) {
+          distance++;
+          const child = currNode.children[index];
+          const maybe = recurse(child, distance);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+        return found;
+      }
+    }
+    return recurse(node, 0).node;
+}
+
+function closest(selector, node) {
+  const visited = [];
+  function recurse (currNode, distance) {
+    let found = { distance: Number.MAX_SAFE_INTEGER };
+    if (!currNode || (typeof currNode.matches) !== 'function') {
+      return found;
+    }
+    visited.push(currNode);
+    console.log('curr: ' + currNode);
+    if (currNode.matches(selector)) {
+      return { node: currNode, distance };
+    } else {
+      for (let index = 0; index < currNode.children.length; index += 1) {
+        const child = currNode.children[index];
+        if (visited.indexOf(child) === -1) {
+          const maybe = recurse(child, distance + index + 1);
+          found = maybe && maybe.distance < found.distance ? maybe : found;
+        }
+      }
+      if (visited.indexOf(currNode.parentNode) === -1) {
+        const maybe = recurse(currNode.parentNode, distance + 1);
+        found = maybe && maybe.distance < found.distance ? maybe : found;
+      }
+      return found;
+    }
+  }
+
+  return recurse(node, 0).node;
+}
+
+function styleUpdate(elem, property, value) {
+  function set(property, value) {
+    elem.style[property] = value;
+  }
+  switch (typeof property) {
+    case 'string':
+      set(property, value);
+      break;
+    case 'object':
+      const keys = Object.keys(property);
+      for (let index = 0; index < keys.length; index += 1) {
+        set(keys[index], property[keys[index]]);
+      }
+      break;
+    default:
+      throw new Error('argument not a string or an object: ' + (typeof property));
+  }
+}
+
+function onEnter(id, func) {
+  const elem = document.getElementById(id);
+  if (elem !== null) {
+    elem.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') func()
+    });
+  }
+}
+
+function elemSpacer(elem, pad) {
+  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
+  const spacerId = elem.getAttribute('spacer-id');
+  elem.style.position = '';
+  elem.style.margin = '';
+  elem.style.width = 'unset'
+  elem.style.height = 'unset'
+  const elemRect = elem.getBoundingClientRect();
+  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
+  spacer.id = spacerId;
+  spacer.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
+  spacer.style.height = elem.scrollHeight + 'px';
+  elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
+  elem.style.height = elem.scrollHeight + 'px';
+  elem.style.margin = 0;
+  elem.style.backgroundColor = 'white';
+  elem.style.zIndex = 1;
+  elem.after(spacer);
+  elem.style.position = elem.getAttribute("position");
+}
+
+// const doesntWork...??? /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))([^>]*)>/;
+
+class JsDetected extends Error {
+  constructor(orig, clean) {
+      super('Java script was detected');
+      this.orig = orig;
+      this.clean = clean;
+  }
+}
+
+const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=/;
+function safeInnerHtml(text, elem) {
+  if (text === undefined) return undefined;
+  const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
+  if (clean !== text) throw new JsDetected(text, clean);
+  if (elem !== undefined) elem.innerHTML = clean;
+  return clean;
+}
+
+function safeOuterHtml(text, elem) {
+  const clean = safeInnerHtml(text);
+  if (elem !== undefined) elem.outerHTML = clean;
+  return clean;
+}
+
+const space = new Array(1).fill('&nbsp;').join('');
+const tabSpacing = new Array(2).fill('&nbsp;').join('');
+function textToHtml(text) {
+  safeInnerHtml(text);
+  return text.replace(/\n/g, '<br>')
+              .replace(/\t/g, tabSpacing)
+              .replace(/<script[^<]*?>/, '')
+              .replace(jsAttrReg, '')
+              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
+                      '<a target=\'blank\' href="$2">$1</a>');
+}
+
+function strToHtml(str) {
+  const container = document.createElement('div');
+  container.innerHTML = safeInnerHtml(str);
+  return container.children[0];
+}
+;class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 ;
 let idCount = 0;
 class ExprDef {
@@ -966,165 +1244,6 @@ ExprDef.parse = parse;
 try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
-;function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
-    }
-}
-
-
-function down(selector, node) {
-    function recurse (currNode, distance) {
-      if (currNode.matches(selector)) {
-        return { node: currNode, distance };
-      } else {
-        let found = { distance: Number.MAX_SAFE_INTEGER };
-        for (let index = 0; index < currNode.children.length; index += 1) {
-          distance++;
-          const child = currNode.children[index];
-          const maybe = recurse(child, distance);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-        return found;
-      }
-    }
-    return recurse(node, 0).node;
-}
-
-function closest(selector, node) {
-  const visited = [];
-  function recurse (currNode, distance) {
-    let found = { distance: Number.MAX_SAFE_INTEGER };
-    if (!currNode || (typeof currNode.matches) !== 'function') {
-      return found;
-    }
-    visited.push(currNode);
-    console.log('curr: ' + currNode);
-    if (currNode.matches(selector)) {
-      return { node: currNode, distance };
-    } else {
-      for (let index = 0; index < currNode.children.length; index += 1) {
-        const child = currNode.children[index];
-        if (visited.indexOf(child) === -1) {
-          const maybe = recurse(child, distance + index + 1);
-          found = maybe && maybe.distance < found.distance ? maybe : found;
-        }
-      }
-      if (visited.indexOf(currNode.parentNode) === -1) {
-        const maybe = recurse(currNode.parentNode, distance + 1);
-        found = maybe && maybe.distance < found.distance ? maybe : found;
-      }
-      return found;
-    }
-  }
-
-  return recurse(node, 0).node;
-}
-
-function styleUpdate(elem, property, value) {
-  function set(property, value) {
-    elem.style[property] = value;
-  }
-  switch (typeof property) {
-    case 'string':
-      set(property, value);
-      break;
-    case 'object':
-      const keys = Object.keys(property);
-      for (let index = 0; index < keys.length; index += 1) {
-        set(keys[index], property[keys[index]]);
-      }
-      break;
-    default:
-      throw new Error('argument not a string or an object: ' + (typeof property));
-  }
-}
-
-function onEnter(id, func) {
-  const elem = document.getElementById(id);
-  if (elem !== null) {
-    elem.addEventListener('keypress', (e) => {
-      if(e.key === 'Enter') func()
-    });
-  }
-}
-
-function elemSpacer(elem, pad) {
-  elem.setAttribute('spacer-id', elem.getAttribute('spacer-id') || `elem-spacer-${Math.floor(Math.random() * 10000000)}`);
-  const spacerId = elem.getAttribute('spacer-id');
-  elem.style.position = '';
-  elem.style.margin = '';
-  elem.style.width = 'unset'
-  elem.style.height = 'unset'
-  const elemRect = elem.getBoundingClientRect();
-  const spacer = document.getElementById(spacerId) || document.createElement(elem.tagName);
-  spacer.id = spacerId;
-  spacer.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
-  spacer.style.height = elem.scrollHeight + 'px';
-  elem.style.width = (elem.scrollWidth + (pad || 0)) + 'px';
-  elem.style.height = elem.scrollHeight + 'px';
-  elem.style.margin = 0;
-  elem.style.backgroundColor = 'white';
-  elem.style.zIndex = 1;
-  elem.after(spacer);
-  elem.style.position = elem.getAttribute("position");
-}
-
-// const doesntWork...??? /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))([^>]*)>/;
-
-class JsDetected extends Error {
-  constructor(orig, clean) {
-      super('Java script was detected');
-      this.orig = orig;
-      this.clean = clean;
-  }
-}
-
-const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=/;
-function safeInnerHtml(text, elem) {
-  if (text === undefined) return undefined;
-  const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
-  if (clean !== text) throw new JsDetected(text, clean);
-  if (elem !== undefined) elem.innerHTML = clean;
-  return clean;
-}
-
-function safeOuterHtml(text, elem) {
-  const clean = safeInnerHtml(text);
-  if (elem !== undefined) elem.outerHTML = clean;
-  return clean;
-}
-
-const space = new Array(1).fill('&nbsp;').join('');
-const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
-  safeInnerHtml(text);
-  return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script[^<]*?>/, '')
-              .replace(jsAttrReg, '')
-              .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
-                      '<a target=\'blank\' href="$2">$1</a>');
-}
-
-function strToHtml(str) {
-  const container = document.createElement('div');
-  container.innerHTML = safeInnerHtml(str);
-  return container.children[0];
-}
-;
-class Page {
-  constructor() {
-    this.label = function () {throw new Error('Must implement label()');};
-    this.html = function() {throw new Error('Must implement template()');}
-    this.header = function() {return '';}
-    this.beforeOpen = function () {};
-    this.afterOpen = function () {};
-    this.hide = function() {return false;}
-  }
-}
 ;
 class KeyShortCut {
   constructor(keys, func) {
@@ -1159,6 +1278,17 @@ KeyShortCut.callOnAll = function (func, e) {
 
 document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
 document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+;
+class Page {
+  constructor() {
+    this.label = function () {throw new Error('Must implement label()');};
+    this.html = function() {throw new Error('Must implement template()');}
+    this.header = function() {return '';}
+    this.beforeOpen = function () {};
+    this.afterOpen = function () {};
+    this.hide = function() {return false;}
+  }
+}
 ;
 class Properties {
   constructor () {
@@ -1384,141 +1514,49 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
     dg.updateConfig({debug: false});
   }
 });
-;class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
+;
+class History {
+  constructor(len) {
+    len = len || 100;
+    let history = [];
+    let currentPosition = -1;
+    this.push = (elem) => {
+      if (elem !== history[currentPosition]) {
+        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
+        history = history.splice(currentPosition - len || 0, len);
+        currentPosition = history.length;
+        history.push(elem);
+        properties.set('ce-history', history, true);
       }
-      if (str.length > 0) {
-          splitted.push(str);
+    };
+    this.index = () => currentPosition;
+    this.get = () => {
+      const histObject = {};
+      histObject.currentPosition = currentPosition;
+      histObject.list = [];
+      for (let index = history.length - 1; index > -1; index -= 1) {
+        histObject.list.push({index, elem: history[index]});
       }
-      return splitted;
-    }
+      return histObject;
+    };
+    this.back = () => history[--currentPosition];
+    this.forward = () => history[++currentPosition];
+    this.goTo = (index) => history[currentPosition = index];
+    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
+    this.hasPast = () => currentPosition > 0;
 
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
+    const initialized = false;
+    function init(savedHistory) {
+      if (!initialized && Array.isArray(savedHistory)) {
+        history = savedHistory;
+        currentPosition = history.length - 1;
       }
     }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
+    properties.onUpdate('ce-history', init);
   }
 }
 
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-;
-class CustomEvent {
-  constructor(name) {
-    const watchers = [];
-    this.name = name;
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        watchers.push(func);
-      } else {
-        return 'on' + name;
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-;
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+const history = new History(1000);
 ;
 class CatchAll {
   constructor(container) {
@@ -2792,17 +2830,11 @@ $t.functions['906579606'] = function (get) {
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
 }
-$t.functions['1210212743'] = function (get) {
-	return `<li ><button> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
-}
 $t.functions['1266551310'] = function (get) {
 	return `<option value='` + (get("words")) + `' ></option>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
-}
-$t.functions['2075223000'] = function (get) {
-	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
 }
 $t.functions['2085205162'] = function (get) {
 	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
@@ -2831,17 +2863,17 @@ $t.functions['icon-menu/links/login'] = function (get) {
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
-}
 $t.functions['icon-menu/links/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
 $t.functions['place'] = function (get) {
 	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right' id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &minus; </button> <button class='place-btn place-right' id='` + (get("MOVE_BTN_ID")) + `'> &Colon; </button> <button class='place-btn place-right' id='` + (get("MAXIMIZE_BTN_ID")) + `'> &plus; </button> <button class='place-btn place-right'` + (get("hideClose") ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='ce-settings'> Settings </menuitem> </menu> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -2849,14 +2881,17 @@ $t.functions['popup-cnt/explanation'] = function (get) {
 $t.functions['popup-cnt/linear-tab'] = function (get) {
 	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
-$t.functions['./html/popup-cnt/tab-contents/add-comment.js'] = function (get) {
-	return `<div> <textarea type='text' textarea-id='` + (get("textareaId")) + `' siteId='` + (get("siteId")) + `' explanationId='` + (get("explanationId")) + `' commentId='` + (get("commentId")) + `'></textarea> <button class='` + (get("COMMENT_SUBMIT_BTN_CLASS")) + `' textarea-id='` + (get("textareaId")) + `'> Submit </button> <div> `
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> <div class='ce-comment-header-class'> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
 }
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
+	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -2864,14 +2899,11 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
 }
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -2879,23 +2911,17 @@ $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 $t.functions['-1925646037'] = function (get) {
 	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['tabs'] = function (get) {
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
+}
 $t.functions['popup-cnt/tabs-navigation'] = function (get) {
 	return `<ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> `
 }
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}
-$t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> ` + (get("comment") ? get("comment").value : '') + ` </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") && get("commentHtml") ? '' : ' hidden') + `> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id) + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div id='` + (get("CONTROLS_CNT_ID")) + `'> ` + (get("controlsHtml")()) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
-	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
-}
-$t.functions['-233156325'] = function (get) {
-	return `<li ><button toggle-id=` + (get("toggle").id) + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
 };// ./bin/dump/$templates.js
 
 class HoverExplanations {
@@ -3191,6 +3217,172 @@ class HoverExplanations {
 
 let hoverExplanations = new HoverExplanations();
 ;
+class ToggleMenu {
+  constructor() {
+    const instance = this;
+    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
+    this.togglesById = {};
+    this.toggles = [];
+    const uniqId = Math.floor(Math.random() * 100000000);
+    this.TOGGLE_MENU_ID = 'ce-toggle-MENU-id-' + uniqId;
+    ToggleMenu.menue[this.TOGGLE_MENU_ID] = this;
+    for (let index = 0; index < arguments.length; index += 1) {
+      let toggle = JSON.parse(JSON.stringify(arguments[index]));
+      this.toggles.push(toggle);
+      this.togglesById[toggle.id] = toggle;
+    }
+
+    this.toggle = (id, onOff) => {
+      const toggler = this.togglesById[id];
+      toggler.showing = onOff !== undefined ? onOff :!toggler.showing;
+      const toggleTarget = document.getElementById(id);
+      toggleTarget.hidden = !toggler.showing;
+      if (toggler.showing === true) {
+        toggler.disabled = false;
+        const toggleBtn = document.querySelector(`[toggle-id=${id}]`);
+        toggleBtn.hidden = false;
+        toggleBtn.disabled = false;
+      }
+      instance.update();
+
+    };
+    this.showing = (id) => toggler.showing;
+    this.html = () => controlTemplate.render(this);
+    this.update = () => {
+      const container = document.getElementById(instance.TOGGLE_MENU_ID).parentElement;
+      container.innerHTML = instance.html();
+    }
+  }
+}
+
+{
+  ToggleMenu.menue = {};
+  ToggleMenu.watching = [];
+  let toggled = (event) => {
+    const elem = event.target;
+    if (elem.matches('button[toggle-id]')) {
+      const toggleId = elem.getAttribute('toggle-id');
+      const listElem = elem.parentElement.parentElement
+      const toggleMenuId = listElem.getAttribute('id');
+      const toggleMenu = ToggleMenu.menue[toggleMenuId];
+      toggleMenu.toggle(toggleId);
+    }
+  }
+
+  ToggleMenu.watch = (container) => {
+    if (ToggleMenu.watching.indexOf(container) === -1) {
+      container.addEventListener('click', toggled);
+    }
+  }
+}
+
+
+class Comment {
+  constructor(explanation, comment, color) {
+    const template = new $t('popup-cnt/tab-contents/add-comment');
+    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
+    const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
+    const scope = {explanation, comment};
+    scope.rating = 0;
+    if (comment) {
+      scope.rating = Math.ceil(comment.author.likes / (comment.author.dislikes + comment.author.likes));
+    }
+    const uniqId = Math.floor(Math.random() * 100000000);
+    scope.ROOT_ELEM_ID = 'ce-comment-root-elem-id-' + uniqId;
+    scope.ADD_CNT_ID = 'ce-comment-add-cnt-id-' + uniqId;
+    scope.COMMENTS_CNT_ID = 'ce-comments-cnt-id-' + uniqId;
+    scope.TEXT_AREA_INPUT_ID = 'ce-comment-textarea-id-' + uniqId;
+    scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
+    scope.showComments = comment === undefined;
+    scope.showAdd = false;
+    scope.commentHtml = '';
+    scope.color = color;
+    scope.value = comment === undefined ? '' : comment.value;
+    let found = false;
+    for (let index = 0; explanation.comments && index < explanation.comments.length; index += 1) {
+      const childComment = explanation.comments[index];
+      if ((comment === undefined && childComment.commentId === null) ||
+          (comment !== undefined && comment.id === childComment.commentId)) {
+        found = true;
+        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
+      }
+    }
+    const toggleComments = new ToggleMenu({
+      id: scope.COMMENTS_CNT_ID,
+      showing: scope.showComments,
+      show: {text: 'Show Comments'},
+      hide: {text: 'Hide Comments'},
+      disabled: !found
+    });
+    scope.commentToggle = () => toggleComments.html();
+
+    const toggleAdd = new ToggleMenu({
+      id: scope.ADD_CNT_ID,
+      showing: scope.showAdd,
+      hide: {text: 'Close Comment'},
+      show: {text: 'Add Comment'},
+      disabled: !User.isLoggedIn()
+    });
+    scope.addToggle = () => toggleAdd.html();
+
+
+    this.add = (dbComment) => {
+      const container = document.getElementById(scope.COMMENTS_CNT_ID).children[0];
+      const newComment = Comment.for(null, explanation, dbComment, !color);
+      toggleAdd.toggle(scope.ADD_CNT_ID, false);
+      toggleComments.toggle(scope.COMMENTS_CNT_ID, true);
+      container.append(strToHtml(newComment.html()));
+    }
+    this.html = () => template.render(scope);
+  }
+}
+
+{
+  let hypenStrs = function () {
+    let str = arguments[0];
+    for (let index = 1; index < arguments.length; index += 1) {
+      str += '-' + arguments[index];
+    }
+    return str;
+  }
+  let uniqueId = (explanation, comment) => {
+    const commentId = comment ? comment.id : undefined;
+    return hypenStrs(explanation.id, commentId);
+  }
+
+
+
+  let submit = (event) => {
+    const elem = event.target;
+    if (elem.matches('.ce-comment-submit-btn-class')) {
+      const textarea = document.getElementById(elem.getAttribute('textarea-id'));
+      const value = textarea.value;
+      const siteId = properties.get('siteId');
+      const explanationId = Number.parseInt(textarea.getAttribute('explanation-id'));
+      const commentId = textarea.getAttribute('comment-id') || undefined;
+      const uniqId = hypenStrs(explanationId, commentId);
+      let addSuccess = (comment) => cache[uniqId].add(comment);
+      let addFailure = (comment) => console.log(comment, '\nfailure!!!');
+      Expl.addComment(value, siteId, explanationId, commentId, addSuccess, addFailure);
+    }
+  }
+
+  let cache = {};
+  let watching = [];
+  Comment.for = (container, explanation, comment, color) => {
+    const uniqId = uniqueId(explanation, comment);
+    if (!cache[uniqId]) {
+      cache[uniqId] = new Comment(explanation, comment, color);
+      if (container && watching.indexOf(container) === -1) {
+        container.addEventListener('click', submit);
+        ToggleMenu.watch(container);
+      }
+    }
+    return cache[uniqId];
+  }
+
+}
+;
 class Expl {
   constructor () {
     let currEnv;
@@ -3226,6 +3418,7 @@ class Expl {
     };
 
     this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
+      console.log(commentId);
       function addCommentSuccess(comment) {
         explanations[explanationId].comments.push(comment);
         if ((typeof success) === 'function') success(comment);
@@ -3291,48 +3484,90 @@ class Form {
 
 Form = new Form();
 ;
-class History {
-  constructor(len) {
-    len = len || 100;
-    let history = [];
-    let currentPosition = -1;
-    this.push = (elem) => {
-      if (elem !== history[currentPosition]) {
-        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
-        history = history.splice(currentPosition - len || 0, len);
-        currentPosition = history.length;
-        history.push(elem);
-        properties.set('ce-history', history, true);
-      }
-    };
-    this.index = () => currentPosition;
-    this.get = () => {
-      const histObject = {};
-      histObject.currentPosition = currentPosition;
-      histObject.list = [];
-      for (let index = history.length - 1; index > -1; index -= 1) {
-        histObject.list.push({index, elem: history[index]});
-      }
-      return histObject;
-    };
-    this.back = () => history[--currentPosition];
-    this.forward = () => history[++currentPosition];
-    this.goTo = (index) => history[currentPosition = index];
-    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
-    this.hasPast = () => currentPosition > 0;
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+;
+class Opinion {
+  constructor() {
+    let siteId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
 
-    const initialized = false;
-    function init(savedHistory) {
-      if (!initialized && Array.isArray(savedHistory)) {
-        history = savedHistory;
-        currentPosition = history.length - 1;
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
       }
     }
-    properties.onUpdate('ce-history', init);
+
+    function canVote (expl, favorable)  {
+      const user = User.loggedIn();
+      if (user) {
+        const userId = user.id;
+        if (expl.author && userId === expl.author.id) {
+          return false;
+        }
+        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+          return opinions[expl.id] !== favorable;
+        }
+        return userId !== undefined && amendments[expl.id] !== favorable;
+      } else {
+        return false;
+      }
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr] || 0;
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value || 0;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        const userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
   }
 }
 
-const history = new History(1000);
+Opinion = new Opinion();
 ;
 class User {
   constructor() {
@@ -3462,244 +3697,6 @@ class User {
 }
 
 User = new User();
-;
-class Opinion {
-  constructor() {
-    let siteId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      const user = User.loggedIn();
-      if (user) {
-        const userId = user.id;
-        if (expl.author && userId === expl.author.id) {
-          return false;
-        }
-        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-          return opinions[expl.id] !== favorable;
-        }
-        return userId !== undefined && amendments[expl.id] !== favorable;
-      } else {
-        return false;
-      }
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr] || 0;
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value || 0;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        const userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
-;
-class ToggleMenu {
-  constructor() {
-    const instance = this;
-    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
-    this.togglesById = {};
-    this.toggles = [];
-    const uniqId = Math.floor(Math.random() * 100000000);
-    this.TOGGLE_MENU_ID = 'ce-toggle-MENU-id-' + uniqId;
-    ToggleMenu.menue[this.TOGGLE_MENU_ID] = this;
-    for (let index = 0; index < arguments.length; index += 1) {
-      let toggle = JSON.parse(JSON.stringify(arguments[index]));
-      this.toggles.push(toggle);
-      this.togglesById[toggle.id] = toggle;
-    }
-
-    this.toggle = (id, onOff) => {
-      const toggler = this.togglesById[id];
-      toggler.showing = onOff !== undefined ? onOff :!toggler.showing;
-      const toggleTarget = document.getElementById(id);
-      toggleTarget.hidden = !toggler.showing;
-      if (toggler.showing === true) {
-        toggler.disabled = false;
-        const toggleBtn = document.querySelector(`[toggle-id=${id}]`);
-        toggleBtn.hidden = false;
-        toggleBtn.disabled = false;
-      }
-      instance.update();
-
-    };
-    this.showing = (id) => toggler.showing;
-    this.html = () => controlTemplate.render(this);
-    this.update = () => {
-      const container = document.getElementById(instance.TOGGLE_MENU_ID).parentElement;
-      container.innerHTML = instance.html();
-    }
-  }
-}
-
-{
-  ToggleMenu.menue = {};
-  ToggleMenu.watching = [];
-  let toggled = (event) => {
-    const elem = event.target;
-    if (elem.matches('button[toggle-id]')) {
-      const toggleId = elem.getAttribute('toggle-id');
-      const listElem = elem.parentElement.parentElement
-      const toggleMenuId = listElem.getAttribute('id');
-      const toggleMenu = ToggleMenu.menue[toggleMenuId];
-      toggleMenu.toggle(toggleId);
-    }
-  }
-
-  ToggleMenu.watch = (container) => {
-    if (ToggleMenu.watching.indexOf(container) === -1) {
-      container.addEventListener('click', toggled);
-    }
-  }
-}
-
-
-class Comment {
-  constructor(explanation, comment, color) {
-    const template = new $t('popup-cnt/tab-contents/add-comment');
-    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
-    const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
-    const scope = {explanation, comment};
-    const uniqId = Math.floor(Math.random() * 100000000);
-    scope.ROOT_ELEM_ID = 'ce-comment-root-elem-id-' + uniqId;
-    scope.ADD_CNT_ID = 'ce-comment-add-cnt-id-' + uniqId;
-    scope.COMMENTS_CNT_ID = 'ce-comments-cnt-id-' + uniqId;
-    scope.TEXT_AREA_INPUT_ID = 'ce-comment-textarea-id-' + uniqId;
-    scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
-    scope.showComments = comment === undefined;
-    scope.showAdd = false;
-    scope.commentHtml = '';
-    scope.color = color;
-    scope.value = comment === undefined ? '' : comment.value;
-    let found = false;
-    for (let index = 0; index < explanation.comments.length; index += 1) {
-      const childComment = explanation.comments[index];
-      if ((comment === undefined && childComment.commentId === null) ||
-          (comment !== undefined && comment.id === childComment.commentId)) {
-        found = true;
-        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
-      }
-    }
-    const toggleMenu = new ToggleMenu({
-      id: scope.COMMENTS_CNT_ID,
-      showing: scope.showComments,
-      show: {text: 'Show Comments'},
-      hide: {text: 'Hide Comments'},
-      disabled: !found
-    },{
-      id: scope.ADD_CNT_ID,
-      showing: scope.showAdd,
-      hide: {text: 'Remove Comment'},
-      show: {text: 'Add Comment'},
-      disabled: !User.isLoggedIn()
-    });
-    scope.controlsHtml = () => toggleMenu.html();
-
-    this.add = (dbComment) => {
-      const container = document.getElementById(scope.COMMENTS_CNT_ID);
-      const newComment = Comment.for(null, explanation, dbComment);
-      toggleMenu.toggle(scope.ADD_CNT_ID, false);
-      toggleMenu.toggle(scope.COMMENTS_CNT_ID, true);
-      container.append(strToHtml(newComment.html()));
-    }
-    this.html = () => template.render(scope);
-  }
-}
-
-{
-  let hypenStrs = function () {
-    let str = arguments[0];
-    for (let index = 1; index < arguments.length; index += 1) {
-      str += '-' + arguments[index];
-    }
-    return str;
-  }
-  let uniqueId = (explanation, comment) => {
-    const commentId = comment ? comment.id : undefined;
-    return hypenStrs(explanation.id, commentId);
-  }
-
-
-
-  let submit = (event) => {
-    const elem = event.target;
-    if (elem.matches('.ce-comment-submit-btn-class')) {
-      const textarea = document.getElementById(elem.getAttribute('textarea-id'));
-      const value = textarea.value;
-      const siteId = properties.get('siteId');
-      const explanationId = Number.parseInt(textarea.getAttribute('explanation-id'));
-      const commentId = textarea.getAttribute('comment-id') || undefined;
-      const uniqId = hypenStrs(explanationId, commentId);
-      let addSuccess = (comment) => cache[uniqId].add(comment);
-      let addFailure = (comment) => console.log(comment, '\nfailure!!!');
-      Expl.addComment(value, siteId, explanationId, commentId, addSuccess, addFailure);
-    }
-  }
-
-  let cache = {};
-  let watching = [];
-  Comment.for = (container, explanation, comment, color) => {
-    const uniqId = uniqueId(explanation, comment);
-    if (!cache[uniqId]) {
-      cache[uniqId] = new Comment(explanation, comment, color);
-      if (container && watching.indexOf(container) === -1) {
-        container.addEventListener('click', submit);
-        ToggleMenu.watch(container);
-      }
-    }
-    return cache[uniqId];
-  }
-
-}
 ;
 const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
 const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
@@ -3877,78 +3874,6 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs();
-;
-class MerriamWebster extends Page {
-  constructor() {
-    super();
-    const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
-    const SEARCH_INPUT_ID = 'merriam-suggestion-search-input-id';
-    let suggestions;
-    let definitions;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
-
-    function openDictionary(event) {
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      const word = searchInput.value.trim();
-      history.push(word);
-      properties.set('searchWords', word);
-      instance.update();
-    }
-
-    this.html = () => meriamTemplate.render({definitions});
-    this.header = () => {
-      console.log('header called');
-      return meriamHeader.render(
-        {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
-          SEARCH_INPUT_ID})};
-
-    function afterOpen(suggestionHtml) {
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      searchInput.addEventListener('change', openDictionary);
-      searchInput.focus();
-    }
-
-    this.afterOpen = afterOpen;
-
-    function success (data) {
-      const elem = data[0];
-      if (elem && elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
-        definitions = data;
-        suggestions = [];
-      } else {
-        definitions = undefined;
-        suggestions = data;
-      }
-      lookupTabs.updateBody();
-      lookupTabs.updateHead();
-      afterOpen();
-    }
-
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
-    }
-
-    this.update = function () {
-      const newKey = properties.get('searchWords');
-      if (newKey && newKey !== key && (typeof newKey) === 'string') {
-        definitions = undefined;
-        suggestions = undefined;
-        key = newKey;
-        const url = EPNTS.merriam.search(key);
-        Request.get(url, success, failure);
-      }
-    }
-
-    this.beforeOpen = this.update;
-  }
-}
-
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
 ;class Explanations extends Page {
   constructor(list) {
     super();
@@ -4120,6 +4045,78 @@ lookupTabs.add(MerriamWebster, 1);
 Explanations = new Explanations();
 lookupTabs.add(Explanations, 0);
 ;
+class MerriamWebster extends Page {
+  constructor() {
+    super();
+    const instance = this;
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
+    const SEARCH_INPUT_ID = 'merriam-suggestion-search-input-id';
+    let suggestions;
+    let definitions;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+
+    function openDictionary(event) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      const word = searchInput.value.trim();
+      history.push(word);
+      properties.set('searchWords', word);
+      instance.update();
+    }
+
+    this.html = () => meriamTemplate.render({definitions});
+    this.header = () => {
+      console.log('header called');
+      return meriamHeader.render(
+        {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
+          SEARCH_INPUT_ID})};
+
+    function afterOpen(suggestionHtml) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      searchInput.addEventListener('change', openDictionary);
+      searchInput.focus();
+    }
+
+    this.afterOpen = afterOpen;
+
+    function success (data) {
+      const elem = data[0];
+      if (elem && elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
+        definitions = data;
+        suggestions = [];
+      } else {
+        definitions = undefined;
+        suggestions = data;
+      }
+      lookupTabs.updateBody();
+      lookupTabs.updateHead();
+      afterOpen();
+    }
+
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
+    }
+
+    this.update = function () {
+      const newKey = properties.get('searchWords');
+      if (newKey && newKey !== key && (typeof newKey) === 'string') {
+        definitions = undefined;
+        suggestions = undefined;
+        key = newKey;
+        const url = EPNTS.merriam.search(key);
+        Request.get(url, success, failure);
+      }
+    }
+
+    this.beforeOpen = this.update;
+  }
+}
+
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
+;
 class AddInterface extends Page {
   constructor () {
     super();
@@ -4197,6 +4194,7 @@ class AddInterface extends Page {
     function updateExplSuccessful() {
       expl.content = content;
       hoverExplanations.update(expl);
+      hoverExplanations.forceOpen();
       content = '';
       save();
       dragDropResize.close();

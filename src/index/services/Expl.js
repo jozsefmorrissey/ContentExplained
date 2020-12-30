@@ -34,6 +34,7 @@ class Expl {
     };
 
     this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
+      console.log(commentId);
       function addCommentSuccess(comment) {
         explanations[explanationId].comments.push(comment);
         if ((typeof success) === 'function') success(comment);
