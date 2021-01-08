@@ -21,6 +21,14 @@
   float: right;
 }
 
+.place-max-min-cnt:hover {
+    opacity: 1;
+}
+
+.place-max-min-cnt {
+    opacity: 0.1;
+}
+
 .place-left {
   float: left;
 }

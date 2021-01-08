@@ -18,8 +18,18 @@ class AddInterface extends Page {
     const UPDATE_EXPL_BTN_ID = 'ce-add-editor-update-expl-btn-id';
     const WORDS_INPUT_ID = 'ce-add-editor-words-input-id';
     let updatePending = false;
-    const editHoverExpl = new HoverExplanations({hideClose: true, position: 'fixed', hover: false});
-    const dragDropResize = new DragDropResize({getDems, setDems, position: 'fixed'});
+    const editHoverExpl = new HoverExplanations({hideClose: true,
+                                                hideMax: true,
+                                                hideMin: true,
+                                                hideMove: true,
+                                                hideComments: true,
+                                                position: 'fixed',
+                                                hover: false});
+    const dragDropResize = new DragDropResize({getDems, setDems,
+                                                  hideMax: true,
+                                                  hideMin: true,
+                                                  hideMove: true,
+                                                  position: 'fixed'});
 
     function getScope() {
       const u = url === window.location.href ? undefined : url;
@@ -34,7 +44,7 @@ class AddInterface extends Page {
     this.label = () => `<button class='ce-btn ce-add-btn'>+</button>`;
     this.html = () => template.render(getScope());
 
-    function initContent(w, clean) {
+    function initContent(w, defaultValue) {
         words = w || words;
         const userContent = properties.get('userContent') || {};
         editedWords = Object.keys(userContent);
@@ -42,8 +52,8 @@ class AddInterface extends Page {
           content = userContent[words].content;
           url = userContent[words].url;
           id = userContent[words].id;
-        } else if (clean) {
-          content = '';
+        } else {
+          content = defaultValue;
           url = window.location.href;
           id = undefined;
         }
@@ -70,15 +80,18 @@ class AddInterface extends Page {
       hoverExplanations.add(expl);
       content = '';
       save();
+      properties.set('searchWords', null);
+      Explanations.clear();
       dragDropResize.close();
     }
 
     function updateExplSuccessful() {
       expl.content = content;
       hoverExplanations.update(expl);
-      hoverExplanations.forceOpen();
       content = '';
       save();
+      properties.set('searchWords', null);
+      Explanations.clear();
       dragDropResize.close();
     }
 
@@ -92,17 +105,18 @@ class AddInterface extends Page {
       Request.put(url, {content, id: expl.id}, updateExplSuccessful);
     }
 
+    let saveBuffer = 10000
     let pendingSave = false;
     let lastSave = new Date().getTime();
     function autoSave() {
       const time = new Date().getTime();
-      if (time - 15000 > lastSave) {
+      if (time - saveBuffer > lastSave) {
         save();
         lastSave = time;
       } else if (!pendingSave) {
         console.log('pending')
         pendingSave = true;
-        setTimeout(() => { pendingSave = false; autoSave() }, 15000);
+        setTimeout(() => { pendingSave = false; autoSave() }, saveBuffer);
       }
     }
 
@@ -133,28 +147,30 @@ class AddInterface extends Page {
     }
 
     function close() {
+      save();
       editHoverExpl.unlockOpen();
       editHoverExpl.close();
+      hoverExplanations.hover();
     }
     this.close = close;
 
     function editTargetUpdate(e) {
       changingTarget = true;
       save();
-      initContent(e.target.value, true);
+      initContent(e.target.value, '');
       instance.inputElem.value = content;
       editHoverExpl.display({words, content});
     }
 
     function open(w, urlOid) {
       if ((typeof w) === 'string') {
-        initContent(w, true);
+        initContent(w, '');
         url = urlOid || url;
       } else if (w instanceof Object) {
         expl = w;
-        id = expl.id;
-        initContent(words);
         words = expl.words;
+        initContent(words, expl.content);
+        id = expl.id;
         content = content || expl.content;
       }
       dragDropResize.show()
@@ -177,6 +193,7 @@ class AddInterface extends Page {
 
       editHoverExpl.display({words, content}).elem(dragDropResize.container()).center().top();
       editHoverExpl.lockOpen();
+      hoverExplanations.hover(false);
     }
     this.open = open;
     this.toggle = () => dragDropResize.hidden() ? instance.open() : dragDropResize.close();

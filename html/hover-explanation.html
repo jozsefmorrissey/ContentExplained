@@ -26,7 +26,7 @@
       <div class=''>
         <div>{{content}}</div>
       </div>
-      <div class='ce-center'>
+      <div class='ce-center'{{hideComments ? ' hidden' : ''}}>
         <button {{loggedIn ? ' hidden' : ''}} id='{{LOGIN_BTN_ID}}'>
           Login
         </button>
@@ -34,8 +34,10 @@
           Edit
         </button>
       </div>
-      <h3>Comments</h3>
-      {{commentHtml}}
+      <div{{hideComments ? ' hidden' : ''}}>
+        <h3>Comments</h3>
+        {{commentHtml}}
+      </div>
     </div>
   </div>
 </div>

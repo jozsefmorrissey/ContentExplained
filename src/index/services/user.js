@@ -2,7 +2,7 @@
 class User {
   constructor() {
     let user;
-    let status = 'expired';
+    let status;
     const instance = this;
     function dispatch(eventName, values) {
       return function (err) {
@@ -39,10 +39,10 @@ class User {
     this.status = () => status;
     this.errorEvent = () => 'UserErrorEvent';
     this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function () {
-      return status === 'active' && user !== undefined;
+    this.isLoggedIn = function (defVal) {
+      return status === undefined ? defVal : status === 'active';
     }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user)) : undefined;
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user || {})) : undefined;
 
     this.get = function (email, success, fail) {
       if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
@@ -91,10 +91,11 @@ class User {
       }
       if ((typeof credential) === 'string') {
         let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus);
+        Request.get(url, updateStatus, () => updateStatus('expired'));
         url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
         Request.get(url, setUser);
-      } else if (credential === null) {
+      } else if (credential === null || credential === undefined) {
+        updateStatus('expired');
         instance.logout(true);
       }
     };

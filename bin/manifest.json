@@ -32,7 +32,8 @@
       "matches": ["*://*/*"],
       "js": ["./CE.js"],
       "css": ["./css/index.css",
-              "./css/hover-resource.css",
+            "./css/hover-resource.css",
+            "./css/place.css",
               "./css/lookup.css"]
     }
   ],

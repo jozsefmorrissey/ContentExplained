@@ -28,7 +28,7 @@ class CssFile {
     const reg = /([^{]*?)\s*?\{([^}]*)\}/;
     CssFile.files[filename] = this;
     this.elems = [];
-    this.filename = filename.replace(/(\.\/|\/|)css\/(.{1,})\.css/g, '$2');
+    this.filename = filename.replace(/(.*\/|)css\/(.{1,})\.css/g, '$2');
     this.rawElems = string.match(new RegExp(reg, 'g'));
     for (let index = 0; index < this.rawElems.length; index += 1) {
       const rawElem = this.rawElems[index].match(reg);

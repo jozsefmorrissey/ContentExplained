@@ -15,6 +15,13 @@ class HoverResources {
     const popupCnt = new DragDropResize(props);
     popupCnt.hide();
 
+    this.hover = (onOff) => {
+      if ((typeof onOff) === 'boolean') {
+        hoverOff =  !onOff;
+      } else {
+        hoverOff =  properties.get('hoverOff');
+      }
+    }
     this.position = () => popupCnt;
 
 

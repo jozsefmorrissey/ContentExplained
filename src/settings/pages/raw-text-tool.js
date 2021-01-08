@@ -2,6 +2,7 @@
 class RawTextTool extends Page {
   constructor() {
     super();
+    let container, textArea;
     const scope = {
       TAB_SPACING_INPUT_ID: 'ce-tab-spcing-input-cnt-id',
       RAW_TEXT_INPUT_ID: 'ce-raw-text-input-id',
@@ -10,15 +11,6 @@ class RawTextTool extends Page {
     }
     const rawInputTemplate = new $t('icon-menu/links/raw-text-input');
     const RawSCC = ShortCutContainer('ce-raw-text-tool-cnt-id', ['r','t'], rawInputTemplate.render(scope));
-
-    function textToHtml(text, spacing, tabSpacing) {
-      if (text === undefined) return '';
-      const space = new Array(spacing).fill('&nbsp;').join('');
-      const tab = new Array(tabSpacing).fill('&nbsp;').join('');
-      return text.replace(/\n/g, '<br>')
-                  .replace(/\t/g, tab)
-                  .replace(/\s/g, space);
-    }
 
     // function pulled from https://jsfiddle.net/2wAzx/13/
     function enableTab(el) {
@@ -34,17 +26,26 @@ class RawTextTool extends Page {
       };
     }
 
+    function updateDisplay (rawHtml) {
+      try {
+        const html = textToHtml(rawHtml, scope.tabSpacing);
+        safeInnerHtml(html, container);
+      } catch (e) {
+        container.innerHTML = e.clean;
+        textArea.value = e.clean;
+      }
+    }
+
     this.scope = () => scope;
     this.label = function () {return 'Raw Text Tool';};
     this.template = function() {return 'icon-menu/links/raw-text-tool';};
     this.onOpen = function () {
       document.getElementById(scope.TAB_SPACING_INPUT_ID).onchange =
             (event) => scope.tabSpacing = Number.parseInt(event.target.value);
-      const textArea = document.getElementById(scope.RAW_TEXT_INPUT_ID);
+      textArea = document.getElementById(scope.RAW_TEXT_INPUT_ID);
       enableTab(textArea);
-      const container = document.getElementById(scope.RAW_TEXT_CNT_ID);
-      const html = textToHtml(event.target.value, 1, scope.tabSpacing);
-      textArea.onkeyup = (event) => safeInnerHtml(html, container)
+      container = document.getElementById(scope.RAW_TEXT_CNT_ID);
+      textArea.onkeyup = () => updateDisplay(event.target.value);
       RawSCC.unlock();
       RawSCC.show();
       RawSCC.lock();
@@ -56,4 +57,3 @@ class RawTextTool extends Page {
     };
   }
 }
-new Settings(new RawTextTool());

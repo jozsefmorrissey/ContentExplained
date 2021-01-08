@@ -139,7 +139,7 @@ const appMenuJsBundler = new JsBundler('bin/AppMenu', []);
 
 
 new Watcher(htmlBundler.change, htmlBundler.write).add('./html');
-new Watcher(cssBundler.change, cssBundler.write).add('./css/');
+new Watcher(cssBundler.change, cssBundler.write).add('./bin/css/');
 new Watcher(backgroundJsBundler.change, backgroundJsBundler.write)
                       .add('./src/manual/background.js');
 new Watcher(ceJsBundler.change, ceJsBundler.write)
@@ -172,6 +172,7 @@ new Watcher(appMenuJsBundler.change, appMenuJsBundler.write)
                             .add('./src/index/properties.js')
                             .add('./src/index/ExprDef.js')
                             .add('./src/index/services/$t.js')
+                            .add('./src/index/services/notifications.js')
                             .add('./bin/dump/$templates.js')
                             .add('./src/index/dom-tools.js')
                             .add('./src/app-menu/state.js');

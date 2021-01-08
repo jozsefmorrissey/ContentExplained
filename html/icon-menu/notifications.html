@@ -1,0 +1,23 @@
+<div class='inline'>
+  <div>
+    <button class="back-btn" id="back-button">&#x2190;</button>
+  </div>
+  <div>
+    <div>
+      <b>Notifications</b>
+      <menu class='fit'>
+        <menuitem:t repeat='notification in currentAlerts'>
+          {{notification}}
+        </menuitem:t>
+      </menu>
+    </div>
+    <div>
+      <b>Elsewhere</b>
+      <menu class='fit'>
+        <menuitem:t repeat='site in otherSites'>
+          {{site}}
+        </menuitem:t>
+      </menu>
+    </div>
+  </div>
+</div>

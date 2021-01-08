@@ -1,8 +1,36 @@
 menu {
   display: grid;
-  padding: 5px;
+  padding: 0;
+  margin: 0 0 0 10px;
 }
 
 menuitem:hover {
   background-color: #d8d8d8;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background-color: #d8d8d8;
+  cursor: pointer;
+}
+
+.inline {
+  display: inline-flex;
+}
+
+.fit {
+  width: fit-content;
+}
+
+.right {
+  float:right;
+}
+
+.back-btn {
+  background-color: transparent;
+  border-color: transparent;
+  font-size: x-large;
+  padding: 0;
+  margin: 0;
+  height: 100%;
 }

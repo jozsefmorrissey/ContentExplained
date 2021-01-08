@@ -1,6 +1,6 @@
 .ce-history-list {
   list-style: none;
-  margin: 0;
+  margin: 0; here
   padding: 0;
 }
 
@@ -22,16 +22,20 @@
   padding-left: 5pt;
   font-weight: bold;
   border-style: solid;
+  border-color: #74767782;
   border-width: 0 0 2px 0;
 }
 .ce-comment-cnt-class {
-    background-color: grey;
-    margin: 5pt 0pt 5pt 5pt;
-    border-radius: 5pt;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #74767782;
+  background-color: white;
+  margin: 5pt 0pt 5pt 5pt;
+  border-radius: 5pt;
 }
 
 .ce-comment-cnt-class.colored {
-  background-color: white;
+  background-color: #2716b136;
 }
 
 .ce-history-list>li:hover {

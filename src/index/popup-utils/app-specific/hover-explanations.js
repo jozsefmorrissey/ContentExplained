@@ -34,6 +34,7 @@ class HoverExplanations {
     props.getDems = props.getDems || getDems;
     props.tabText = () => active.expl.words;
     const hoverResource = new HoverResources(props);
+    this.hover = hoverResource.hover;
 
     hoverResource.container().addEventListener('drop', () => newHoverResource());
     hoverResource.container().addEventListener('tabbed', () => newHoverResource());
@@ -82,7 +83,8 @@ class HoverExplanations {
       const scope = {
         LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
         active, loggedIn, authored,
-        commentHtml: Comment.for(hoverResource.container(), active.expl).html(),
+        commentHtml: Comment.for(hoverResource.container(), active.expl, undefined, true).html(),
+        hideComments: props.hideComments,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),

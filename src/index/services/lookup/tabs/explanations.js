@@ -18,9 +18,11 @@ class Explanations extends Page {
       this.list.push(expl);
     }
 
+    this.clear = () => searchWords = null;
+
     function openAddPage(event) {
-      AddInterface.open(searchWords, window.location.href);
       lookupTabs.close();
+      AddInterface.open(searchWords, window.location.href);
       event.stopPropagation();
     }
 
@@ -131,7 +133,7 @@ class Explanations extends Page {
         expl.canApply = hoverExplanations.canApply(expl);
         expl.rendered = textToHtml(expl.content);
         const author = expl.author;
-        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100);
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100) || 0;
       });
 
       scope.words = searchWords;

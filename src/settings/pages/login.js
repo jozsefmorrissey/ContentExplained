@@ -18,7 +18,7 @@ class Login extends Page {
     scope.state = scope.LOGIN;
     this.label = function () {return 'Login';};
     this.template = function() {return 'icon-menu/links/login';};
-    this.hide = function () {return User.isLoggedIn();};
+    this.hide = function () {return User.isLoggedIn(false);};
     this.scope = function () {return scope;};
 
     function setState(state) {
@@ -57,13 +57,16 @@ class Login extends Page {
         lastUser = user;
         switch (lastStatus) {
           case 'active':
-          profileSetting.activate();
+            profileSetting.activate();
           break;
           case 'pending':
-          setState(scope.CHECK)();
+            setState(scope.CHECK)();
           break;
           case 'expired':
-          setState(scope.LOGIN)();
+            setState(scope.LOGIN)();
+          break;
+          case undefined:
+            setState(scope.LOGIN)();
           break;
           default:
           console.error('Unknown user status')
@@ -117,4 +120,3 @@ class Login extends Page {
     document.addEventListener(User.errorEvent(), setError);
   }
 }
-new Settings(new Login());

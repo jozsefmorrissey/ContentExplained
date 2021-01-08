@@ -172,11 +172,11 @@ class DragDropResize {
     }
 
     function updateControls() {
-      showElem(MINIMIZE_BTN_ID, isMaximized || props.tabText !== undefined);
-      showElem(MAXIMIZE_BTN_ID, !isMaximized());
+      showElem(MINIMIZE_BTN_ID, !props.hideMin && (isMaximized || props.tabText !== undefined));
+      showElem(MAXIMIZE_BTN_ID, !props.hideMax && !isMaximized());
       const hasPast = props.hasPast ? props.hasPast() : false;
       showElem(BACK_BTN_ID, hasPast);
-      const hasFuture = props.hasPast ? props.hasFuture() : false;
+      const hasFuture = props.hasFuture ? props.hasFuture() : false;
       showElem(FORWARD_BTN_ID, hasFuture);
       showElem(HISTORY_BTN_ID, hasFuture || hasPast);
 
@@ -301,7 +301,7 @@ class DragDropResize {
         MINIMIZE_BTN_ID, MAXIMIZE_BTN_ID, MAX_MIN_CNT_ID, CLOSE_BTN_ID,
         HISTORY_BTN_ID, FORWARD_BTN_ID, BACK_BTN_ID, MOVE_BTN_ID,
         POPUP_HEADER_CNT_ID, POPUP_CONTENT_CNT_ID,
-        hideClose: props.hideClose});
+        props});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
     document.body.append(tempElem);
@@ -378,7 +378,7 @@ class DragDropResize {
       e.stopPropagation()
     };
 
-    CssFile.apply('place');
+    // CssFile.apply('place');
 
 
     function getPopupElems() {

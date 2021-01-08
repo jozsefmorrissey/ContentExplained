@@ -13,15 +13,17 @@ class Profile extends Page {
     const updateEmailSent = 'Email sent: you must confirm changes';
     this.label = function () {return 'Profile';};
     this.template = function() {return 'icon-menu/links/profile';}
-    this.hide = function () {return !User.isLoggedIn();}
+    this.hide = function () {return !User.isLoggedIn(true);}
     this.scope = function () {return scope;};
     this.beforeOpen = function () {
       if (!this.hide()) {
         let user = User.loggedIn();
-        scope.id = user.id;
-        scope.username = user.username;
-        scope.likes = user.likes;
-        scope.dislikes = user.dislikes;
+        if (user) {
+          scope.id = user.id;
+          scope.username = user.username;
+          scope.likes = user.likes;
+          scope.dislikes = user.dislikes;
+        }
       }
     }
 
@@ -51,4 +53,3 @@ class Profile extends Page {
     }
   }
 }
-const profileSetting = new Settings(new Profile());

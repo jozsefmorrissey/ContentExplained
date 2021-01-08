@@ -114,7 +114,7 @@ class JsDetected extends Error {
   }
 }
 
-const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})on[a-z]{1,}=/;
+const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})(\s|'|")on[a-z]{1,}=/;
 function safeInnerHtml(text, elem) {
   if (text === undefined) return undefined;
   const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
@@ -129,14 +129,12 @@ function safeOuterHtml(text, elem) {
   return clean;
 }
 
-const space = new Array(1).fill('&nbsp;').join('');
 const tabSpacing = new Array(2).fill('&nbsp;').join('');
-function textToHtml(text) {
+function textToHtml(text, tabSpacing) {
+  const tab = new Array(tabSpacing || 6).fill('&nbsp;').join('');
   safeInnerHtml(text);
   return text.replace(/\n/g, '<br>')
-              .replace(/\t/g, tabSpacing)
-              .replace(/<script[^<]*?>/, '')
-              .replace(jsAttrReg, '')
+              .replace(/\t/g, tab)
               .replace(/\(([^\(^\)]*?)\)\s*\[([^\]\[]*?)\]/g,
                       '<a target=\'blank\' href="$2">$1</a>');
 }

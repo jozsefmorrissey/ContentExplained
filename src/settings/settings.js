@@ -16,6 +16,7 @@ class Settings {
     const ACTIVE_CSS_CLASS = `${CSS_CLASS} ce-active-list-item`;
     const LIST_ID = 'ce-setting-list';
     const CNT_ID = 'ce-setting-cnt';
+    this.pn = page.constructor.name;
     this.pageName = function () {return page.constructor.name;}
     this.getPage = () => page;
     const instance = this;
@@ -82,8 +83,9 @@ Settings.activePage = function () {
   return pageName.indexOf('://') === -1 ? pageName :
         Object.keys(Settings.settings)[0];
 }
-Settings.updateMenus = function (page) {
-  if (document.readyState !== "complete") return;
+
+Settings.updateMenus = function () {
+  // if (document.readyState !== "complete") return;
 
   const settingsPages = Object.values(Settings.settings);
   if (settingsPages.length) {
@@ -103,7 +105,8 @@ Settings.updateMenus = function (page) {
 window.onhashchange = function () {
   Settings.updateMenus();
 };
-window.onload = () => document.addEventListener(User.updateEvent(), Settings.updateMenus);
+
+document.addEventListener(User.updateEvent(), Settings.updateMenus);
 
 function getInnerState(page) {
   var stateReg = new RegExp(`^.*?#${page}:(.*)$`);

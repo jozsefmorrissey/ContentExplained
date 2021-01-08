@@ -39,6 +39,3 @@ class Developer extends Page {
     this.updateDebug = (debug) => {show = debug; Settings.updateMenus();}
   }
 }
-const developerPage = new Developer();
-const developerSettings = new Settings(developerPage);
-properties.onUpdate('debug', developerPage.updateDebug);

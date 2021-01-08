@@ -1,6 +1,6 @@
 <div class='ce-comment-cnt-class{{color ? ' colored' : ''}}' id='{{ROOT_ELEM_ID}}'>
   <div>
-    <div class='ce-comment-header-class'>
+    <div class='ce-comment-header-class'{{comment.author ? '' : ' hidden'}}>
       {{comment ? comment.author.username : ''}}
     </div>
     <div class='ce-comment-body-class'>

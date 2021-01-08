@@ -66,7 +66,9 @@ class Properties {
           updateFuncs[key] = [];
         }
         updateFuncs[key].push(func);
-        func(properties[key]);
+        if (properties[key] !== undefined) {
+          func(properties[key]);
+        }
       });
     }
 
