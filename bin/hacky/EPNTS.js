@@ -121,6 +121,12 @@ const EPNTS = new Endpoints({
   "comment": {
     "add": "/comment/add"
   },
+  "question": {
+    "add": "/question/add"
+  },
+  "notification": {
+    "get": "/notifications"
+  },
   "_secure": [
     "user.update",
     "credential.get",
@@ -134,5 +140,5 @@ const EPNTS = new Endpoints({
     "comment.add"
   ]
 }
-, 'local').getFuncObj();
+, 'prod').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){}

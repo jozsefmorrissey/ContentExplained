@@ -522,6 +522,12 @@ const EPNTS = new Endpoints({
   "comment": {
     "add": "/comment/add"
   },
+  "question": {
+    "add": "/question/add"
+  },
+  "notification": {
+    "get": "/notifications"
+  },
   "_secure": [
     "user.update",
     "credential.get",
@@ -535,7 +541,7 @@ const EPNTS = new Endpoints({
     "comment.add"
   ]
 }
-, 'local').getFuncObj();
+, 'prod').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){};
 class Css {
   constructor(identifier, value) {
@@ -625,11 +631,13 @@ try{
 ;// ./src/index/css.js
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   padding: 0;   margin: 0;   margin-right: 5pt; }  .ce-hover-list-elem {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list-elem.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
-
 new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0; here   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-comment-body-class {   padding: 5pt 1pt 5pt 5pt; }  .ce-comment-header-class {   padding-left: 5pt;   font-weight: bold;   border-style: solid;   border-color: #74767782;   border-width: 0 0 2px 0; } .ce-comment-cnt-class {   border-style: solid;   border-width: 2px;   border-color: #74767782;   background-color: white;   margin: 5pt 0pt 5pt 5pt;   border-radius: 5pt; }  .ce-comment-cnt-class.colored {   background-color: #2716b136; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-comment-control-cnt-class {   list-style: none;   padding: 0;   margin: 0;   display: inline-flex; }  .ce-comment-control-cnt-class>li {   margin-left: 10pt; }  .ce-comment-control-cnt-class>li>button {   padding: 0 5pt; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
 
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
 new CssFile('menu', 'menu {   display: grid;   padding: 0;   margin: 0 0 0 10px; }  menuitem:hover {   background-color: #d8d8d8;   cursor: pointer; }  .back-btn:hover {   background-color: #d8d8d8;   cursor: pointer; }  .inline {   display: inline-flex; }  .fit {   width: fit-content; }  .right {   float:right; }  .back-btn {   background-color: transparent;   border-color: transparent;   font-size: x-large;   padding: 0;   margin: 0;   height: 100%; } ');
+
+new CssFile('notification', '.one {   background-color: red; } .two {   background-color: white; } .three {   background-color: blue; } ');
 
 new CssFile('place', '.place-history-cnt {   background: white;   width: fit-content;   height: fit-content;   border-style: groove;   border-radius: 10pt; }  .place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-max-min-cnt:hover {     opacity: 1; }  .place-max-min-cnt {     opacity: 0.1; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 1%;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
 
@@ -639,6 +647,40 @@ new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin:
 
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
+;
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
+      } else {
+        return 'on' + name;
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
 ;function up(selector, node) {
     if (node.matches(selector)) {
         return node;
@@ -785,6 +827,136 @@ function strToHtml(str) {
   container.innerHTML = safeInnerHtml(str);
   return container.children[0];
 }
+;class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
+;
+class KeyShortCut {
+  constructor(keys, func) {
+    KeyShortCut.cuts.push(this);
+    var currentKeys = {};
+
+    function keysPressed() {
+      for (let index = 0; index < keys.length; index += 1) {
+        if (!currentKeys[keys[index]]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    this.keyDownListener = (e) => {
+        currentKeys[e.key] = true;
+        if (keysPressed()) func();
+    }
+
+    this.keyUpListener = (e) => delete currentKeys[e.key];
+  }
+}
+
+KeyShortCut.cuts = [];
+
+KeyShortCut.callOnAll = function (func, e) {
+  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
+    KeyShortCut.cuts[index][func](e);
+  }
+}
+
+document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
+document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
 ;
 let idCount = 0;
 class ExprDef {
@@ -1098,40 +1270,6 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 ;
-class KeyShortCut {
-  constructor(keys, func) {
-    KeyShortCut.cuts.push(this);
-    var currentKeys = {};
-
-    function keysPressed() {
-      for (let index = 0; index < keys.length; index += 1) {
-        if (!currentKeys[keys[index]]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    this.keyDownListener = (e) => {
-        currentKeys[e.key] = true;
-        if (keysPressed()) func();
-    }
-
-    this.keyUpListener = (e) => delete currentKeys[e.key];
-  }
-}
-
-KeyShortCut.cuts = [];
-
-KeyShortCut.callOnAll = function (func, e) {
-  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
-    KeyShortCut.cuts[index][func](e);
-  }
-}
-
-document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
-document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
-;
 class Page {
   constructor() {
     this.label = function () {throw new Error('Must implement label()');};
@@ -1373,978 +1511,6 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
     dg.updateConfig({debug: false});
   }
 });
-;class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-;
-class CustomEvent {
-  constructor(name) {
-    const watchers = [];
-    this.name = name;
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        watchers.push(func);
-      } else {
-        return 'on' + name;
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-;
-class $t {
-	constructor(template, id) {
-		function varReg(prefix, suffix) {
-		  const vReg = '([a-zA-Z_\\$][a-zA-Z0-9_\\$]*)';
-		  prefix = prefix ? prefix : '';
-		  suffix = suffix ? suffix : '';
-		  return new RegExp(`${prefix}${vReg}${suffix}`)
-		};
-
-		function replace(needleRegEx, replaceStr, exceptions) {
-		  return function (sub) {
-		    if (!exceptions || exceptions.indexOf(sub) === -1) {
-		      return sub.replace(needleRegEx, replaceStr)
-		    } else {
-		      return sub;
-		    }
-		  }
-		}
-
-		const signProps = {opening: /([-+\!])/};
-		const relationalProps = {opening: /((\<|\>|\<\=|\>\=|\|\||\||&&|&))/};
-		const ternaryProps = {opening: /\?/};
-		const keyWordProps = {opening: /(new|null|undefined|NaN|true|false)[^a-z^A-Z]/, tailOffset: -1};
-		const ignoreProps = {opening: /new \$t\('.*?'\).render\(get\('scope'\), '(.*?)', get\)/};
-		const commaProps = {opening: /,/};
-		const colonProps = {opening: /:/};
-		const multiplierProps = {opening: /(===|[-+=*\/](=|))/};
-		const stringProps = {opening: /('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))/};
-		const spaceProps = {opening: /\s{1}/};
-		const numberProps = {opening: /[0-9]*((\.)[0-9]*|)/};
-		const objectProps = {opening: '{', closing: '}'};
-		const objectLabelProps = {opening: varReg(null, '\\:')};
-		const groupProps = {opening: /\(/, closing: /\)/};
-		const expressionProps = {opening: null, closing: null};
-		const attrProps = {opening: varReg('(\\.', '){1,}')};
-
-		// const funcProps = {
-		//   opening: varReg(null, '\\('),
-		//   onOpen: replace(varReg(null, '\\('), 'get("$1")('),
-		//   closing: /\)/
-		// };
-		const arrayProps = {
-		  opening: varReg(null, '\\['),
-		  onOpen: replace(varReg(null, '\\['), 'get("$1")['),
-		  closing: /\]/
-		};
-		const variableProps = {
-		  opening: varReg(),
-		  onOpen: replace(varReg(), 'get("$1")'),
-		};
-		const objectShorthandProps = {
-		  opening: varReg(),
-		  onOpen: replace(varReg(), '$1: get("$1")'),
-		};
-
-
-		const expression = new ExprDef('expression', expressionProps);
-		const ternary = new ExprDef('ternary', ternaryProps);
-		const relational = new ExprDef('relational', relationalProps);
-		const comma = new ExprDef('comma', commaProps);
-		const colon = new ExprDef('colon', colonProps);
-		const attr = new ExprDef('attr', attrProps);
-		// const func = new ExprDef('func', funcProps);
-		const string = new ExprDef('string', stringProps);
-		const space = new ExprDef('space', spaceProps);
-		const keyWord = new ExprDef('keyWord', keyWordProps);
-		const group = new ExprDef('group', groupProps);
-		const object = new ExprDef('object', objectProps);
-		const array = new ExprDef('array', arrayProps);
-		const number = new ExprDef('number', numberProps);
-		const multiplier = new ExprDef('multiplier', multiplierProps);
-		const sign = new ExprDef('sign', signProps);
-		const ignore = new ExprDef('ignore', ignoreProps);
-		const variable = new ExprDef('variable', variableProps);
-		const objectLabel = new ExprDef('objectLabel', objectLabelProps);
-		const objectShorthand = new ExprDef('objectShorthand', objectShorthandProps);
-
-		expression.always(space, ignore, keyWord);
-		expression.if(string, number, group, array, variable)
-		      .then(multiplier, sign, relational, group)
-		      .repeat();
-		expression.if(string, group, array, variable)
-					.then(attr)
-		      .then(multiplier, sign, relational, expression)
-					.repeat();
-		expression.if(string, group, array, variable)
-					.then(attr)
-					.end();
-		expression.if(sign)
-		      .then(expression)
-		      .then(multiplier, sign, relational, group)
-		      .repeat();
-		expression.if(string, number, group, array, variable)
-		      .then(ternary)
-		      .then(expression)
-		      .then(colon)
-		      .then(expression)
-		      .end();
-		expression.if(ternary)
-		      .then(expression)
-		      .then(colon)
-		      .then(expression)
-		      .end();
-		expression.if(object, string, number, group, array, variable)
-		      .end();
-		expression.if(sign)
-		      .then(number)
-		      .end();
-
-		object.always(space, ignore, keyWord);
-		object.if(objectLabel).then(expression).then(comma).repeat();
-		object.if(objectShorthand).then(comma).repeat();
-		object.if(objectLabel).then(expression).end();
-		object.if(objectShorthand).end();
-
-		group.always(space, ignore, keyWord);
-		group.if(expression).then(comma).repeat();
-		group.if(expression).end();
-
-		array.always(space, ignore, keyWord);
-		array.if(expression).then(comma).repeat();
-		array.if(expression).end();
-
-		function getter(scope, parentScope) {
-			parentScope = parentScope || function () {return undefined};
-			function get(name) {
-				if (name === 'scope') return scope;
-				const split = new String(name).split('.');
-				let currObj = scope;
-				for (let index = 0; currObj != undefined && index < split.length; index += 1) {
-					currObj = currObj[split[index]];
-				}
-				if (currObj !== undefined) return currObj;
-				const parentScopeVal = parentScope(name);
-				if (parentScopeVal !== undefined) return parentScopeVal;
-				return '';
-			}
-			return get;
-		}
-
-		function defaultArray(elemName, get) {
-			let resp = '';
-			for (let index = 0; index < get('scope').length; index += 1) {
-				if (elemName) {
-					const obj = {};
-					obj[elemName] = get(index);
-					resp += new $t(template).render(obj, undefined, get);
-				} else {
-					resp += new $t(template).render(get(index), undefined, get);
-				}
-			}
-			return `${resp}`;
-		}
-
-		function arrayExp(itExp, get) {
-			const match = itExp.match($t.arrayItExpReg);
-			const varName = match[1];
-			const array = get(match[2]);
-			let built = '';
-			for (let index = 0; index < array.length; index += 1) {
-				const obj = {};
-				obj[varName] = array[index];
-				obj.$index = index;
-				built += new $t(template).render(obj, undefined, get);
-			}
-			return built;
-		}
-
-		function itOverObject(itExp, get) {
-			const match = itExp.match($t.objItExpReg);
-			const keyName = match[1];
-			const valueName = match[2];
-			const obj = get(match[3]);
-			const keys = Object.keys(obj);
-			let built = '';
-			for (let index = 0; index < keys.length; index += 1) {
-				const key = keys[index];
-				const childScope = {};
-				childScope[keyName] = {key};
-				childScope[valueName] = obj[key];
-				childScope.$index = index;
-				built += new $t(template).render(obj, undefined, get);
-			}
-		}
-
-		function rangeExp(itExp, get) {
-			const match = itExp.match($t.rangeItExpReg);
-			const elemName = match[1];
-			let startIndex = (typeof match[2]) === 'number' ||
-						match[2].match(/^[0-9]*$/) ?
-						match[2] : get(`${match[2]}`);
-			let endIndex = (typeof match[3]) === 'number' ||
-						match[3].match(/^[0-9]*$/) ?
-						match[3] : get(`${match[3]}`);
-			if (((typeof startIndex) !== 'string' &&
-							(typeof	startIndex) !== 'number') ||
-								(typeof endIndex) !== 'string' &&
-								(typeof endIndex) !== 'number') {
-									throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
-			}
-
-			try {
-				startIndex = Number.parseInt(startIndex);
-			} catch (e) {
-				throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
-			}
-			try {
-				endIndex = Number.parseInt(endIndex);
-			} catch (e) {
-				throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
-			}
-
-			let index = startIndex;
-			let built = '';
-			while (true) {
-				let increment = 1;
-				if (startIndex > endIndex) {
-					if (index <= endIndex) {
-						break;
-					}
-					increment = -1;
-				} else if (index >= endIndex) {
-					break;
-				}
-				const obj = {$index: index};
-				obj[elemName] = index;
-				built += new $t(template).render(obj, undefined, get);
-				index += increment;
-			}
-			return built;
-		}
-
-		function evaluate(get) {
-			if ($t.functions[id]) {
-				try {
-					return $t.functions[id](get);
-				} catch (e) {
-				  console.error(e);
-				}
-			} else {
-				return eval($t.templates[id])
-			}
-		}
-
-		function type(scope, itExp) {
-			if ((typeof itExp) === 'string' && itExp.match($t.rangeAttemptExpReg)) {
-				if (itExp.match($t.rangeItExpReg)) {
-					return 'rangeExp'
-				}
-				return 'rangeExpFormatError';
-			} else if (Array.isArray(scope)) {
-				if (itExp === undefined) {
-					return 'defaultArray';
-				} else if (itExp.match($t.nameScopeExpReg)) {
-					return 'nameArrayExp';
-				} else {
-					return 'invalidArray';
-				}
-			} else if ((typeof scope) === 'object') {
-				if (itExp === undefined) {
-					return 'defaultObject';
-				} else if (itExp.match($t.objItExpReg)){
-					return 'itOverObject';
-				} else if (itExp.match($t.arrayItExpReg)){
-					return 'arrayExp';
-				} else {
-					return 'invalidObject';
-				}
-			} else {
-				return 'defaultObject';
-			}
-		}
-
-		function render(scope, itExp, parentScope) {
-			let rendered = '';
-			const get = getter(scope, parentScope);
-			switch (type(scope, itExp)) {
-				case 'rangeExp':
-					rendered = rangeExp(itExp, get);
-					break;
-				case 'rangeExpFormatError':
-					throw new Error(`Invalid range itteration expression "${itExp}"`);
-				case 'defaultArray':
-					rendered = defaultArray(itExp, get);
-					break;
-				case 'nameArrayExp':
-					rendered = defaultArray(itExp, get);
-					break;
-				case 'arrayExp':
-					rendered = arrayExp(itExp, get);
-					break;
-				case 'invalidArray':
-					throw new Error(`Invalid iterative expression for an array "${itExp}"`);
-				case 'defaultObject':
-					rendered = evaluate(get);
-					break;
-				case 'itOverObject':
-					rendered = itOverObject(itExp, get);
-					break;
-				case 'invalidObject':
-					throw new Error(`Invalid iterative expression for an object "${itExp}"`);
-				default:
-					throw new Error(`Programming error defined type '${type()}' not implmented in switch`);
-			}
-			return rendered;
-		}
-
-
-//---------------------  Compile Functions ---------------//
-
-		function stringHash(string) {
-			let hashString = string;
-			let hash = 0;
-			for (let i = 0; i < hashString.length; i += 1) {
-				const character = hashString.charCodeAt(i);
-				hash = ((hash << 5) - hash) + character;
-				hash &= hash; // Convert to 32bit integer
-			}
-			return hash;
-		}
-
-		function isolateBlocks(template) {
-			let inBlock = false;
-			let openBracketCount = 0;
-			let block = '';
-			let blocks = [];
-			let str = template;
-			for (let index = 0; index < str.length; index += 1) {
-				if (inBlock) {
-					block += str[index];
-				}
-				if (!inBlock && index > 0 &&
-					str[index] == '{' && str[index - 1] == '{') {
-					inBlock = true;
-				} else if (inBlock && str[index] == '{') {
-					openBracketCount++;
-				} else if (openBracketCount > 0 && str[index] == '}') {
-					openBracketCount--;
-				} else if (str[index + 1] == '}' && str[index] == '}' ) {
-					inBlock = false;
-					blocks.push(`${block.substr(0, block.length - 1)}`);
-					block = '';
-				}
-			}
-			return blocks;
-		}
-
-		function compile() {
-			const blocks = isolateBlocks(template);
-			let str = template;
-			for (let index = 0; index < blocks.length; index += 1) {
-				const block = blocks[index];
-				const parced = ExprDef.parse(expression, block);
-				str = str.replace(`{{${block}}}`, `\` + (${parced}) + \``);
-			}
-			return `\`${str}\``;
-		}
-
-		const repeatReg = /<([a-zA-Z-]*):t( ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\1:t[^>]*>|<\/\1:t>)).)*<\/)\1:t>/;
-		function formatRepeat(string) {
-			// tagname:1 prefix:2 quote:4 exlpression:5 suffix:6
-			// string = string.replace(/<([^\s^:^-^>]*)/g, '<$1-ce');
-			let match;
-			while (match = string.match(repeatReg)) {
-				let tagContents = match[2] + match[6];
-				let template = `<${match[1]}${tagContents}${match[1]}>`.replace(/\\'/g, '\\\\\\\'').replace(/([^\\])'/g, '$1\\\'').replace(/''/g, '\'\\\'');
-				let templateName = tagContents.replace(/.*\$t-id=('|")([a-zA-Z-_\/]*?)(\1).*/, '$2');
-				template = templateName !== tagContents ? templateName : template;
-				string = string.replace(match[0], `{{new $t('${template}').render(get('scope'), '${match[5]}', get)}}`);
-				// console.log('\n\n\nformrepeat: ', string, '\n\n\n')
-				eval(`new $t(\`${template}\`)`);
-			}
-			return string;
-		}
-
-		if (id) {
-			$t.templates[id] = undefined;
-			$t.functions[id] = undefined;
-		}
-
-		template = template.replace(/\s{1,}/g, ' ');
-		id = $t.functions[template] ? template : id || stringHash(template);
-		if (!$t.functions[id]) {
-			if (!$t.templates[id]) {
-				template = template.replace(/\s{2,}|\n/g, ' ');
-				template = formatRepeat(template);
-				$t.templates[id] = compile();
-			}
-		}
-		this.compiled = function () { return $t.templates[id];}
-		this.render = render;
-		this.type = type;
-		this.isolateBlocks = isolateBlocks;
-	}
-}
-
-$t.templates = {};//{"-1554135584": '<h1>{{greeting}}</h1>'};
-$t.functions = {};
-$t.arrayItExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*in\s*([a-zA-Z][a-z0-9A-Z\.]*)\s*$/;
-$t.objItExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*,\s*([a-zA-Z][a-z0-9A-Z]*)\s*in\s*([a-zA-Z][a-z0-9A-Z]*)\s*$/;
-$t.rangeAttemptExpReg = /^\s*([a-z0-9A-Z]*)\s*in\s*(.*\.\..*)\s*$/;
-$t.rangeItExpReg = /^\s*([a-z0-9A-Z]*)\s*in\s*([a-z0-9A-Z]*)\.\.([a-z0-9A-Z]*)\s*$/;
-$t.nameScopeExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*$/;
-$t.quoteStr = function (str) {
-		str = str.replace(/\\`/g, '\\\\\\`')
-		str = str.replace(/([^\\])`/g, '$1\\\`')
-		return `\`${str.replace(/``/g, '`\\`')}\``;
-	}
-$t.formatName = function (string) {
-    function toCamel(whoCares, one, two) {return `${one}${two.toUpperCase()}`;}
-    return string.replace(/([a-z])[^a-z^A-Z]{1,}([a-zA-Z])/g, toCamel);
-}
-$t.dumpTemplates = function () {
-	let templateFunctions = '';
-	let tempNames = Object.keys($t.templates);
-	for (let index = 0; index < tempNames.length; index += 1) {
-		const tempName = tempNames[index];
-		if (tempName) {
-			const template = $t.templates[tempName];
-			templateFunctions += `\n$t.functions['${tempName}'] = function (get) {\n\treturn ${template}\n}`;
-		}
-	}
-	return templateFunctions;
-}
-
-try{
-	exports.$t = $t;
-} catch (e) {}
-;// ./src/index/services/$t.js
-
-$t.functions['492362584'] = function (get) {
-	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
-}
-$t.functions['863427587'] = function (get) {
-	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
-}
-$t.functions['906579606'] = function (get) {
-	return `<li class='ce-hover-list-elem` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `&nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
-}
-$t.functions['1165578666'] = function (get) {
-	return `<option value='` + (get("sug")) + `' ></option>`
-}
-$t.functions['1266551310'] = function (get) {
-	return `<option value='` + (get("words")) + `' ></option>`
-}
-$t.functions['1496787416'] = function (get) {
-	return `<menuitem > ` + (get("notification")) + ` </menuitem>`
-}
-$t.functions['1663607604'] = function (get) {
-	return `<menuitem > ` + (get("site")) + ` </menuitem>`
-}
-$t.functions['1870015841'] = function (get) {
-	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
-}
-$t.functions['2085205162'] = function (get) {
-	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
-}
-$t.functions['history'] = function (get) {
-	return `<div> <ul class='ce-history-list'> ` + (new $t('<li  value=\'{{elem.index}}\' class=\'{{!filtered && elem.index === history.currentPosition ? \'place-current-hist-loc\' : \'\'}}\'> {{!filtered && elem.index === history.currentPosition ? \'\' : elem.elem}} </li>').render(get('scope'), 'elem in history.list', get)) + ` </ul> </div> `
-}
-$t.functions['-2107865266'] = function (get) {
-	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
-}
-$t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
-}
-$t.functions['icon-menu/links/developer'] = function (get) {
-	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
-}
-$t.functions['-67159008'] = function (get) {
-	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
-}
-$t.functions['icon-menu/links/favorite-lists'] = function (get) {
-	return `<h1>favorite lists</h1> `
-}
-$t.functions['icon-menu/links/login'] = function (get) {
-	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
-}
-$t.functions['icon-menu/links/profile'] = function (get) {
-	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
-}
-$t.functions['icon-menu/links/raw-text-input'] = function (get) {
-	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
-}
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
-}
-$t.functions['icon-menu/notifications'] = function (get) {
-	return `<div class='inline'> <div> <button class="back-btn" id="back-button">&#x2190;</button> </div> <div> <div> <b>Notifications</b> <menu class='fit'> ` + (new $t('<menuitem > {{notification}} </menuitem>').render(get('scope'), 'notification in currentAlerts', get)) + ` </menu> </div> <div> <b>Elsewhere</b> <menu class='fit'> ` + (new $t('<menuitem > {{site}} </menuitem>').render(get('scope'), 'site in otherSites', get)) + ` </menu> </div> </div> </div> `
-}
-$t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
-}
-$t.functions['popup-cnt/explanation'] = function (get) {
-	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
-}
-$t.functions['popup-cnt/lookup'] = function (get) {
-	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
-}
-$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
-	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
-}
-$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
-	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
-	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
-}
-$t.functions['-1132695726'] = function (get) {
-	return `popup-cnt/explanation`
-}
-$t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
-	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
-}
-$t.functions['-1925646037'] = function (get) {
-	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
-}
-$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
-	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
-}
-$t.functions['popup-cnt/tabs-navigation'] = function (get) {
-	return `<ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> `
-}
-$t.functions['-888280636'] = function (get) {
-	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
-}
-$t.functions['tabs'] = function (get) {
-	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
-};// ./bin/dump/$templates.js
-
-class HoverExplanations {
-  constructor (props) {
-    props = props || {};
-    const template = new $t('hover-explanation');
-    const instance = this;
-    const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
-    const  active = {expl: {}};
-    const tag = 'hover-explanation';
-
-    let switches = [];
-    let disabled = false;
-    let explRefs = {};
-    let left;
-    let explIds = [];
-    let currIndex, currRef;
-    let lastEnabled = properties.get('enabled');
-
-    const id = Math.floor(Math.random() * 1000000);
-    const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
-    const EDIT_BTN_ID = 'ce-hover-expl-edit-btn-id-' + id;
-    const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
-    const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
-    const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
-
-    const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
-    const setDems = (dems) => {
-      if (hoverExplanations === instance)
-        properties.set('hoverExplanationsDems', dems, true);
-    };
-
-    props.setDems = props.setDems || setDems;
-    props.getDems = props.getDems || getDems;
-    props.tabText = () => active.expl.words;
-    const hoverResource = new HoverResources(props);
-    this.hover = hoverResource.hover;
-
-    hoverResource.container().addEventListener('drop', () => newHoverResource());
-    hoverResource.container().addEventListener('tabbed', () => newHoverResource());
-    if (props.hover === undefined || props.hover === true) {
-      hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
-    }
-
-    this.close = () => hoverResource.close();
-    this.disable = () => {disabled = true; instance.close()};
-    this.enable = () => disabled = false;;
-    this.keepOpen = () => hoverResource.forceOpen();
-    this.letClose = () => hoverResource.forceClose();
-
-    function getHtml(elemExplORef, index) {
-      currIndex = index === undefined ? currIndex || 0 : index;
-      let ref;
-      if (elemExplORef instanceof HTMLElement) {
-        ref = elemExplORef.getAttribute('ref');
-      } else if ((typeof elemExplORef) === 'string') {
-        ref = elemExplORef;
-      }
-
-      if (ref === undefined) {
-        if (elemExplORef !== undefined) {
-          active.list = [elemExplORef];
-          currRef = undefined;
-        } else {
-          active.list = explRefs[currRef];
-          currIndex = index === undefined ? currIndex || 0 : index;
-        }
-      } else {
-        if (ref !== currRef) currIndex = index || 0;
-        currRef = ref;
-        active.list = explRefs[currRef];
-      }
-
-      if (active.expl) active.expl.isActive = false;
-      active.expl = active.list[currIndex];
-      active.expl.isActive = true;
-      active.list = active.list.length > 1 ? active.list : [];
-      active.list.sort(sortByPopularity);
-
-      const loggedIn = User.isLoggedIn();
-      const authored = loggedIn && active.expl.author &&
-              User.loggedIn().id === active.expl.author.id;
-      const scope = {
-        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
-        active, loggedIn, authored,
-        commentHtml: Comment.for(hoverResource.container(), active.expl, undefined, true).html(),
-        hideComments: props.hideComments,
-        content: textToHtml(active.expl.content),
-        likes: Opinion.likes(active.expl),
-        dislikes: Opinion.dislikes(active.expl),
-        canLike: Opinion.canLike(active.expl),
-        canDislike: Opinion.canDislike(active.expl)
-      };
-      return template.render(scope);
-    }
-    this.getHtml = getHtml;
-
-    function updateContent(expl, index) {
-      const position = hoverResource.updateContent(getHtml(expl, index));
-      return position;
-    }
-
-    function switchFunc (index) {
-      return () => {
-        updateContent(undefined, index);
-      };
-    }
-
-    function display(expl) {
-      updateContent(expl);
-      return hoverResource.position();
-    }
-    this.display = display;
-
-    function voteup() {Opinion.voteup(active.expl, () => updateContent());}
-
-    function votedown() {Opinion.votedown(active.expl, () => updateContent());}
-
-    function setSwitches() {
-      if (active.list.length > 1) {
-        switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
-        switches.forEach((elem, index) => elem.onclick = switchFunc(index));
-      }
-      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
-      document.getElementById(EDIT_BTN_ID).onclick = () => {
-        setTimeout(instance.close, 0);
-        AddInterface.open(active.expl);
-      }
-      document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
-      document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
-    }
-
-    function sortByPopularity(expl1, expl2) {
-      expl1.popularity = Opinion.popularity(expl1);
-      expl2.popularity = Opinion.popularity(expl2);
-      return expl2.popularity - expl1.popularity;
-    }
-
-    function topNodeText(el) {
-        let child = el.firstChild;
-        const explanations = [];
-
-        while (child) {
-            if (child.nodeType == 3) {
-                explanations.push(child.data);
-            }
-            child = child.nextSibling;
-        }
-
-        return explanations.join("");
-    }
-
-    function findWord(word) {
-        return Array.from(document.body.querySelectorAll('*'))
-          .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
-    }
-
-
-    function wrapText(elem, text, ref) {
-      function replaceRef() {
-        const prefix = arguments[1];
-        const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
-        const suffix = arguments[5];
-        return `${prefix}<${tag} ref='${ref}'>${text}</${tag}>${suffix}`;
-      }
-      if (text) {
-        let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
-        let textReg = new RegExp(textRegStr, 'ig');
-        const newHtml = elem.innerHTML.replace(textReg, replaceRef);
-        safeInnerHtml(newHtml, elem)
-      }
-    }
-
-    let wrapList = [];
-    let wrapIndex = 0;
-    function wrapOne() {
-        if (!properties.get('enabled') || wrapIndex >= wrapList.length) return;
-        const wrapInfo = wrapList[wrapIndex];
-        const elems = findWord(wrapInfo.word);
-        for (let eIndex = 0; eIndex < elems.length; eIndex += 1) {
-          const elem = elems[eIndex];
-          if (wrapInfo && elem.tagName.toLowerCase() !== tag) {
-            wrapText(elem, wrapInfo.word, wrapInfo.ref);
-            wrapInfo[wrapIndex] = undefined;
-          }
-        }
-        wrapIndex++;
-        setTimeout(wrapOne, 1);
-    }
-    this.wrapOne = wrapOne;
-
-    function removeAll() {
-      wrapIndex = 0;
-      let resources = document.getElementsByTagName(tag);
-      while (resources.length > 0) {
-        Array.from(resources)
-          .forEach((elem) => safeOuterHtml(elem.innerHTML, elem));
-        resources = document.getElementsByTagName(tag);
-      }
-    }
-
-    function sortByLength(str1, str2) {return str2.length - str1.length;}
-
-    function uniqueWords(explList) {
-      const uniq = {}
-      explList.forEach((expl) => uniq[expl.words] = true);
-      return Object.keys(uniq).sort(sortByLength);
-    }
-
-    function set(explList, soft) {
-      explRefs = explList;
-      if (soft) return;
-      removeAll();
-      wrapList = [];
-      const wordList = Object.keys(explList).sort(sortByLength);
-      for (let index = 0; index < wordList.length; index += 1) {
-        const ref = wordList[index];
-        const explanations = explList[ref];
-        explanations.forEach((expl) => explIds.push(expl.id));
-        const uniqWords = uniqueWords(explanations).sort(sortByLength);
-        for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
-          const word = uniqWords[wIndex];
-          wrapList.push({ word, ref });
-        }
-      }
-      wrapOne();
-    }
-
-    function update(expl) {
-      const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [];
-      }
-      const list = explRefs[ref];
-      let index = 0;
-      for (; index < list.length; index += 1) {
-        if (list[index].id === expl.id) {
-          list[index] = expl;
-          updateContent(ref, index).show();
-          return;
-        }
-      }
-      list.push(expl);
-      updateContent(ref, index).show();
-    }
-    this.update = update;
-
-    function add(expl) {
-      const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [expl];
-      } else {
-        explRefs[ref].push(expl);
-      }
-      const elem = document.createElement(tag);
-      elem.setAttribute('ref', expl.searchWords);
-      updateContent(elem, explRefs[ref].length - 1);
-      hoverResource.position().elem();
-
-      wrapList.push({ word: expl.words, ref });
-      wrapOne();
-      explIds.push(expl.id);
-    }
-
-    this.set = set;
-    this.add = add;
-
-    this.wrapText = wrapText;
-    this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
-
-    this.lockOpen = hoverResource.lockOpen;
-    this.unlockOpen = hoverResource.unlockOpen;
-    this.position = hoverResource.position;
-
-    function enableToggled(enabled) {
-      if (enabled !== lastEnabled) {
-        lastEnabled = enabled;
-        removeAll();
-        if (enabled) {
-          instance.wrapOne();
-        }
-      }
-    }
-
-    const newHoverResource = () => {
-        if(hoverExplanations === instance) {
-          hoverResource.stopHover();
-          hoverResource.lockOpen();
-          hoverExplanations = new HoverExplanations();
-          hoverExplanations.set(explRefs, true);
-        }
-    }
-
-    properties.onUpdate('enabled', enableToggled);
-  }
-}
-
-let hoverExplanations = new HoverExplanations();
 ;
 class CatchAll {
   constructor(container) {
@@ -3212,155 +2378,6 @@ afterLoad.push(() => new KeyShortCut(['c','e'], () => {
   properties.toggle('hoverOff', true);
 }));
 ;
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
-;
-class Expl {
-  constructor () {
-    let currEnv;
-    let explanations = {};
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      Object.values(data.list).forEach((elem) => elem.forEach(
-        (expl) => explanations[expl.id] = expl));
-      hoverExplanations.set(data.list);
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env') || 'local';
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
-      console.log(commentId);
-      function addCommentSuccess(comment) {
-        explanations[explanationId].comments.push(comment);
-        if ((typeof success) === 'function') success(comment);
-      }
-      function addCommentFailure(error) {
-        if ((typeof failure) === 'function') failure(error);
-      }
-      const body = {value, siteId, explanationId, commentId};
-      Request.post(EPNTS.comment.add(), body, addCommentSuccess, addCommentFailure);
-    }
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
-  }
-}
-
-Expl = new Expl();
-;
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            Request.get(url, success, fail);
-          } else {
-            Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-;
-class History {
-  constructor(len) {
-    len = len || 100;
-    let history = [];
-    let currentPosition = -1;
-    this.push = (elem) => {
-      if (elem !== history[currentPosition]) {
-        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
-        history = history.splice(currentPosition - len || 0, len);
-        currentPosition = history.length;
-        history.push(elem);
-        properties.set('ce-history', history, true);
-      }
-    };
-    this.index = () => currentPosition;
-    this.get = () => {
-      const histObject = {};
-      histObject.currentPosition = currentPosition;
-      histObject.list = [];
-      for (let index = history.length - 1; index > -1; index -= 1) {
-        histObject.list.push({index, elem: history[index]});
-      }
-      return histObject;
-    };
-    this.back = () => history[--currentPosition];
-    this.forward = () => history[++currentPosition];
-    this.goTo = (index) => history[currentPosition = index];
-    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
-    this.hasPast = () => currentPosition > 0;
-
-    const initialized = false;
-    function init(savedHistory) {
-      if (!initialized && Array.isArray(savedHistory)) {
-        history = savedHistory;
-        currentPosition = history.length - 1;
-      }
-    }
-    properties.onUpdate('ce-history', init);
-  }
-}
-
-const history = new History(1000);
-;
 class User {
   constructor() {
     let user;
@@ -3490,139 +2507,6 @@ class User {
 }
 
 User = new User();
-;
-class Opinion {
-  constructor() {
-    let siteId;
-    const amendments = {};
-    const opinions = {};
-    const instance = this;
-
-    function voteSuccess(explId, favorable, callback) {
-      return function () {
-        amendments[explId] = favorable;
-        if ((typeof callback) === 'function') callback();
-      }
-    }
-
-    function canVote (expl, favorable)  {
-      const user = User.loggedIn();
-      if (user) {
-        const userId = user.id;
-        if (expl.author && userId === expl.author.id) {
-          return false;
-        }
-        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
-          return opinions[expl.id] !== favorable;
-        }
-        return userId !== undefined && amendments[expl.id] !== favorable;
-      } else {
-        return false;
-      }
-    };
-
-    function explOpinions(expl, favorable) {
-      const attr = favorable ? 'likes' : 'dislikes';
-      if (amendments[expl.id] === undefined) {
-        return expl[attr] || 0;
-      }
-      let value = expl[attr];
-      if (opinions[expl.id] === favorable) value--;
-      if (amendments[expl.id] === favorable) value++;
-      return value || 0;
-    }
-
-    this.canLike = (expl) => canVote(expl, true);
-    this.canDislike = (expl) => canVote(expl, false);
-    this.likes = (expl) => explOpinions(expl, true);
-    this.dislikes = (expl) => explOpinions(expl, false);
-
-
-    this.voteup = (expl, callback) => {
-      const url = EPNTS.opinion.like(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, true, callback));
-    }
-
-    this.votedown = (expl, callback) => {
-      const url = EPNTS.opinion.dislike(expl.id, siteId);
-      Request.get(url, voteSuccess(expl.id, false, callback));
-    }
-
-    this.popularity = (expl) => {
-      const likes = instance.likes(expl);
-      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
-    }
-
-    function saveVotes(results) {
-      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
-    }
-
-    function getUserVotes() {
-      siteId = properties.get('siteId');
-      if (siteId !== undefined && User.loggedIn() !== undefined) {
-        const userId = User.loggedIn().id;
-        const url = EPNTS.opinion.bySite(siteId, userId);
-        Request.get(url, saveVotes);
-      }
-    }
-    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
-  }
-}
-
-Opinion = new Opinion();
-;
-class Notifications {
-  constructor (activeTime) {
-    let activationCounter = -1;
-    let isActive = false;
-
-    this.hasPending = () => true;
-
-    function activate() {
-      activationCounter++;
-      if (isActive === false) {
-        isActive = true;
-        console.log('active!');
-      }
-    }
-
-    function deactivate(activationId) {
-      return function () {
-        if (activationId === activationCounter) {
-          console.log('deactivated')
-          isActive = false;
-        }
-      }
-    }
-
-    function currentAlerts() {
-      return ['hey', 'how', 'are', 'you'];
-    }
-
-    function otherSites() {
-      return [
-        'http://www.trex.com',
-        'http://www.potomous.com',
-        'http://www.rino.com',
-        'http://www.duck.com',
-        'http://www.hippo.com'
-      ]
-    }
-
-    function activationTimer() {
-      setTimeout(deactivate(activationCounter), activeTime);
-    }
-
-    window.addEventListener('focus', activate);
-    window.addEventListener('blur', activationTimer);
-    activate();
-
-    this.currentAlerts = currentAlerts;
-    this.otherSites = otherSites;
-  }
-}
-
-Notifications = new Notifications(10000);
 ;
 class ToggleMenu {
   constructor() {
@@ -3789,6 +2673,1190 @@ class Comment {
   }
 
 }
+;
+class $t {
+	constructor(template, id) {
+		function varReg(prefix, suffix) {
+		  const vReg = '([a-zA-Z_\\$][a-zA-Z0-9_\\$]*)';
+		  prefix = prefix ? prefix : '';
+		  suffix = suffix ? suffix : '';
+		  return new RegExp(`${prefix}${vReg}${suffix}`)
+		};
+
+		function replace(needleRegEx, replaceStr, exceptions) {
+		  return function (sub) {
+		    if (!exceptions || exceptions.indexOf(sub) === -1) {
+		      return sub.replace(needleRegEx, replaceStr)
+		    } else {
+		      return sub;
+		    }
+		  }
+		}
+
+		const signProps = {opening: /([-+\!])/};
+		const relationalProps = {opening: /((\<|\>|\<\=|\>\=|\|\||\||&&|&))/};
+		const ternaryProps = {opening: /\?/};
+		const keyWordProps = {opening: /(new|null|undefined|NaN|true|false)[^a-z^A-Z]/, tailOffset: -1};
+		const ignoreProps = {opening: /new \$t\('.*?'\).render\(get\('scope'\), '(.*?)', get\)/};
+		const commaProps = {opening: /,/};
+		const colonProps = {opening: /:/};
+		const multiplierProps = {opening: /(===|[-+=*\/](=|))/};
+		const stringProps = {opening: /('|"|`)(\1|.*?([^\\]((\\\\)*?|[^\\])(\1)))/};
+		const spaceProps = {opening: /\s{1}/};
+		const numberProps = {opening: /[0-9]*((\.)[0-9]*|)/};
+		const objectProps = {opening: '{', closing: '}'};
+		const objectLabelProps = {opening: varReg(null, '\\:')};
+		const groupProps = {opening: /\(/, closing: /\)/};
+		const expressionProps = {opening: null, closing: null};
+		const attrProps = {opening: varReg('(\\.', '){1,}')};
+
+		// const funcProps = {
+		//   opening: varReg(null, '\\('),
+		//   onOpen: replace(varReg(null, '\\('), 'get("$1")('),
+		//   closing: /\)/
+		// };
+		const arrayProps = {
+		  opening: varReg(null, '\\['),
+		  onOpen: replace(varReg(null, '\\['), 'get("$1")['),
+		  closing: /\]/
+		};
+		const variableProps = {
+		  opening: varReg(),
+		  onOpen: replace(varReg(), 'get("$1")'),
+		};
+		const objectShorthandProps = {
+		  opening: varReg(),
+		  onOpen: replace(varReg(), '$1: get("$1")'),
+		};
+
+
+		const expression = new ExprDef('expression', expressionProps);
+		const ternary = new ExprDef('ternary', ternaryProps);
+		const relational = new ExprDef('relational', relationalProps);
+		const comma = new ExprDef('comma', commaProps);
+		const colon = new ExprDef('colon', colonProps);
+		const attr = new ExprDef('attr', attrProps);
+		// const func = new ExprDef('func', funcProps);
+		const string = new ExprDef('string', stringProps);
+		const space = new ExprDef('space', spaceProps);
+		const keyWord = new ExprDef('keyWord', keyWordProps);
+		const group = new ExprDef('group', groupProps);
+		const object = new ExprDef('object', objectProps);
+		const array = new ExprDef('array', arrayProps);
+		const number = new ExprDef('number', numberProps);
+		const multiplier = new ExprDef('multiplier', multiplierProps);
+		const sign = new ExprDef('sign', signProps);
+		const ignore = new ExprDef('ignore', ignoreProps);
+		const variable = new ExprDef('variable', variableProps);
+		const objectLabel = new ExprDef('objectLabel', objectLabelProps);
+		const objectShorthand = new ExprDef('objectShorthand', objectShorthandProps);
+
+		expression.always(space, ignore, keyWord);
+		expression.if(string, number, group, array, variable)
+		      .then(multiplier, sign, relational, group)
+		      .repeat();
+		expression.if(string, group, array, variable)
+					.then(attr)
+		      .then(multiplier, sign, relational, expression)
+					.repeat();
+		expression.if(string, group, array, variable)
+					.then(attr)
+					.end();
+		expression.if(sign)
+		      .then(expression)
+		      .then(multiplier, sign, relational, group)
+		      .repeat();
+		expression.if(string, number, group, array, variable)
+		      .then(ternary)
+		      .then(expression)
+		      .then(colon)
+		      .then(expression)
+		      .end();
+		expression.if(ternary)
+		      .then(expression)
+		      .then(colon)
+		      .then(expression)
+		      .end();
+		expression.if(object, string, number, group, array, variable)
+		      .end();
+		expression.if(sign)
+		      .then(number)
+		      .end();
+
+		object.always(space, ignore, keyWord);
+		object.if(objectLabel).then(expression).then(comma).repeat();
+		object.if(objectShorthand).then(comma).repeat();
+		object.if(objectLabel).then(expression).end();
+		object.if(objectShorthand).end();
+
+		group.always(space, ignore, keyWord);
+		group.if(expression).then(comma).repeat();
+		group.if(expression).end();
+
+		array.always(space, ignore, keyWord);
+		array.if(expression).then(comma).repeat();
+		array.if(expression).end();
+
+		function getter(scope, parentScope) {
+			parentScope = parentScope || function () {return undefined};
+			function get(name) {
+				if (name === 'scope') return scope;
+				const split = new String(name).split('.');
+				let currObj = scope;
+				for (let index = 0; currObj != undefined && index < split.length; index += 1) {
+					currObj = currObj[split[index]];
+				}
+				if (currObj !== undefined) return currObj;
+				const parentScopeVal = parentScope(name);
+				if (parentScopeVal !== undefined) return parentScopeVal;
+				return '';
+			}
+			return get;
+		}
+
+		function defaultArray(elemName, get) {
+			let resp = '';
+			for (let index = 0; index < get('scope').length; index += 1) {
+				if (elemName) {
+					const obj = {};
+					obj[elemName] = get(index);
+					resp += new $t(template).render(obj, undefined, get);
+				} else {
+					resp += new $t(template).render(get(index), undefined, get);
+				}
+			}
+			return `${resp}`;
+		}
+
+		function arrayExp(itExp, get) {
+			const match = itExp.match($t.arrayItExpReg);
+			const varName = match[1];
+			const array = get(match[2]);
+			let built = '';
+			for (let index = 0; index < array.length; index += 1) {
+				const obj = {};
+				obj[varName] = array[index];
+				obj.$index = index;
+				built += new $t(template).render(obj, undefined, get);
+			}
+			return built;
+		}
+
+		function itOverObject(itExp, get) {
+			const match = itExp.match($t.objItExpReg);
+			const keyName = match[1];
+			const valueName = match[2];
+			const obj = get(match[3]);
+			const keys = Object.keys(obj);
+			let built = '';
+			for (let index = 0; index < keys.length; index += 1) {
+				const key = keys[index];
+				const childScope = {};
+				childScope[keyName] = {key};
+				childScope[valueName] = obj[key];
+				childScope.$index = index;
+				built += new $t(template).render(obj, undefined, get);
+			}
+		}
+
+		function rangeExp(itExp, get) {
+			const match = itExp.match($t.rangeItExpReg);
+			const elemName = match[1];
+			let startIndex = (typeof match[2]) === 'number' ||
+						match[2].match(/^[0-9]*$/) ?
+						match[2] : get(`${match[2]}`);
+			let endIndex = (typeof match[3]) === 'number' ||
+						match[3].match(/^[0-9]*$/) ?
+						match[3] : get(`${match[3]}`);
+			if (((typeof startIndex) !== 'string' &&
+							(typeof	startIndex) !== 'number') ||
+								(typeof endIndex) !== 'string' &&
+								(typeof endIndex) !== 'number') {
+									throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
+			}
+
+			try {
+				startIndex = Number.parseInt(startIndex);
+			} catch (e) {
+				throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
+			}
+			try {
+				endIndex = Number.parseInt(endIndex);
+			} catch (e) {
+				throw Error(`Invalid range '${itExp}' evaluates to '${startIndex}..${endIndex}'`);
+			}
+
+			let index = startIndex;
+			let built = '';
+			while (true) {
+				let increment = 1;
+				if (startIndex > endIndex) {
+					if (index <= endIndex) {
+						break;
+					}
+					increment = -1;
+				} else if (index >= endIndex) {
+					break;
+				}
+				const obj = {$index: index};
+				obj[elemName] = index;
+				built += new $t(template).render(obj, undefined, get);
+				index += increment;
+			}
+			return built;
+		}
+
+		function evaluate(get) {
+			if ($t.functions[id]) {
+				try {
+					return $t.functions[id](get);
+				} catch (e) {
+				  console.error(e);
+				}
+			} else {
+				return eval($t.templates[id])
+			}
+		}
+
+		function type(scope, itExp) {
+			if ((typeof itExp) === 'string' && itExp.match($t.rangeAttemptExpReg)) {
+				if (itExp.match($t.rangeItExpReg)) {
+					return 'rangeExp'
+				}
+				return 'rangeExpFormatError';
+			} else if (Array.isArray(scope)) {
+				if (itExp === undefined) {
+					return 'defaultArray';
+				} else if (itExp.match($t.nameScopeExpReg)) {
+					return 'nameArrayExp';
+				} else {
+					return 'invalidArray';
+				}
+			} else if ((typeof scope) === 'object') {
+				if (itExp === undefined) {
+					return 'defaultObject';
+				} else if (itExp.match($t.objItExpReg)){
+					return 'itOverObject';
+				} else if (itExp.match($t.arrayItExpReg)){
+					return 'arrayExp';
+				} else {
+					return 'invalidObject';
+				}
+			} else {
+				return 'defaultObject';
+			}
+		}
+
+		function render(scope, itExp, parentScope) {
+			let rendered = '';
+			const get = getter(scope, parentScope);
+			switch (type(scope, itExp)) {
+				case 'rangeExp':
+					rendered = rangeExp(itExp, get);
+					break;
+				case 'rangeExpFormatError':
+					throw new Error(`Invalid range itteration expression "${itExp}"`);
+				case 'defaultArray':
+					rendered = defaultArray(itExp, get);
+					break;
+				case 'nameArrayExp':
+					rendered = defaultArray(itExp, get);
+					break;
+				case 'arrayExp':
+					rendered = arrayExp(itExp, get);
+					break;
+				case 'invalidArray':
+					throw new Error(`Invalid iterative expression for an array "${itExp}"`);
+				case 'defaultObject':
+					rendered = evaluate(get);
+					break;
+				case 'itOverObject':
+					rendered = itOverObject(itExp, get);
+					break;
+				case 'invalidObject':
+					throw new Error(`Invalid iterative expression for an object "${itExp}"`);
+				default:
+					throw new Error(`Programming error defined type '${type()}' not implmented in switch`);
+			}
+			return rendered;
+		}
+
+
+//---------------------  Compile Functions ---------------//
+
+		function stringHash(string) {
+			let hashString = string;
+			let hash = 0;
+			for (let i = 0; i < hashString.length; i += 1) {
+				const character = hashString.charCodeAt(i);
+				hash = ((hash << 5) - hash) + character;
+				hash &= hash; // Convert to 32bit integer
+			}
+			return hash;
+		}
+
+		function isolateBlocks(template) {
+			let inBlock = false;
+			let openBracketCount = 0;
+			let block = '';
+			let blocks = [];
+			let str = template;
+			for (let index = 0; index < str.length; index += 1) {
+				if (inBlock) {
+					block += str[index];
+				}
+				if (!inBlock && index > 0 &&
+					str[index] == '{' && str[index - 1] == '{') {
+					inBlock = true;
+				} else if (inBlock && str[index] == '{') {
+					openBracketCount++;
+				} else if (openBracketCount > 0 && str[index] == '}') {
+					openBracketCount--;
+				} else if (str[index + 1] == '}' && str[index] == '}' ) {
+					inBlock = false;
+					blocks.push(`${block.substr(0, block.length - 1)}`);
+					block = '';
+				}
+			}
+			return blocks;
+		}
+
+		function compile() {
+			const blocks = isolateBlocks(template);
+			let str = template;
+			for (let index = 0; index < blocks.length; index += 1) {
+				const block = blocks[index];
+				const parced = ExprDef.parse(expression, block);
+				str = str.replace(`{{${block}}}`, `\` + (${parced}) + \``);
+			}
+			return `\`${str}\``;
+		}
+
+		const repeatReg = /<([a-zA-Z-]*):t( ([^>]* |))repeat=("|')([^>^\4]*?)\4([^>]*>((?!(<\1:t[^>]*>|<\/\1:t>)).)*<\/)\1:t>/;
+		function formatRepeat(string) {
+			// tagname:1 prefix:2 quote:4 exlpression:5 suffix:6
+			// string = string.replace(/<([^\s^:^-^>]*)/g, '<$1-ce');
+			let match;
+			while (match = string.match(repeatReg)) {
+				let tagContents = match[2] + match[6];
+				let template = `<${match[1]}${tagContents}${match[1]}>`.replace(/\\'/g, '\\\\\\\'').replace(/([^\\])'/g, '$1\\\'').replace(/''/g, '\'\\\'');
+				let templateName = tagContents.replace(/.*\$t-id=('|")([a-zA-Z-_\/]*?)(\1).*/, '$2');
+				template = templateName !== tagContents ? templateName : template;
+				string = string.replace(match[0], `{{new $t('${template}').render(get('scope'), '${match[5]}', get)}}`);
+				// console.log('\n\n\nformrepeat: ', string, '\n\n\n')
+				eval(`new $t(\`${template}\`)`);
+			}
+			return string;
+		}
+
+		if (id) {
+			$t.templates[id] = undefined;
+			$t.functions[id] = undefined;
+		}
+
+		template = template.replace(/\s{1,}/g, ' ');
+		id = $t.functions[template] ? template : id || stringHash(template);
+		if (!$t.functions[id]) {
+			if (!$t.templates[id]) {
+				template = template.replace(/\s{2,}|\n/g, ' ');
+				template = formatRepeat(template);
+				$t.templates[id] = compile();
+			}
+		}
+		this.compiled = function () { return $t.templates[id];}
+		this.render = render;
+		this.type = type;
+		this.isolateBlocks = isolateBlocks;
+	}
+}
+
+$t.templates = {};//{"-1554135584": '<h1>{{greeting}}</h1>'};
+$t.functions = {};
+$t.arrayItExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*in\s*([a-zA-Z][a-z0-9A-Z\.]*)\s*$/;
+$t.objItExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*,\s*([a-zA-Z][a-z0-9A-Z]*)\s*in\s*([a-zA-Z][a-z0-9A-Z]*)\s*$/;
+$t.rangeAttemptExpReg = /^\s*([a-z0-9A-Z]*)\s*in\s*(.*\.\..*)\s*$/;
+$t.rangeItExpReg = /^\s*([a-z0-9A-Z]*)\s*in\s*([a-z0-9A-Z]*)\.\.([a-z0-9A-Z]*)\s*$/;
+$t.nameScopeExpReg = /^\s*([a-zA-Z][a-z0-9A-Z]*)\s*$/;
+$t.quoteStr = function (str) {
+		str = str.replace(/\\`/g, '\\\\\\`')
+		str = str.replace(/([^\\])`/g, '$1\\\`')
+		return `\`${str.replace(/``/g, '`\\`')}\``;
+	}
+$t.formatName = function (string) {
+    function toCamel(whoCares, one, two) {return `${one}${two.toUpperCase()}`;}
+    return string.replace(/([a-z])[^a-z^A-Z]{1,}([a-zA-Z])/g, toCamel);
+}
+$t.dumpTemplates = function () {
+	let templateFunctions = '';
+	let tempNames = Object.keys($t.templates);
+	for (let index = 0; index < tempNames.length; index += 1) {
+		const tempName = tempNames[index];
+		if (tempName) {
+			const template = $t.templates[tempName];
+			templateFunctions += `\n$t.functions['${tempName}'] = function (get) {\n\treturn ${template}\n}`;
+		}
+	}
+	return templateFunctions;
+}
+
+try{
+	exports.$t = $t;
+} catch (e) {}
+;// ./src/index/services/$t.js
+
+$t.functions['492362584'] = function (get) {
+	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
+}
+$t.functions['863427587'] = function (get) {
+	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
+}
+$t.functions['906579606'] = function (get) {
+	return `<li class='ce-hover-list-elem` + (get("expl").id === get("active").expl.id ? " active": "") + `' > ` + (get("expl").words) + `&nbsp;<b class='ce-small-text'>(` + (get("expl").popularity) + `%)</b> </li>`
+}
+$t.functions['1165578666'] = function (get) {
+	return `<option value='` + (get("sug")) + `' ></option>`
+}
+$t.functions['1266551310'] = function (get) {
+	return `<option value='` + (get("words")) + `' ></option>`
+}
+$t.functions['1496787416'] = function (get) {
+	return `<menuitem > ` + (get("notification")) + ` </menuitem>`
+}
+$t.functions['1663607604'] = function (get) {
+	return `<menuitem > ` + (get("site")) + ` </menuitem>`
+}
+$t.functions['1870015841'] = function (get) {
+	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+}
+$t.functions['2085205162'] = function (get) {
+	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
+}
+$t.functions['history'] = function (get) {
+	return `<div> <ul class='ce-history-list'> ` + (new $t('<li  value=\'{{elem.index}}\' class=\'{{!filtered && elem.index === history.currentPosition ? \'place-current-hist-loc\' : \'\'}}\'> {{!filtered && elem.index === history.currentPosition ? \'\' : elem.elem}} </li>').render(get('scope'), 'elem in history.list', get)) + ` </ul> </div> `
+}
+$t.functions['-2107865266'] = function (get) {
+	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
+}
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
+}
+$t.functions['icon-menu/links/developer'] = function (get) {
+	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
+}
+$t.functions['-67159008'] = function (get) {
+	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['icon-menu/links/favorite-lists'] = function (get) {
+	return `<h1>favorite lists</h1> `
+}
+$t.functions['icon-menu/links/login'] = function (get) {
+	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
+}
+$t.functions['icon-menu/links/profile'] = function (get) {
+	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
+}
+$t.functions['icon-menu/links/raw-text-input'] = function (get) {
+	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
+}
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
+}
+$t.functions['icon-menu/notifications'] = function (get) {
+	return `<div class='inline'> <div> <button class="back-btn" id="back-button">&#x2190;</button> </div> <div> <div> <b>Notifications</b> <menu class='fit'> ` + (new $t('<menuitem > {{notification}} </menuitem>').render(get('scope'), 'notification in currentAlerts', get)) + ` </menu> </div> <div> <b>Elsewhere</b> <menu class='fit'> ` + (new $t('<menuitem > {{site}} </menuitem>').render(get('scope'), 'site in otherSites', get)) + ` </menu> </div> </div> </div> `
+}
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+}
+$t.functions['place'] = function (get) {
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
+}
+$t.functions['popup-cnt/explanation'] = function (get) {
+	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
+}
+$t.functions['popup-cnt/lookup'] = function (get) {
+	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
+	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
+}
+$t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
+	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
+	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
+}
+$t.functions['-1132695726'] = function (get) {
+	return `popup-cnt/explanation`
+}
+$t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
+	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
+	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
+}
+$t.functions['popup-cnt/tabs-navigation'] = function (get) {
+	return `<ul class='ce-width-full ` + (get("LIST_CLASS")) + `' id='` + (get("LIST_ID")) + `'> ` + (new $t('<li  {{page.hide() ? \'hidden\' : \'\'}} class=\'{{activePage === page ? ACTIVE_CSS_CLASS : CSS_CLASS}}\'> {{page.label()}} </li>').render(get('scope'), 'page in pages', get)) + ` </ul> `
+}
+$t.functions['-888280636'] = function (get) {
+	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
+}
+$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
+	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
+}
+$t.functions['-1925646037'] = function (get) {
+	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
+}
+$t.functions['tabs'] = function (get) {
+	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
+};// ./bin/dump/$templates.js
+
+class HoverExplanations {
+  constructor (props) {
+    props = props || {};
+    const template = new $t('hover-explanation');
+    const instance = this;
+    const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
+    const  active = {expl: {}};
+    const tag = 'hover-explanation';
+
+    let switches = [];
+    let disabled = false;
+    let explRefs = {};
+    let left;
+    let explIds = [];
+    let currIndex, currRef;
+    let lastEnabled = properties.get('enabled');
+
+    const id = Math.floor(Math.random() * 1000000);
+    const LOGIN_BTN_ID = 'ce-hover-expl-login-btn-id-' + id;
+    const EDIT_BTN_ID = 'ce-hover-expl-edit-btn-id-' + id;
+    const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
+    const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
+    const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
+
+    const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
+    const setDems = (dems) => {
+      if (hoverExplanations === instance)
+        properties.set('hoverExplanationsDems', dems, true);
+    };
+
+    props.setDems = props.setDems || setDems;
+    props.getDems = props.getDems || getDems;
+    props.tabText = () => active.expl.words;
+    const hoverResource = new HoverResources(props);
+    this.hover = hoverResource.hover;
+
+    hoverResource.container().addEventListener('drop', () => newHoverResource());
+    hoverResource.container().addEventListener('tabbed', () => newHoverResource());
+    if (props.hover === undefined || props.hover === true) {
+      hoverResource.on(tag, {html: getHtml, after: setSwitches, disabled: () => disabled});
+    }
+
+    this.close = () => hoverResource.close();
+    this.disable = () => {disabled = true; instance.close()};
+    this.enable = () => disabled = false;;
+    this.keepOpen = () => hoverResource.forceOpen();
+    this.letClose = () => hoverResource.forceClose();
+
+    function getHtml(elemExplORef, index) {
+      currIndex = index === undefined ? currIndex || 0 : index;
+      let ref;
+      if (elemExplORef instanceof HTMLElement) {
+        ref = elemExplORef.getAttribute('ref');
+      } else if ((typeof elemExplORef) === 'string') {
+        ref = elemExplORef;
+      }
+
+      if (ref === undefined) {
+        if (elemExplORef !== undefined) {
+          active.list = [elemExplORef];
+          currRef = undefined;
+        } else {
+          active.list = explRefs[currRef];
+          currIndex = index === undefined ? currIndex || 0 : index;
+        }
+      } else {
+        if (ref !== currRef) currIndex = index || 0;
+        currRef = ref;
+        active.list = explRefs[currRef];
+      }
+
+      if (active.expl) active.expl.isActive = false;
+      active.expl = active.list[currIndex];
+      active.expl.isActive = true;
+      active.list = active.list.length > 1 ? active.list : [];
+      active.list.sort(sortByPopularity);
+
+      const loggedIn = User.isLoggedIn();
+      const authored = loggedIn && active.expl.author &&
+              User.loggedIn().id === active.expl.author.id;
+      const scope = {
+        LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
+        active, loggedIn, authored,
+        commentHtml: Comment.for(hoverResource.container(), active.expl, undefined, true).html(),
+        hideComments: props.hideComments,
+        content: textToHtml(active.expl.content),
+        likes: Opinion.likes(active.expl),
+        dislikes: Opinion.dislikes(active.expl),
+        canLike: Opinion.canLike(active.expl),
+        canDislike: Opinion.canDislike(active.expl)
+      };
+      return template.render(scope);
+    }
+    this.getHtml = getHtml;
+
+    function updateContent(expl, index) {
+      const position = hoverResource.updateContent(getHtml(expl, index));
+      return position;
+    }
+
+    function switchFunc (index) {
+      return () => {
+        updateContent(undefined, index);
+      };
+    }
+
+    function display(expl) {
+      updateContent(expl);
+      return hoverResource.position();
+    }
+    this.display = display;
+
+    function voteup() {Opinion.voteup(active.expl, () => updateContent());}
+
+    function votedown() {Opinion.votedown(active.expl, () => updateContent());}
+
+    function setSwitches() {
+      if (active.list.length > 1) {
+        switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
+        switches.forEach((elem, index) => elem.onclick = switchFunc(index));
+      }
+      document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      document.getElementById(EDIT_BTN_ID).onclick = () => {
+        setTimeout(instance.close, 0);
+        AddInterface.open(active.expl);
+      }
+      document.getElementById(VOTEUP_BTN_ID).addEventListener('click', voteup);
+      document.getElementById(VOTEDOWN_BTN_ID).addEventListener('click', votedown);
+    }
+
+    function sortByPopularity(expl1, expl2) {
+      expl1.popularity = Opinion.popularity(expl1);
+      expl2.popularity = Opinion.popularity(expl2);
+      return expl2.popularity - expl1.popularity;
+    }
+
+    function topNodeText(el) {
+        let child = el.firstChild;
+        const explanations = [];
+
+        while (child) {
+            if (child.nodeType == 3) {
+                explanations.push(child.data);
+            }
+            child = child.nextSibling;
+        }
+
+        return explanations.join("");
+    }
+
+    function findWord(word) {
+        return Array.from(document.body.querySelectorAll('*'))
+          .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
+    }
+
+
+    function wrapText(elem, text, ref) {
+      function replaceRef() {
+        const prefix = arguments[1];
+        const text = arguments[4].replace(/\s{1,}/g, '&nbsp;');
+        const suffix = arguments[5];
+        return `${prefix}<${tag} ref='${ref}'>${text}</${tag}>${suffix}`;
+      }
+      if (text) {
+        let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
+        let textReg = new RegExp(textRegStr, 'ig');
+        const newHtml = elem.innerHTML.replace(textReg, replaceRef);
+        safeInnerHtml(newHtml, elem)
+      }
+    }
+
+    let wrapList = [];
+    let wrapIndex = 0;
+    function wrapOne() {
+        if (!properties.get('enabled') || wrapIndex >= wrapList.length) return;
+        const wrapInfo = wrapList[wrapIndex];
+        const elems = findWord(wrapInfo.word);
+        for (let eIndex = 0; eIndex < elems.length; eIndex += 1) {
+          const elem = elems[eIndex];
+          if (wrapInfo && elem.tagName.toLowerCase() !== tag) {
+            wrapText(elem, wrapInfo.word, wrapInfo.ref);
+            wrapInfo[wrapIndex] = undefined;
+          }
+        }
+        wrapIndex++;
+        setTimeout(wrapOne, 1);
+    }
+    this.wrapOne = wrapOne;
+
+    function removeAll() {
+      wrapIndex = 0;
+      let resources = document.getElementsByTagName(tag);
+      while (resources.length > 0) {
+        Array.from(resources)
+          .forEach((elem) => safeOuterHtml(elem.innerHTML, elem));
+        resources = document.getElementsByTagName(tag);
+      }
+    }
+
+    function sortByLength(str1, str2) {return str2.length - str1.length;}
+
+    function uniqueWords(explList) {
+      const uniq = {}
+      explList.forEach((expl) => uniq[expl.words] = true);
+      return Object.keys(uniq).sort(sortByLength);
+    }
+
+    function set(explList, soft) {
+      explRefs = explList;
+      if (soft) return;
+      removeAll();
+      wrapList = [];
+      const wordList = Object.keys(explList).sort(sortByLength);
+      for (let index = 0; index < wordList.length; index += 1) {
+        const ref = wordList[index];
+        const explanations = explList[ref];
+        explanations.forEach((expl) => explIds.push(expl.id));
+        const uniqWords = uniqueWords(explanations).sort(sortByLength);
+        for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
+          const word = uniqWords[wIndex];
+          wrapList.push({ word, ref });
+        }
+      }
+      wrapOne();
+    }
+
+    function update(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [];
+      }
+      const list = explRefs[ref];
+      let index = 0;
+      for (; index < list.length; index += 1) {
+        if (list[index].id === expl.id) {
+          list[index] = expl;
+          updateContent(ref, index).show();
+          return;
+        }
+      }
+      list.push(expl);
+      updateContent(ref, index).show();
+    }
+    this.update = update;
+
+    function add(expl) {
+      const ref = expl.searchWords;
+      if (explRefs[ref] === undefined) {
+        explRefs[ref] = [expl];
+      } else {
+        explRefs[ref].push(expl);
+      }
+      const elem = document.createElement(tag);
+      elem.setAttribute('ref', expl.searchWords);
+      updateContent(elem, explRefs[ref].length - 1);
+      hoverResource.position().elem();
+
+      wrapList.push({ word: expl.words, ref });
+      wrapOne();
+      explIds.push(expl.id);
+    }
+
+    this.set = set;
+    this.add = add;
+
+    this.wrapText = wrapText;
+    this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
+
+    this.lockOpen = hoverResource.lockOpen;
+    this.unlockOpen = hoverResource.unlockOpen;
+    this.position = hoverResource.position;
+
+    function enableToggled(enabled) {
+      if (enabled !== lastEnabled) {
+        lastEnabled = enabled;
+        removeAll();
+        if (enabled) {
+          instance.wrapOne();
+        }
+      }
+    }
+
+    const newHoverResource = () => {
+        if(hoverExplanations === instance) {
+          hoverResource.stopHover();
+          hoverResource.lockOpen();
+          hoverExplanations = new HoverExplanations();
+          hoverExplanations.set(explRefs, true);
+        }
+    }
+
+    properties.onUpdate('enabled', enableToggled);
+  }
+}
+
+let hoverExplanations = new HoverExplanations();
+;
+class Expl {
+  constructor () {
+    let currEnv;
+    let explanations = {};
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      Object.values(data.list).forEach((elem) => elem.forEach(
+        (expl) => explanations[expl.id] = expl));
+      hoverExplanations.set(data.list);
+    }
+
+    function addHoverResources () {
+      const enabled = properties.get('enabled');
+      const env = properties.get('env') || 'local';
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
+      console.log(commentId);
+      function addCommentSuccess(comment) {
+        explanations[explanationId].comments.push(comment);
+        if ((typeof success) === 'function') success(comment);
+      }
+      function addCommentFailure(error) {
+        if ((typeof failure) === 'function') failure(error);
+      }
+      const body = {value, siteId, explanationId, commentId};
+      Request.post(EPNTS.comment.add(), body, addCommentSuccess, addCommentFailure);
+    }
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
+  }
+}
+
+Expl = new Expl();
+;
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            Request.get(url, success, fail);
+          } else {
+            Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
+;
+class History {
+  constructor(len) {
+    len = len || 100;
+    let history = [];
+    let currentPosition = -1;
+    this.push = (elem) => {
+      if (elem !== history[currentPosition]) {
+        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
+        history = history.splice(currentPosition - len || 0, len);
+        currentPosition = history.length;
+        history.push(elem);
+        properties.set('ce-history', history, true);
+      }
+    };
+    this.index = () => currentPosition;
+    this.get = () => {
+      const histObject = {};
+      histObject.currentPosition = currentPosition;
+      histObject.list = [];
+      for (let index = history.length - 1; index > -1; index -= 1) {
+        histObject.list.push({index, elem: history[index]});
+      }
+      return histObject;
+    };
+    this.back = () => history[--currentPosition];
+    this.forward = () => history[++currentPosition];
+    this.goTo = (index) => history[currentPosition = index];
+    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
+    this.hasPast = () => currentPosition > 0;
+
+    const initialized = false;
+    function init(savedHistory) {
+      if (!initialized && Array.isArray(savedHistory)) {
+        history = savedHistory;
+        currentPosition = history.length - 1;
+      }
+    }
+    properties.onUpdate('ce-history', init);
+  }
+}
+
+const history = new History(1000);
+;
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+;
+class Opinion {
+  constructor() {
+    let siteId;
+    const amendments = {};
+    const opinions = {};
+    const instance = this;
+
+    function voteSuccess(explId, favorable, callback) {
+      return function () {
+        amendments[explId] = favorable;
+        if ((typeof callback) === 'function') callback();
+      }
+    }
+
+    function canVote (expl, favorable)  {
+      const user = User.loggedIn();
+      if (user) {
+        const userId = user.id;
+        if (expl.author && userId === expl.author.id) {
+          return false;
+        }
+        if (opinions[expl.id] !== undefined && amendments[expl.id] === undefined) {
+          return opinions[expl.id] !== favorable;
+        }
+        return userId !== undefined && amendments[expl.id] !== favorable;
+      } else {
+        return false;
+      }
+    };
+
+    function explOpinions(expl, favorable) {
+      const attr = favorable ? 'likes' : 'dislikes';
+      if (amendments[expl.id] === undefined) {
+        return expl[attr] || 0;
+      }
+      let value = expl[attr];
+      if (opinions[expl.id] === favorable) value--;
+      if (amendments[expl.id] === favorable) value++;
+      return value || 0;
+    }
+
+    this.canLike = (expl) => canVote(expl, true);
+    this.canDislike = (expl) => canVote(expl, false);
+    this.likes = (expl) => explOpinions(expl, true);
+    this.dislikes = (expl) => explOpinions(expl, false);
+
+
+    this.voteup = (expl, callback) => {
+      const url = EPNTS.opinion.like(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, true, callback));
+    }
+
+    this.votedown = (expl, callback) => {
+      const url = EPNTS.opinion.dislike(expl.id, siteId);
+      Request.get(url, voteSuccess(expl.id, false, callback));
+    }
+
+    this.popularity = (expl) => {
+      const likes = instance.likes(expl);
+      return Math.floor((likes / (likes + instance.dislikes(expl))) * 100) || 0;
+    }
+
+    function saveVotes(results) {
+      results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
+    }
+
+    function getUserVotes() {
+      siteId = properties.get('siteId');
+      if (siteId !== undefined && User.loggedIn() !== undefined) {
+        const userId = User.loggedIn().id;
+        const url = EPNTS.opinion.bySite(siteId, userId);
+        Request.get(url, saveVotes);
+      }
+    }
+    properties.onUpdate(['siteId', 'loggedIn'], getUserVotes);
+  }
+}
+
+Opinion = new Opinion();
+;
+class Notifications {
+  constructor (activeTime) {
+    const EXPLANATION = 'Explanation';
+    const COMMENT = 'Comment';
+    const QUESTION = 'Question';
+    let notifications = {currPage: [], otherPage: []};
+
+    this.hasNotifications = () => notifications.currPage.length > 0 &&
+          notifications.otherPage.length > 0;
+
+    this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
+
+    function words(data) {
+      return data.explanation.words;
+    }
+
+    function fullText(data) {
+      switch (data.type) {
+        case EXPLANATION:
+          return data.explanation.content;
+        case COMMENT:
+          return data.comment.value;
+        case QUESTION:
+          return data.explanation.content;
+        default:
+          return "Error getting text data";
+
+      }
+    }
+
+    function shortText(data) {
+        return fullText(data).substr(0, 20);
+    }
+
+    function author(data) {
+      switch (data.type) {
+        case EXPLANATION:
+          return data.explanation.author.username;
+        case COMMENT:
+          return data.comment.author.username;
+        case QUESTION:
+        return data.explanation.author.username;
+        default:
+          return "Error getting author data";
+
+      }
+    }
+
+    function getClass() {
+      return `${data.type.tolowercase()}-notification`;
+    }
+
+    function update() {
+      const user = User.loggedIn();
+      if (user) {
+        const userId = user.id;
+        const siteUrl = window.location.href;
+        Request.post(ENPTS.notification.get(), {userId, siteUrl}, (notes) => notifications = notes);
+      }
+    }
+
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => update()));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -------------------------------------- User Present ----------------------//
+    let activationCounter = -1;
+    let isActive = false;
+
+    this.hasPending = () => true;
+
+    function activate() {
+      activationCounter++;
+      if (isActive === false) {
+        isActive = true;
+        console.log('active!');
+      }
+    }
+
+    function deactivate(activationId) {
+      return function () {
+        if (activationId === activationCounter) {
+          console.log('deactivated')
+          isActive = false;
+        }
+      }
+    }
+
+    function activationTimer() {
+      setTimeout(deactivate(activationCounter), activeTime);
+    }
+
+    window.addEventListener('focus', activate);
+    window.addEventListener('blur', activationTimer);
+    activate();
+  }
+}
+
+Notifications = new Notifications(10000);
 ;
 const getDems = () => properties.get('lookupHoverResourceDems') || {width: '40vw', height: '20vh'};
 const setDems = (dems) => properties.set('lookupHoverResourceDems', dems, true);
