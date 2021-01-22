@@ -112,6 +112,30 @@ class HoverExplanations {
     }
     this.display = display;
 
+    function displayExistingElem(expl, callback, call) {
+      call = call || 0;
+      if (call >= 5) return;
+      let elem;
+      const elems = document.querySelectorAll(`hover-explanation[ref="${expl.searchWords}"]`);
+      for (let index = 0; index < elems.length && elem === undefined; index += 1) {
+        const e = elems[index];
+        const rect = e.getBoundingClientRect();
+        if (rect.width !== 0 && rect.height !== 0) {
+          elem = e;
+        }
+      }
+      if (elem === undefined) {
+        setTimeout(() => displayExistingElem(expl, callback, call + 1), 500);
+      } else {
+        display(expl).elem(elem);
+        callback(elem);
+      }
+    }
+
+    function scrollTo(expl, call) {
+      displayExistingElem(expl, () => scrollIntoView(hoverResource.container(), 40, 10));
+    }
+
     function voteup() {Opinion.voteup(active.expl, () => updateContent());}
 
     function votedown() {Opinion.votedown(active.expl, () => updateContent());}
@@ -167,7 +191,11 @@ class HoverExplanations {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
         const newHtml = elem.innerHTML.replace(textReg, replaceRef);
-        safeInnerHtml(newHtml, elem)
+        try {
+          safeInnerHtml(newHtml, elem)
+        } catch (e) {
+          console.error('Replacement Failed')
+        }
       }
     }
 
@@ -262,15 +290,30 @@ class HoverExplanations {
       explIds.push(expl.id);
     }
 
+    function getHeaderCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-title-cnt');
+    }
+    function getExplCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-cnt');
+    }
+    function getContentCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-content-cnt');
+    }
+
     this.set = set;
     this.add = add;
 
+    this.getHeaderCnt = getHeaderCnt;
+    this.getExplCnt = getExplCnt;
+    this.getContentCnt = getContentCnt;
     this.wrapText = wrapText;
     this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
     this.lockOpen = hoverResource.lockOpen;
     this.unlockOpen = hoverResource.unlockOpen;
     this.position = hoverResource.position;
+    this.scrollTo = scrollTo;
+    this.displayExistingElem = displayExistingElem;
 
     function enableToggled(enabled) {
       if (enabled !== lastEnabled) {

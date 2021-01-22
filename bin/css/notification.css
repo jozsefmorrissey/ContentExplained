@@ -1,9 +1,35 @@
-.one {
-  background-color: red;
+.ce-notification-list {
+  margin: 0;
+  padding: 5pt;
+  list-style: none;
+  cursor: pointer;
 }
-.two {
+
+.ce-notification {
+  padding: 0 10pt 0 10pt;
+  border-radius: 4pt;
+  width: fit-content;
+  font-size: 10pt;
+}
+
+.ce-notification>h4 {
+ font-size: inherit;
+}
+
+.ce-notification.explanation-notification {
+  background-color: #ff000047;
+}
+.ce-notification.comment-notification {
   background-color: white;
 }
-.three {
-  background-color: blue;
+.ce-notification.question-notification {
+  background-color: #0000ff47;
+}
+
+.ce-notification:hover {
+  background-color: #2530af5c;
+}
+
+.ce-no-margin {
+  margin: 0;
 }

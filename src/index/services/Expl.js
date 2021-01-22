@@ -8,6 +8,11 @@ class Expl {
       Object.values(data.list).forEach((elem) => elem.forEach(
         (expl) => explanations[expl.id] = expl));
       hoverExplanations.set(data.list);
+      hoverExplanations.scrollTo(data.list[Object.keys(data.list)[0]][0]);
+    }
+
+    function getById(id) {
+      return JSON.parse(JSON.stringify(explanations[id]));
     }
 
     function addHoverResources () {
@@ -52,6 +57,7 @@ class Expl {
     };
 
 
+    this.getById = getById;
     properties.onUpdate(['enabled', 'env'], addHoverResources);
   }
 }

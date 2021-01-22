@@ -23,8 +23,8 @@ class DragDropResize {
     const instance = this;
     const closeFuncs = [];
 
-    let width = '40vw';
-    let height = '20vh';
+    let width = props.width || '40vw';
+    let height = props.height || '20vh';
     this.getDems = props.getDems || ( () => { return {width, height}; } );
     this.setDems = props.setDems || ( (w, h) => { width = w; height = h; } );
 
@@ -38,8 +38,8 @@ class DragDropResize {
       background-color: white;
       position: ${position};
       overflow: hidden;
-      min-height: 20vh;
-      min-width: 50vw;
+      min-height: ${props.minWidth === undefined ? '20vh' : props.minWidth};
+      min-width: ${props.minHeight === undefined ? '50vw' : props.minHeight};
       display: none;
       border: 1px solid;
       padding: 3pt;

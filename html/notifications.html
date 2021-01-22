@@ -1,0 +1,17 @@
+<div class="">
+  <ul class='ce-notification-list'>
+    <li:t repeat='note in notifications.currPage' class='{{getClass(note)}}'
+          ce-notification-key="{{key(note)}}">
+      <h4 class='ce-no-margin'>{{getHeading(note)}}</h4>
+      {{getText(note)}}
+    </li:t>
+  </ul>
+  <h4>Other Page Notifications</h4>
+  <ul class='ce-notification-list'>
+    <li:t repeat='note in notifications.otherPage' class='{{getClass(note)}}'
+          ce-open="{{note.site.url}}" ce-target="_blank">
+      <h4 class='ce-no-margin'>{{getHeading(note)}}</h4>
+      {{getText(note)}}
+    </li:t>
+  </ul>
+</div>

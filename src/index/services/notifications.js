@@ -4,12 +4,47 @@ class Notifications {
     const EXPLANATION = 'Explanation';
     const COMMENT = 'Comment';
     const QUESTION = 'Question';
+    const template = new $t('notifications');
+    const popup = new DragDropResize({position: 'fixed', height: '25vh', width: 'fit-content',
+        minWidth: 0, minHeight: 0});
+    popup.top().right();
+    const instance = this;
+    const byKey = {};
     let notifications = {currPage: [], otherPage: []};
+
+    function key(note) {
+      return `${note.type}-${note.id}`;
+    }
+
+    function gotoNotification(target) {
+      const noteKey = target.getAttribute('ce-notification-key');
+      const note = byKey[noteKey];
+      let getElem;
+      if (note.type === 'Comment') {
+        getElem = () => document.querySelector(`[ce-comment-id="${note.comment.id}"]`);
+      } else {
+        getElem = () => hoverExplanations.getExplCnt();
+      }
+      const func = () => scrollIntoView(getElem(), 40, 10)
+      hoverExplanations.displayExistingElem(note.explanation, func);
+    }
+
+    function openPage(target) {
+      const url = target.getAttribute('ce-open');
+      const name = target.getAttribute('ce-target');
+      window.open(url, name);
+    }
+
+    matchRun('click', '[ce-open]', openPage, popup.container())
+    matchRun('click', '[ce-notification-key]', gotoNotification, popup.container())
+
 
     this.hasNotifications = () => notifications.currPage.length > 0 &&
           notifications.otherPage.length > 0;
 
     this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
+
+    const getHeading = (note) => note.explanation.words;
 
     function words(data) {
       return data.explanation.words;
@@ -47,20 +82,29 @@ class Notifications {
       }
     }
 
-    function getClass() {
-      return `${data.type.tolowercase()}-notification`;
+    function getClass(note) {
+      return `ce-notification ${note.type.toLowerCase()}-notification`;
+    }
+
+    this.html = () => template.render({key, notifications, getHeading, getText: shortText, getClass});
+
+    function setNotifications(notes) {
+      notifications = notes;
+      notes.currPage.forEach((note) => byKey[key(note)] = note)
+      popup.updateContent(instance.html());
+      popup.show();
     }
 
     function update() {
       const user = User.loggedIn();
-      if (user) {
+      if (user && user.id) {
         const userId = user.id;
         const siteUrl = window.location.href;
-        Request.post(ENPTS.notification.get(), {userId, siteUrl}, (notes) => notifications = notes);
+        Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
       }
     }
 
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => update()));
+    document.addEventListener(User.updateEvent(), update);
 
 
 

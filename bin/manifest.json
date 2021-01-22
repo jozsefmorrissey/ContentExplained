@@ -34,7 +34,8 @@
       "css": ["./css/index.css",
             "./css/hover-resource.css",
             "./css/place.css",
-              "./css/lookup.css"]
+            "./css/notification.css",
+            "./css/lookup.css"]
     }
   ],
 

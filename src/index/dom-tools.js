@@ -1,9 +1,151 @@
-function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
+
+
+function isScrollable(elem) {
+    const horizontallyScrollable = elem.scrollWidth > elem.clientWidth;
+    const verticallyScrollable = elem.scrollHeight > elem.clientHeight;
+    return elem.scrollWidth > elem.clientWidth || elem.scrollHeight > elem.clientHeight;
+};
+
+function scrollableParents(elem) {
+  let scrollable = [];
+  if (elem instanceof HTMLElement) {
+    if (isScrollable(elem)) {
+      scrollable.push(elem);
     }
+    return scrollableParents(elem.parentNode).concat(scrollable);
+  }
+  return scrollable;
+}
+
+function center(elem) {
+  const rect = elem.getBoundingClientRect();
+  const x = rect.x + (rect.height / 2);
+  const y = rect.y + (rect.height / 2);
+  return {x, y, top: rect.top};
+}
+
+function temporaryStyle(elem, time, style) {
+  const save = {};
+  const keys = Object.keys(style);
+  keys.forEach((key) => {
+    save[key] = elem.style[key];
+    elem.style[key] = style[key];
+  });
+
+  setTimeout(() => {
+    keys.forEach((key) => {
+      elem.style[key] = save[key];
+    });
+  }, time);
+}
+
+function scrollIntoView(elem, divisor, delay, scrollElem) {
+  let scrollPidCounter = 0;
+  const lastPosition = {};
+  let highlighted = false;
+  function scroll(scrollElem) {
+    return function() {
+      const scrollCenter = center(scrollElem);
+      const elemCenter = center(elem);
+      const fullDist = Math.abs(scrollCenter.y - elemCenter.y);
+      const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
+      const yDiff = scrollDist * (elemCenter.y < scrollCenter.y ? -1 : 1);
+      scrollElem.scroll(0, scrollElem.scrollTop + yDiff);
+      console.log(scrollElem.scrollPid, '-', elemCenter.y, ':', scrollCenter.y)
+      console.log(`${elemCenter.top} !== ${lastPosition[scrollElem.scrollPid]}`)
+      console.log();
+      if (elemCenter.top !== lastPosition[scrollElem.scrollPid]
+            && (scrollCenter.y < elemCenter.y - 2 || scrollCenter.y > elemCenter.y + 2)) {
+        lastPosition[scrollElem.scrollPid] = elemCenter.top;
+        setTimeout(scroll(scrollElem), delay);
+      } else if(!highlighted) {
+        highlighted = true;
+        temporaryStyle(elem, 2000, {
+          borderStyle: 'solid',
+          borderColor: '#07ff07',
+          borderWidth: '5px'
+        });
+      }
+    }
+  }
+  const scrollParents = scrollableParents(elem);
+  scrollParents.forEach((scrollParent) => {
+    scrollParent.scrollPid = scrollPidCounter++;
+    setTimeout(scroll(scrollParent), 10);
+  });
+}
+
+// function scrollIntoView(elem, divisor, delay) {
+//   let lastPosition;
+//   function scroll() {
+//     const rect = elem.getBoundingClientRect();
+//     const target = Math.floor((window.innerHeight - rect.height) / 2);
+//     const fullDist = Math.abs(rect.top - target);
+//     const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
+//     const yDiff = scrollDist * (rect.top < target ? -1 : 1);
+//     window.scroll(0, window.scrollY + yDiff);
+//     console.log(elem.id, ':', window.scrollY)
+//     if (window.scrollY !== lastPosition && (rect.top < target - 2 || rect.top > target + 2)) {
+//       lastPosition = window.scrollY;
+//       setTimeout(scroll, delay);
+//     }
+//   }
+//   setTimeout(scroll, 10);
+// }
+
+const selectors = {};
+let matchRunIdCount = 0;
+function getTargetId(target) {
+  if((typeof target.getAttribute) === 'function') {
+    let targetId = target.getAttribute('ce-match-run-id');
+    if (targetId === null || targetId === undefined) {
+      targetId = matchRunIdCount + '';
+      target.setAttribute('ce-match-run-id', matchRunIdCount++)
+    }
+    return targetId;
+  }
+  return target === document ?
+        '#document' : target === window ? '#window' : undefined;
+}
+
+function runMatch(event) {
+  const  matchRunTargetId = getTargetId(event.currentTarget);
+  const selectStrs = Object.keys(selectors[matchRunTargetId][event.type]);
+  selectStrs.forEach((selectStr) => {
+    const target = up(selectStr, event.target);
+    if (target) {
+      selectors[matchRunTargetId][event.type][selectStr].forEach((func) => func(target));
+    }
+  })
+  console.log(event);
+}
+
+function matchRun(event, selector, func, target) {
+  target = target || document;
+  const  matchRunTargetId = getTargetId(target);
+  if (selectors[matchRunTargetId] === undefined) {
+    selectors[matchRunTargetId] = {};
+  }
+  if (selectors[matchRunTargetId][event] === undefined) {
+    selectors[matchRunTargetId][event] = {};
+    target.addEventListener(event, runMatch);
+  }
+  if (selectors[matchRunTargetId][event][selector] === undefined) {
+    selectors[matchRunTargetId][event][selector] = [];
+  }
+
+  selectors[matchRunTargetId][event][selector].push(func);
+}
+
+
+function up(selector, node) {
+  if (node instanceof HTMLElement) {
+    if (node.matches(selector)) {
+      return node;
+    } else {
+      return up(selector, node.parentNode);
+    }
+  }
 }
 
 
@@ -118,7 +260,9 @@ const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})(\s|'|")on[a-z]{1,}=/;
 function safeInnerHtml(text, elem) {
   if (text === undefined) return undefined;
   const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
-  if (clean !== text) throw new JsDetected(text, clean);
+  if (clean !== text) {
+    throw new JsDetected(text, clean);
+  }
   if (elem !== undefined) elem.innerHTML = clean;
   return clean;
 }

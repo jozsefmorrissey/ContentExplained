@@ -9,22 +9,24 @@
       </ul>
     </div>
     <div class='ce-width-full'>
-      <div class='ce-hover-expl-title-cnt'>
-        <div id='{{VOTEUP_BTN_ID}}' class='ce-center{{canLike ? " ce-pointer" : ""}}'>
-          <button class='ce-like-btn'{{canLike ? '' : ' disabled'}}></button>
-          <br>
-          {{likes}}
+      <div class='ce-hover-expl-cnt'>
+        <div class='ce-hover-expl-title-cnt'>
+          <div id='{{VOTEUP_BTN_ID}}' class='ce-center{{canLike ? " ce-pointer" : ""}}'>
+            <button class='ce-like-btn'{{canLike ? '' : ' disabled'}}></button>
+            <br>
+            {{likes}}
+          </div>
+          <h3>{{active.expl.words}}</h3>
+          <div id='{{VOTEDOWN_BTN_ID}}' class='ce-center{{canDislike ? " ce-pointer" : ""}}'>
+            {{dislikes}}
+            <br>
+            <button class='ce-dislike-btn'{{canDislike ? '' : ' disabled'}}></button>
+          </div>
+          &nbsp;&nbsp;&nbsp;&nbsp;
         </div>
-        <h3>{{active.expl.words}}</h3>
-        <div id='{{VOTEDOWN_BTN_ID}}' class='ce-center{{canDislike ? " ce-pointer" : ""}}'>
-          {{dislikes}}
-          <br>
-          <button class='ce-dislike-btn'{{canDislike ? '' : ' disabled'}}></button>
+        <div class='ce-hover-expl-content-cnt'>
+          <div>{{content}}</div>
         </div>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-      </div>
-      <div class=''>
-        <div>{{content}}</div>
       </div>
       <div class='ce-center'{{hideComments ? ' hidden' : ''}}>
         <button {{loggedIn ? ' hidden' : ''}} id='{{LOGIN_BTN_ID}}'>

@@ -87,6 +87,7 @@
 
 .ce-comment-control-cnt-class>li {
   margin-left: 10pt;
+  list-style: none;
 }
 
 .ce-comment-control-cnt-class>li>button {

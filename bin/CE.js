@@ -541,7 +541,7 @@ const EPNTS = new Endpoints({
     "comment.add"
   ]
 }
-, 'prod').getFuncObj();
+, 'local').getFuncObj();
 try {exports.EPNTS = EPNTS;}catch(e){};
 class Css {
   constructor(identifier, value) {
@@ -631,13 +631,13 @@ try{
 ;// ./src/index/css.js
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   padding: 0;   margin: 0;   margin-right: 5pt; }  .ce-hover-list-elem {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list-elem.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
-new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0; here   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-comment-body-class {   padding: 5pt 1pt 5pt 5pt; }  .ce-comment-header-class {   padding-left: 5pt;   font-weight: bold;   border-style: solid;   border-color: #74767782;   border-width: 0 0 2px 0; } .ce-comment-cnt-class {   border-style: solid;   border-width: 2px;   border-color: #74767782;   background-color: white;   margin: 5pt 0pt 5pt 5pt;   border-radius: 5pt; }  .ce-comment-cnt-class.colored {   background-color: #2716b136; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-comment-control-cnt-class {   list-style: none;   padding: 0;   margin: 0;   display: inline-flex; }  .ce-comment-control-cnt-class>li {   margin-left: 10pt; }  .ce-comment-control-cnt-class>li>button {   padding: 0 5pt; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
-
 new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+
+new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0; here   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-comment-body-class {   padding: 5pt 1pt 5pt 5pt; }  .ce-comment-header-class {   padding-left: 5pt;   font-weight: bold;   border-style: solid;   border-color: #74767782;   border-width: 0 0 2px 0; } .ce-comment-cnt-class {   border-style: solid;   border-width: 2px;   border-color: #74767782;   background-color: white;   margin: 5pt 0pt 5pt 5pt;   border-radius: 5pt; }  .ce-comment-cnt-class.colored {   background-color: #2716b136; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-comment-control-cnt-class {   list-style: none;   padding: 0;   margin: 0;   display: inline-flex; }  .ce-comment-control-cnt-class>li {   margin-left: 10pt;   list-style: none; }  .ce-comment-control-cnt-class>li>button {   padding: 0 5pt; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
 
 new CssFile('menu', 'menu {   display: grid;   padding: 0;   margin: 0 0 0 10px; }  menuitem:hover {   background-color: #d8d8d8;   cursor: pointer; }  .back-btn:hover {   background-color: #d8d8d8;   cursor: pointer; }  .inline {   display: inline-flex; }  .fit {   width: fit-content; }  .right {   float:right; }  .back-btn {   background-color: transparent;   border-color: transparent;   font-size: x-large;   padding: 0;   margin: 0;   height: 100%; } ');
 
-new CssFile('notification', '.one {   background-color: red; } .two {   background-color: white; } .three {   background-color: blue; } ');
+new CssFile('notification', '.ce-notification-list {   margin: 0;   padding: 5pt;   list-style: none;   cursor: pointer; }  .ce-notification {   padding: 0 10pt 0 10pt;   border-radius: 4pt;   width: fit-content;   font-size: 10pt; }  .ce-notification>h4 {  font-size: inherit; }  .ce-notification.explanation-notification {   background-color: #ff000047; } .ce-notification.comment-notification {   background-color: white; } .ce-notification.question-notification {   background-color: #0000ff47; }  .ce-notification:hover {   background-color: #2530af5c; }  .ce-no-margin {   margin: 0; } ');
 
 new CssFile('place', '.place-history-cnt {   background: white;   width: fit-content;   height: fit-content;   border-style: groove;   border-radius: 10pt; }  .place-btn {   padding: 0 5px;   border-radius: 3px;   margin: 2px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  .place-right {   float: right; }  .place-max-min-cnt:hover {     opacity: 1; }  .place-max-min-cnt {     opacity: 0.1; }  .place-left {   float: left; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; }  .place-max-min-cnt {   display: grid;   position: absolute;   top: 0;   right: 1%;   z-index: 100; }  .place-inline {   display: inline-flex; }  .place-full-width {   width: 100%; } ');
 
@@ -648,45 +648,153 @@ new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin:
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
 ;
-class CustomEvent {
-  constructor(name) {
-    const watchers = [];
-    this.name = name;
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        watchers.push(func);
-      } else {
-        return 'on' + name;
-      }
-    }
 
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
+function isScrollable(elem) {
+    const horizontallyScrollable = elem.scrollWidth > elem.clientWidth;
+    const verticallyScrollable = elem.scrollHeight > elem.clientHeight;
+    return elem.scrollWidth > elem.clientWidth || elem.scrollHeight > elem.clientHeight;
+};
+
+function scrollableParents(elem) {
+  let scrollable = [];
+  if (elem instanceof HTMLElement) {
+    if (isScrollable(elem)) {
+      scrollable.push(elem);
     }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
+    return scrollableParents(elem.parentNode).concat(scrollable);
+  }
+  return scrollable;
+}
+
+function center(elem) {
+  const rect = elem.getBoundingClientRect();
+  const x = rect.x + (rect.height / 2);
+  const y = rect.y + (rect.height / 2);
+  return {x, y, top: rect.top};
+}
+
+function temporaryStyle(elem, time, style) {
+  const save = {};
+  const keys = Object.keys(style);
+  keys.forEach((key) => {
+    save[key] = elem.style[key];
+    elem.style[key] = style[key];
+  });
+
+  setTimeout(() => {
+    keys.forEach((key) => {
+      elem.style[key] = save[key];
+    });
+  }, time);
+}
+
+function scrollIntoView(elem, divisor, delay, scrollElem) {
+  let scrollPidCounter = 0;
+  const lastPosition = {};
+  let highlighted = false;
+  function scroll(scrollElem) {
+    return function() {
+      const scrollCenter = center(scrollElem);
+      const elemCenter = center(elem);
+      const fullDist = Math.abs(scrollCenter.y - elemCenter.y);
+      const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
+      const yDiff = scrollDist * (elemCenter.y < scrollCenter.y ? -1 : 1);
+      scrollElem.scroll(0, scrollElem.scrollTop + yDiff);
+      console.log(scrollElem.scrollPid, '-', elemCenter.y, ':', scrollCenter.y)
+      console.log(`${elemCenter.top} !== ${lastPosition[scrollElem.scrollPid]}`)
+      console.log();
+      if (elemCenter.top !== lastPosition[scrollElem.scrollPid]
+            && (scrollCenter.y < elemCenter.y - 2 || scrollCenter.y > elemCenter.y + 2)) {
+        lastPosition[scrollElem.scrollPid] = elemCenter.top;
+        setTimeout(scroll(scrollElem), delay);
+      } else if(!highlighted) {
+        highlighted = true;
+        temporaryStyle(elem, 2000, {
+          borderStyle: 'solid',
+          borderColor: '#07ff07',
+          borderWidth: '5px'
+        });
+      }
     }
   }
+  const scrollParents = scrollableParents(elem);
+  scrollParents.forEach((scrollParent) => {
+    scrollParent.scrollPid = scrollPidCounter++;
+    setTimeout(scroll(scrollParent), 10);
+  });
 }
-;function up(selector, node) {
-    if (node.matches(selector)) {
-        return node;
-    } else {
-        return lookUp(selector, node.parentNode);
+
+// function scrollIntoView(elem, divisor, delay) {
+//   let lastPosition;
+//   function scroll() {
+//     const rect = elem.getBoundingClientRect();
+//     const target = Math.floor((window.innerHeight - rect.height) / 2);
+//     const fullDist = Math.abs(rect.top - target);
+//     const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
+//     const yDiff = scrollDist * (rect.top < target ? -1 : 1);
+//     window.scroll(0, window.scrollY + yDiff);
+//     console.log(elem.id, ':', window.scrollY)
+//     if (window.scrollY !== lastPosition && (rect.top < target - 2 || rect.top > target + 2)) {
+//       lastPosition = window.scrollY;
+//       setTimeout(scroll, delay);
+//     }
+//   }
+//   setTimeout(scroll, 10);
+// }
+
+const selectors = {};
+let matchRunIdCount = 0;
+function getTargetId(target) {
+  if((typeof target.getAttribute) === 'function') {
+    let targetId = target.getAttribute('ce-match-run-id');
+    if (targetId === null || targetId === undefined) {
+      targetId = matchRunIdCount + '';
+      target.setAttribute('ce-match-run-id', matchRunIdCount++)
     }
+    return targetId;
+  }
+  return target === document ?
+        '#document' : target === window ? '#window' : undefined;
+}
+
+function runMatch(event) {
+  const  matchRunTargetId = getTargetId(event.currentTarget);
+  const selectStrs = Object.keys(selectors[matchRunTargetId][event.type]);
+  selectStrs.forEach((selectStr) => {
+    const target = up(selectStr, event.target);
+    if (target) {
+      selectors[matchRunTargetId][event.type][selectStr].forEach((func) => func(target));
+    }
+  })
+  console.log(event);
+}
+
+function matchRun(event, selector, func, target) {
+  target = target || document;
+  const  matchRunTargetId = getTargetId(target);
+  if (selectors[matchRunTargetId] === undefined) {
+    selectors[matchRunTargetId] = {};
+  }
+  if (selectors[matchRunTargetId][event] === undefined) {
+    selectors[matchRunTargetId][event] = {};
+    target.addEventListener(event, runMatch);
+  }
+  if (selectors[matchRunTargetId][event][selector] === undefined) {
+    selectors[matchRunTargetId][event][selector] = [];
+  }
+
+  selectors[matchRunTargetId][event][selector].push(func);
+}
+
+
+function up(selector, node) {
+  if (node instanceof HTMLElement) {
+    if (node.matches(selector)) {
+      return node;
+    } else {
+      return up(selector, node.parentNode);
+    }
+  }
 }
 
 
@@ -801,7 +909,9 @@ const jsAttrReg = /<([a-zA-Z]{1,}[^>]{1,})(\s|'|")on[a-z]{1,}=/;
 function safeInnerHtml(text, elem) {
   if (text === undefined) return undefined;
   const clean = text.replace(/<script(| [^<]*?)>/, '').replace(jsAttrReg, '<$1');
-  if (clean !== text) throw new JsDetected(text, clean);
+  if (clean !== text) {
+    throw new JsDetected(text, clean);
+  }
   if (elem !== undefined) elem.innerHTML = clean;
   return clean;
 }
@@ -827,136 +937,6 @@ function strToHtml(str) {
   container.innerHTML = safeInnerHtml(str);
   return container.children[0];
 }
-;class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
-
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
-
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
-      }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
-    }
-
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
-      } else {
-        stack.push({str, index: array.length - 1});
-      }
-    }
-
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
-  }
-}
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
-;
-class KeyShortCut {
-  constructor(keys, func) {
-    KeyShortCut.cuts.push(this);
-    var currentKeys = {};
-
-    function keysPressed() {
-      for (let index = 0; index < keys.length; index += 1) {
-        if (!currentKeys[keys[index]]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    this.keyDownListener = (e) => {
-        currentKeys[e.key] = true;
-        if (keysPressed()) func();
-    }
-
-    this.keyUpListener = (e) => delete currentKeys[e.key];
-  }
-}
-
-KeyShortCut.cuts = [];
-
-KeyShortCut.callOnAll = function (func, e) {
-  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
-    KeyShortCut.cuts[index][func](e);
-  }
-}
-
-document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
-document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
 ;
 let idCount = 0;
 class ExprDef {
@@ -1270,6 +1250,94 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 ;
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
+      } else {
+        return 'on' + name;
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+;
+
+
+function scrollTo(elem, pixels, delay) {
+  function scroll() {
+    const rect = elem.getBoundingClientRect();
+    const target = Math.floor((window.innerHeight - rect.height) / 2);
+    const fullDist = Math.abs(rect.top - target);
+    const scrollDist = fullDist > pixels ? pixels : fullDist;
+    const yDiff = scrollDist * (rect.top < target ? -1 : 1);
+    window.scroll(0, window.scrollY + yDiff);
+    console.log(elem.id, ':', window.scrollY)
+    if (rect.top !== target) {
+      setTimeout(scroll, delay);
+    }
+  }
+  setTimeout(scroll, 10);
+}
+
+// id="test1"
+;
+class KeyShortCut {
+  constructor(keys, func) {
+    KeyShortCut.cuts.push(this);
+    var currentKeys = {};
+
+    function keysPressed() {
+      for (let index = 0; index < keys.length; index += 1) {
+        if (!currentKeys[keys[index]]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    this.keyDownListener = (e) => {
+        currentKeys[e.key] = true;
+        if (keysPressed()) func();
+    }
+
+    this.keyUpListener = (e) => delete currentKeys[e.key];
+  }
+}
+
+KeyShortCut.cuts = [];
+
+KeyShortCut.callOnAll = function (func, e) {
+  for (let index = 0; index < KeyShortCut.cuts.length; index += 1) {
+    KeyShortCut.cuts[index][func](e);
+  }
+}
+
+document.onkeyup = (e) => KeyShortCut.callOnAll('keyUpListener', e);
+document.onkeydown = (e) => KeyShortCut.callOnAll('keyDownListener', e);
+;
 class Page {
   constructor() {
     this.label = function () {throw new Error('Must implement label()');};
@@ -1280,6 +1348,102 @@ class Page {
     this.hide = function() {return false;}
   }
 }
+;class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 ;
 class Properties {
   constructor () {
@@ -1817,8 +1981,8 @@ class DragDropResize {
     const instance = this;
     const closeFuncs = [];
 
-    let width = '40vw';
-    let height = '20vh';
+    let width = props.width || '40vw';
+    let height = props.height || '20vh';
     this.getDems = props.getDems || ( () => { return {width, height}; } );
     this.setDems = props.setDems || ( (w, h) => { width = w; height = h; } );
 
@@ -1832,8 +1996,8 @@ class DragDropResize {
       background-color: white;
       position: ${position};
       overflow: hidden;
-      min-height: 20vh;
-      min-width: 50vw;
+      min-height: ${props.minWidth === undefined ? '20vh' : props.minWidth};
+      min-width: ${props.minHeight === undefined ? '50vw' : props.minHeight};
       display: none;
       border: 1px solid;
       padding: 3pt;
@@ -2378,302 +2542,6 @@ afterLoad.push(() => new KeyShortCut(['c','e'], () => {
   properties.toggle('hoverOff', true);
 }));
 ;
-class User {
-  constructor() {
-    let user;
-    let status;
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function (defVal) {
-      return status === undefined ? defVal : status === 'active';
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user || {})) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = EPNTS.user.get(email);
-        Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = properties.get('user.credential');
-      if (cred !== null) {
-        properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = EPNTS.credential.delete(cred);
-          Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus, () => updateStatus('expired'));
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
-      } else if (credential === null || credential === undefined) {
-        updateStatus('expired');
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = EPNTS.credential.add(user.id);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = EPNTS.credential.add(uId);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = EPNTS.user.add();
-      const body = {email, username};
-      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
-;
-class ToggleMenu {
-  constructor() {
-    const instance = this;
-    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
-    this.togglesById = {};
-    this.toggles = [];
-    const uniqId = Math.floor(Math.random() * 100000000);
-    this.TOGGLE_MENU_ID = 'ce-toggle-MENU-id-' + uniqId;
-    ToggleMenu.menue[this.TOGGLE_MENU_ID] = this;
-    for (let index = 0; index < arguments.length; index += 1) {
-      let toggle = JSON.parse(JSON.stringify(arguments[index]));
-      this.toggles.push(toggle);
-      this.togglesById[toggle.id] = toggle;
-    }
-
-    this.toggle = (id, onOff) => {
-      const toggler = this.togglesById[id];
-      toggler.showing = onOff !== undefined ? onOff :!toggler.showing;
-      const toggleTarget = document.getElementById(id);
-      toggleTarget.hidden = !toggler.showing;
-      if (toggler.showing === true) {
-        toggler.disabled = false;
-        const toggleBtn = document.querySelector(`[toggle-id=${id}]`);
-        toggleBtn.hidden = false;
-        toggleBtn.disabled = false;
-      }
-      instance.update();
-
-    };
-    this.showing = (id) => toggler.showing;
-    this.html = () => controlTemplate.render(this);
-    this.update = () => {
-      const container = document.getElementById(instance.TOGGLE_MENU_ID).parentElement;
-      container.innerHTML = instance.html();
-    }
-  }
-}
-
-{
-  ToggleMenu.menue = {};
-  ToggleMenu.watching = [];
-  let toggled = (event) => {
-    const elem = event.target;
-    if (elem.matches('button[toggle-id]')) {
-      const toggleId = elem.getAttribute('toggle-id');
-      const listElem = elem.parentElement.parentElement
-      const toggleMenuId = listElem.getAttribute('id');
-      const toggleMenu = ToggleMenu.menue[toggleMenuId];
-      toggleMenu.toggle(toggleId);
-    }
-  }
-
-  ToggleMenu.watch = (container) => {
-    if (ToggleMenu.watching.indexOf(container) === -1) {
-      container.addEventListener('click', toggled);
-    }
-  }
-}
-
-
-class Comment {
-  constructor(explanation, comment, color) {
-    const template = new $t('popup-cnt/tab-contents/add-comment');
-    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
-    const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
-    const scope = {explanation, comment};
-    scope.rating = 0;
-    if (comment) {
-      scope.rating = Math.ceil(comment.author.likes / (comment.author.dislikes + comment.author.likes));
-    }
-    const uniqId = Math.floor(Math.random() * 100000000);
-    scope.ROOT_ELEM_ID = 'ce-comment-root-elem-id-' + uniqId;
-    scope.ADD_CNT_ID = 'ce-comment-add-cnt-id-' + uniqId;
-    scope.COMMENTS_CNT_ID = 'ce-comments-cnt-id-' + uniqId;
-    scope.TEXT_AREA_INPUT_ID = 'ce-comment-textarea-id-' + uniqId;
-    scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
-    scope.showComments = comment === undefined;
-    scope.showAdd = false;
-    scope.commentHtml = '';
-    scope.color = color;
-    scope.value = comment === undefined ? '' : comment.value;
-    let found = false;
-    for (let index = 0; explanation.comments && index < explanation.comments.length; index += 1) {
-      const childComment = explanation.comments[index];
-      if ((comment === undefined && childComment.commentId === null) ||
-          (comment !== undefined && comment.id === childComment.commentId)) {
-        found = true;
-        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
-      }
-    }
-    const toggleComments = new ToggleMenu({
-      id: scope.COMMENTS_CNT_ID,
-      showing: scope.showComments,
-      show: {text: 'Show Comments'},
-      hide: {text: 'Hide Comments'},
-      disabled: !found
-    });
-    scope.commentToggle = () => toggleComments.html();
-
-    const toggleAdd = new ToggleMenu({
-      id: scope.ADD_CNT_ID,
-      showing: scope.showAdd,
-      hide: {text: 'Close Comment'},
-      show: {text: 'Add Comment'},
-      disabled: !User.isLoggedIn()
-    });
-    scope.addToggle = () => toggleAdd.html();
-
-
-    this.add = (dbComment) => {
-      const container = document.getElementById(scope.COMMENTS_CNT_ID).children[0];
-      const newComment = Comment.for(null, explanation, dbComment, !color);
-      toggleAdd.toggle(scope.ADD_CNT_ID, false);
-      toggleComments.toggle(scope.COMMENTS_CNT_ID, true);
-      container.append(strToHtml(newComment.html()));
-    }
-    this.html = () => template.render(scope);
-  }
-}
-
-{
-  let hypenStrs = function () {
-    let str = arguments[0];
-    for (let index = 1; index < arguments.length; index += 1) {
-      str += '-' + arguments[index];
-    }
-    return str;
-  }
-  let uniqueId = (explanation, comment) => {
-    const commentId = comment ? comment.id : undefined;
-    return hypenStrs(explanation.id, commentId);
-  }
-
-
-
-  let submit = (event) => {
-    const elem = event.target;
-    if (elem.matches('.ce-comment-submit-btn-class')) {
-      const textarea = document.getElementById(elem.getAttribute('textarea-id'));
-      const value = textarea.value;
-      const siteId = properties.get('siteId');
-      const explanationId = Number.parseInt(textarea.getAttribute('explanation-id'));
-      const commentId = textarea.getAttribute('comment-id') || undefined;
-      const uniqId = hypenStrs(explanationId, commentId);
-      let addSuccess = (comment) => cache[uniqId].add(comment);
-      let addFailure = (comment) => console.log(comment, '\nfailure!!!');
-      Expl.addComment(value, siteId, explanationId, commentId, addSuccess, addFailure);
-    }
-  }
-
-  let cache = {};
-  let watching = [];
-  Comment.for = (container, explanation, comment, color) => {
-    const uniqId = uniqueId(explanation, comment);
-    if (!cache[uniqId]) {
-      cache[uniqId] = new Comment(explanation, comment, color);
-      if (container && watching.indexOf(container) === -1) {
-        container.addEventListener('click', submit);
-        ToggleMenu.watch(container);
-      }
-    }
-    return cache[uniqId];
-  }
-
-}
-;
 class $t {
 	constructor(template, id) {
 		function varReg(prefix, suffix) {
@@ -3107,6 +2975,15 @@ try{
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
 }
+$t.functions['736143977'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['737568395'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").siteUrl) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['771465937'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
+}
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
 }
@@ -3116,17 +2993,32 @@ $t.functions['906579606'] = function (get) {
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
 }
+$t.functions['1204899121'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
 $t.functions['1266551310'] = function (get) {
 	return `<option value='` + (get("words")) + `' ></option>`
 }
 $t.functions['1496787416'] = function (get) {
 	return `<menuitem > ` + (get("notification")) + ` </menuitem>`
 }
+$t.functions['1511666641'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['1525597977'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
 $t.functions['1663607604'] = function (get) {
 	return `<menuitem > ` + (get("site")) + ` </menuitem>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
+}
+$t.functions['1892901021'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['1925052500'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("note").explanation.words) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 }
 $t.functions['2085205162'] = function (get) {
 	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
@@ -3138,7 +3030,7 @@ $t.functions['-2107865266'] = function (get) {
 	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
 }
 $t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class=''> <div>` + (get("content")) + `</div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
+	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-cnt'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class='ce-hover-expl-content-cnt'> <div>` + (get("content")) + `</div> </div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
 }
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
@@ -3152,23 +3044,20 @@ $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
-$t.functions['icon-menu/links/profile'] = function (get) {
-	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
-}
-$t.functions['icon-menu/links/raw-text-input'] = function (get) {
-	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
-}
 $t.functions['icon-menu/links/raw-text-tool'] = function (get) {
 	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
+$t.functions['icon-menu/links/profile'] = function (get) {
+	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
 }
 $t.functions['icon-menu/menu'] = function (get) {
 	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
 }
+$t.functions['icon-menu/links/raw-text-input'] = function (get) {
+	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
+}
 $t.functions['icon-menu/notifications'] = function (get) {
 	return `<div class='inline'> <div> <button class="back-btn" id="back-button">&#x2190;</button> </div> <div> <div> <b>Notifications</b> <menu class='fit'> ` + (new $t('<menuitem > {{notification}} </menuitem>').render(get('scope'), 'notification in currentAlerts', get)) + ` </menu> </div> <div> <b>Elsewhere</b> <menu class='fit'> ` + (new $t('<menuitem > {{site}} </menuitem>').render(get('scope'), 'site in otherSites', get)) + ` </menu> </div> </div> </div> `
-}
-$t.functions['popup-cnt/linear-tab'] = function (get) {
-	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
 }
 $t.functions['place'] = function (get) {
 	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
@@ -3176,17 +3065,20 @@ $t.functions['place'] = function (get) {
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
 }
+$t.functions['popup-cnt/linear-tab'] = function (get) {
+	return `<span class='ce-linear-tab'>` + (get("scope")) + `</span> `
+}
 $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
-}
-$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
-	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div ce-comment-id='` + (get("comment").id) + `'> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/comment-controls'] = function (get) {
+	return `<ul class='ce-comment-control-cnt-class' id='` + (get("TOGGLE_MENU_ID")) + `'> ` + (new $t('<li ><button toggle-id=\'{{toggle.id}}\' {{toggle.disabled ? \' hidden disabled\' : \'\'}}> {{toggle.showing ? toggle.hide.text : toggle.show.text}} </button></li>').render(get('scope'), 'toggle in toggles', get)) + ` </ul> `
 }
 $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 	return `<div> <div class='ce-center'> <h2 ` + (get("explanations").length > 0 ? 'hidden' : '') + `>No Explanations Found</h2> </div> <div class='ce-expls-cnt'` + (get("explanations").length > 0 ? '' : ' hidden') + `> <div class='ce-lookup-expl-list-cnt'> ` + (new $t('popup-cnt/explanation').render(get('scope'), 'explanation in explanations', get)) + ` </div> </div> <div class='ce-center'> <button` + (get("loggedIn") ? '' : ' hidden') + ` id='` + (get("CREATE_YOUR_OWN_BTN_ID")) + `'> Create Your Own </button> <button` + (!get("loggedIn") ? '' : ' hidden') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> </div> </div> `
@@ -3194,11 +3086,17 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
+}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
+$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
+	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
+}
+$t.functions['-1925646037'] = function (get) {
+	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
 }
 $t.functions['popup-cnt/tab-contents/wikapedia'] = function (get) {
 	return `<iframe class='ce-wiki-frame' src="https://en.wikipedia.org/wiki/Second_Silesian_War"></iframe> `
@@ -3209,14 +3107,26 @@ $t.functions['popup-cnt/tabs-navigation'] = function (get) {
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 }
-$t.functions['popup-cnt/tab-contents/webster'] = function (get) {
-	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
-}
-$t.functions['-1925646037'] = function (get) {
-	return `<div class='ce-merriam-expl'> ` + (get("def")) + ` <br><br> </div>`
-}
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
+}
+$t.functions['notifications'] = function (get) {
+	return `<div class=""> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-notification-key="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.currPage', get)) + ` </ul> <h4>Other Page Notifications</h4> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-open="{{note.site.url}}" ce-target="_blank"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.otherPage', get)) + ` </ul> </div> `
+}
+$t.functions['-1581780113'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").site.url) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-1219294225'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `" ce-target="_blank"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-961465421'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-1571138811'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-397749582'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 };// ./bin/dump/$templates.js
 
 class HoverExplanations {
@@ -3331,6 +3241,30 @@ class HoverExplanations {
     }
     this.display = display;
 
+    function displayExistingElem(expl, callback, call) {
+      call = call || 0;
+      if (call >= 5) return;
+      let elem;
+      const elems = document.querySelectorAll(`hover-explanation[ref="${expl.searchWords}"]`);
+      for (let index = 0; index < elems.length && elem === undefined; index += 1) {
+        const e = elems[index];
+        const rect = e.getBoundingClientRect();
+        if (rect.width !== 0 && rect.height !== 0) {
+          elem = e;
+        }
+      }
+      if (elem === undefined) {
+        setTimeout(() => displayExistingElem(expl, callback, call + 1), 500);
+      } else {
+        display(expl).elem(elem);
+        callback(elem);
+      }
+    }
+
+    function scrollTo(expl, call) {
+      displayExistingElem(expl, () => scrollIntoView(hoverResource.container(), 40, 10));
+    }
+
     function voteup() {Opinion.voteup(active.expl, () => updateContent());}
 
     function votedown() {Opinion.votedown(active.expl, () => updateContent());}
@@ -3386,7 +3320,11 @@ class HoverExplanations {
         let textRegStr = `((^|>)([^>^<]* |))(${text})(([^>^<]* |)(<|$|))`;
         let textReg = new RegExp(textRegStr, 'ig');
         const newHtml = elem.innerHTML.replace(textReg, replaceRef);
-        safeInnerHtml(newHtml, elem)
+        try {
+          safeInnerHtml(newHtml, elem)
+        } catch (e) {
+          console.error('Replacement Failed')
+        }
       }
     }
 
@@ -3481,15 +3419,30 @@ class HoverExplanations {
       explIds.push(expl.id);
     }
 
+    function getHeaderCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-title-cnt');
+    }
+    function getExplCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-cnt');
+    }
+    function getContentCnt() {
+      return hoverResource.container().querySelector('.ce-hover-expl-content-cnt');
+    }
+
     this.set = set;
     this.add = add;
 
+    this.getHeaderCnt = getHeaderCnt;
+    this.getExplCnt = getExplCnt;
+    this.getContentCnt = getContentCnt;
     this.wrapText = wrapText;
     this.canApply = (expl) => User.isLoggedIn() && explIds.indexOf(expl.id) === -1;
 
     this.lockOpen = hoverResource.lockOpen;
     this.unlockOpen = hoverResource.unlockOpen;
     this.position = hoverResource.position;
+    this.scrollTo = scrollTo;
+    this.displayExistingElem = displayExistingElem;
 
     function enableToggled(enabled) {
       if (enabled !== lastEnabled) {
@@ -3516,6 +3469,172 @@ class HoverExplanations {
 
 let hoverExplanations = new HoverExplanations();
 ;
+class ToggleMenu {
+  constructor() {
+    const instance = this;
+    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
+    this.togglesById = {};
+    this.toggles = [];
+    const uniqId = Math.floor(Math.random() * 100000000);
+    this.TOGGLE_MENU_ID = 'ce-toggle-MENU-id-' + uniqId;
+    ToggleMenu.menue[this.TOGGLE_MENU_ID] = this;
+    for (let index = 0; index < arguments.length; index += 1) {
+      let toggle = JSON.parse(JSON.stringify(arguments[index]));
+      this.toggles.push(toggle);
+      this.togglesById[toggle.id] = toggle;
+    }
+
+    this.toggle = (id, onOff) => {
+      const toggler = this.togglesById[id];
+      toggler.showing = onOff !== undefined ? onOff :!toggler.showing;
+      const toggleTarget = document.getElementById(id);
+      toggleTarget.hidden = !toggler.showing;
+      if (toggler.showing === true) {
+        toggler.disabled = false;
+        const toggleBtn = document.querySelector(`[toggle-id=${id}]`);
+        toggleBtn.hidden = false;
+        toggleBtn.disabled = false;
+      }
+      instance.update();
+
+    };
+    this.showing = (id) => toggler.showing;
+    this.html = () => controlTemplate.render(this);
+    this.update = () => {
+      const container = document.getElementById(instance.TOGGLE_MENU_ID).parentElement;
+      container.innerHTML = instance.html();
+    }
+  }
+}
+
+{
+  ToggleMenu.menue = {};
+  ToggleMenu.watching = [];
+  let toggled = (event) => {
+    const elem = event.target;
+    if (elem.matches('button[toggle-id]')) {
+      const toggleId = elem.getAttribute('toggle-id');
+      const listElem = elem.parentElement.parentElement
+      const toggleMenuId = listElem.getAttribute('id');
+      const toggleMenu = ToggleMenu.menue[toggleMenuId];
+      toggleMenu.toggle(toggleId);
+    }
+  }
+
+  ToggleMenu.watch = (container) => {
+    if (ToggleMenu.watching.indexOf(container) === -1) {
+      container.addEventListener('click', toggled);
+    }
+  }
+}
+
+
+class Comment {
+  constructor(explanation, comment, color) {
+    const template = new $t('popup-cnt/tab-contents/add-comment');
+    const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
+    const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
+    const scope = {explanation, comment};
+    scope.rating = 0;
+    if (comment) {
+      scope.rating = Math.ceil(comment.author.likes / (comment.author.dislikes + comment.author.likes));
+    }
+    const uniqId = Math.floor(Math.random() * 100000000);
+    scope.ROOT_ELEM_ID = 'ce-comment-root-elem-id-' + uniqId;
+    scope.ADD_CNT_ID = 'ce-comment-add-cnt-id-' + uniqId;
+    scope.COMMENTS_CNT_ID = 'ce-comments-cnt-id-' + uniqId;
+    scope.TEXT_AREA_INPUT_ID = 'ce-comment-textarea-id-' + uniqId;
+    scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
+    scope.showComments = comment === undefined;
+    scope.showAdd = false;
+    scope.commentHtml = '';
+    scope.color = color;
+    scope.value = comment === undefined ? '' : comment.value;
+    let found = false;
+    for (let index = 0; explanation.comments && index < explanation.comments.length; index += 1) {
+      const childComment = explanation.comments[index];
+      if ((comment === undefined && childComment.commentId === null) ||
+          (comment !== undefined && comment.id === childComment.commentId)) {
+        found = true;
+        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
+      }
+    }
+    const toggleComments = new ToggleMenu({
+      id: scope.COMMENTS_CNT_ID,
+      showing: scope.showComments,
+      show: {text: 'Show Comments'},
+      hide: {text: 'Hide Comments'},
+      disabled: !found
+    });
+    scope.commentToggle = () => toggleComments.html();
+
+    const toggleAdd = new ToggleMenu({
+      id: scope.ADD_CNT_ID,
+      showing: scope.showAdd,
+      hide: {text: 'Close Comment'},
+      show: {text: 'Add Comment'},
+      disabled: !User.isLoggedIn()
+    });
+    scope.addToggle = () => toggleAdd.html();
+
+
+    this.add = (dbComment) => {
+      const container = document.getElementById(scope.COMMENTS_CNT_ID).children[0];
+      const newComment = Comment.for(null, explanation, dbComment, !color);
+      toggleAdd.toggle(scope.ADD_CNT_ID, false);
+      toggleComments.toggle(scope.COMMENTS_CNT_ID, true);
+      container.append(strToHtml(newComment.html()));
+    }
+    this.html = () => template.render(scope);
+  }
+}
+
+{
+  let hypenStrs = function () {
+    let str = arguments[0];
+    for (let index = 1; index < arguments.length; index += 1) {
+      str += '-' + arguments[index];
+    }
+    return str;
+  }
+  let uniqueId = (explanation, comment) => {
+    const commentId = comment ? comment.id : undefined;
+    return hypenStrs(explanation.id, commentId);
+  }
+
+
+
+  let submit = (event) => {
+    const elem = event.target;
+    if (elem.matches('.ce-comment-submit-btn-class')) {
+      const textarea = document.getElementById(elem.getAttribute('textarea-id'));
+      const value = textarea.value;
+      const siteId = properties.get('siteId');
+      const explanationId = Number.parseInt(textarea.getAttribute('explanation-id'));
+      const commentId = textarea.getAttribute('comment-id') || undefined;
+      const uniqId = hypenStrs(explanationId, commentId);
+      let addSuccess = (comment) => cache[uniqId].add(comment);
+      let addFailure = (comment) => console.log(comment, '\nfailure!!!');
+      Expl.addComment(value, siteId, explanationId, commentId, addSuccess, addFailure);
+    }
+  }
+
+  let cache = {};
+  let watching = [];
+  Comment.for = (container, explanation, comment, color) => {
+    const uniqId = uniqueId(explanation, comment);
+    if (!cache[uniqId]) {
+      cache[uniqId] = new Comment(explanation, comment, color);
+      if (container && watching.indexOf(container) === -1) {
+        container.addEventListener('click', submit);
+        ToggleMenu.watch(container);
+      }
+    }
+    return cache[uniqId];
+  }
+
+}
+;
 class Expl {
   constructor () {
     let currEnv;
@@ -3525,6 +3644,11 @@ class Expl {
       Object.values(data.list).forEach((elem) => elem.forEach(
         (expl) => explanations[expl.id] = expl));
       hoverExplanations.set(data.list);
+      hoverExplanations.scrollTo(data.list[Object.keys(data.list)[0]][0]);
+    }
+
+    function getById(id) {
+      return JSON.parse(JSON.stringify(explanations[id]));
     }
 
     function addHoverResources () {
@@ -3569,6 +3693,7 @@ class Expl {
     };
 
 
+    this.getById = getById;
     properties.onUpdate(['enabled', 'env'], addHoverResources);
   }
 }
@@ -3660,6 +3785,136 @@ class History {
 
 const history = new History(1000);
 ;
+class User {
+  constructor() {
+    let user;
+    let status;
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function (defVal) {
+      return status === undefined ? defVal : status === 'active';
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user || {})) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = EPNTS.user.get(email);
+        Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = properties.get('user.credential');
+      if (cred !== null) {
+        properties.set('user.credential', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = EPNTS.credential.delete(cred);
+          Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = EPNTS.credential.status(credential);
+        Request.get(url, updateStatus, () => updateStatus('expired'));
+        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+        Request.get(url, setUser);
+      } else if (credential === null || credential === undefined) {
+        updateStatus('expired');
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = EPNTS.credential.add(user.id);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = EPNTS.credential.add(uId);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = EPNTS.user.add();
+      const body = {email, username};
+      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+  }
+}
+
+User = new User();
+;
 const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
 const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
 const CE_LOADED = new CustomEvent('user-add-call-failure');
@@ -3750,12 +4005,47 @@ class Notifications {
     const EXPLANATION = 'Explanation';
     const COMMENT = 'Comment';
     const QUESTION = 'Question';
+    const template = new $t('notifications');
+    const popup = new DragDropResize({position: 'fixed', height: '25vh', width: 'fit-content',
+        minWidth: 0, minHeight: 0});
+    popup.top().right();
+    const instance = this;
+    const byKey = {};
     let notifications = {currPage: [], otherPage: []};
+
+    function key(note) {
+      return `${note.type}-${note.id}`;
+    }
+
+    function gotoNotification(target) {
+      const noteKey = target.getAttribute('ce-notification-key');
+      const note = byKey[noteKey];
+      let getElem;
+      if (note.type === 'Comment') {
+        getElem = () => document.querySelector(`[ce-comment-id="${note.comment.id}"]`);
+      } else {
+        getElem = () => hoverExplanations.getExplCnt();
+      }
+      const func = () => scrollIntoView(getElem(), 40, 10)
+      hoverExplanations.displayExistingElem(note.explanation, func);
+    }
+
+    function openPage(target) {
+      const url = target.getAttribute('ce-open');
+      const name = target.getAttribute('ce-target');
+      window.open(url, name);
+    }
+
+    matchRun('click', '[ce-open]', openPage, popup.container())
+    matchRun('click', '[ce-notification-key]', gotoNotification, popup.container())
+
 
     this.hasNotifications = () => notifications.currPage.length > 0 &&
           notifications.otherPage.length > 0;
 
     this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
+
+    const getHeading = (note) => note.explanation.words;
 
     function words(data) {
       return data.explanation.words;
@@ -3793,20 +4083,29 @@ class Notifications {
       }
     }
 
-    function getClass() {
-      return `${data.type.tolowercase()}-notification`;
+    function getClass(note) {
+      return `ce-notification ${note.type.toLowerCase()}-notification`;
+    }
+
+    this.html = () => template.render({key, notifications, getHeading, getText: shortText, getClass});
+
+    function setNotifications(notes) {
+      notifications = notes;
+      notes.currPage.forEach((note) => byKey[key(note)] = note)
+      popup.updateContent(instance.html());
+      popup.show();
     }
 
     function update() {
       const user = User.loggedIn();
-      if (user) {
+      if (user && user.id) {
         const userId = user.id;
         const siteUrl = window.location.href;
-        Request.post(ENPTS.notification.get(), {userId, siteUrl}, (notes) => notifications = notes);
+        Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
       }
     }
 
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => update()));
+    document.addEventListener(User.updateEvent(), update);
 
 
 
@@ -4105,178 +4404,6 @@ class MerriamWebster extends Page {
 
 MerriamWebster = new MerriamWebster();
 lookupTabs.add(MerriamWebster, 1);
-;class Explanations extends Page {
-  constructor(list) {
-    super();
-    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
-    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
-    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
-    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
-    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
-    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
-    let selected = [];
-    let searchInput;
-    let inputIndex = 0;
-    const instance = this;
-    let explanations = [];
-    let searchWords;
-    this.list = list ? list : [];
-    this.add = function (expl) {
-      this.list.push(expl);
-    }
-
-    this.clear = () => searchWords = null;
-
-    function openAddPage(event) {
-      lookupTabs.close();
-      AddInterface.open(searchWords, window.location.href);
-      event.stopPropagation();
-    }
-
-    function forTags(func) {
-      const tags = document.getElementsByClassName('ce-expl-tag');
-      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
-    }
-
-    function selectUpdate() {
-      selected = [];
-      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
-      setExplanation();
-    }
-
-    function regScore(reg, text) {
-      let match = text.match(reg);
-      let score = (value) => match === null ? 0 : value;
-      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
-      return {score, length};
-    }
-
-    function byFilterValue(expl1, expl2) {
-      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
-                        .split(/\s{1,}/);
-      if (wordList.length === 1 && wordList[0] === '') {
-        return expl2.author.percent - expl1.author.percent;
-      }
-      let matchCount1 = 0;
-      let matchCount2 = 0;
-      wordList.forEach((word) => {
-        if (word) {
-          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
-          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
-          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
-
-          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
-          matchCount1 += regScore(tagReg, expl1.content).score(10);
-          matchCount2 += regScore(tagReg, expl2.content).score(10);
-
-          const wordReg = new RegExp(word);
-          matchCount1 += regScore(wordReg, expl1.content).length();
-          matchCount2 += regScore(wordReg, expl2.content).length();
-        }
-      });
-      expl1.score = matchCount1;
-      expl2.score = matchCount2;
-      return matchCount2 - matchCount1;
-    }
-
-
-    function addExpl(e) {
-      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
-      function addExplSuccessful() {
-        explanations.forEach((expl) => {
-          if(expl.id === explId)
-            hoverExplanations.add(expl);
-            setExplanation();
-        })
-      }
-      const url = EPNTS.siteExplanation.add(explId);
-      const siteUrl = window.location.href;
-      Request.post(url, {siteUrl}, addExplSuccessful);
-    }
-
-    function setTagOnclick() {
-      forTags((elem) => elem.onclick = selectUpdate);
-      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
-      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
-
-      const searchBtn = document.getElementById(SEARCH_BTN_ID);
-      if (searchBtn) {
-        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
-        searchBtn.onclick = () => {
-          let words = searchInput.value;
-          if (words) {
-            words = words.toLowerCase().trim();
-            properties.set('searchWords', words, true);
-            history.push(words);
-            instance.get();
-          }
-        };
-        searchInput.addEventListener('keyup', lookupTabs.updateBody)
-        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
-
-        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
-        searchInput.selectionStart = inputIndex;
-        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
-        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
-      }
-    }
-
-    function setExplanation(expls) {
-      if (expls !== undefined) {
-        explanations = expls;
-      }
-      lookupTabs.updateHead();
-      lookupTabs.updateBody();
-      setTagOnclick();
-    }
-
-    function getScope() {
-      const scope = {};
-      const tagObj = {}
-      scope.explanations = explanations.sort(byFilterValue);
-      scope.explanations.forEach(function (expl) {
-        const username = expl.author.username;
-        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = hoverExplanations.canApply(expl);
-        expl.rendered = textToHtml(expl.content);
-        const author = expl.author;
-        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100) || 0;
-      });
-
-      scope.words = searchWords;
-      scope.loggedIn = User.isLoggedIn();
-      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
-      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
-      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
-      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
-      scope.selected = selected;
-      return scope;
-    }
-
-    function html () {
-      return template.render(scope);
-    }
-
-    this.html = () => template.render(getScope());
-    this.header= () => headerTemplate.render(getScope());
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
-    this.afterOpen = setTagOnclick;
-    this.beforeOpen = () => instance.get();
-
-    this.get = function () {
-      const newSearchWords = properties.get('searchWords');
-      if (newSearchWords !== searchWords) {
-        selected = [];
-        searchWords = newSearchWords;
-        const url = EPNTS.explanation.get(searchWords);
-        Request.get(url, setExplanation, () => setExplanation([]));
-      }
-    }
-  }
-}
-
-Explanations = new Explanations();
-lookupTabs.add(Explanations, 0);
 ;
 class AddInterface extends Page {
   constructor () {
@@ -4485,6 +4612,178 @@ class AddInterface extends Page {
 AddInterface = new AddInterface();
 // AddInterface.open('poopLuck');
 new KeyShortCut('ca', AddInterface.toggle);
+;class Explanations extends Page {
+  constructor(list) {
+    super();
+    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
+    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
+    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
+    let selected = [];
+    let searchInput;
+    let inputIndex = 0;
+    const instance = this;
+    let explanations = [];
+    let searchWords;
+    this.list = list ? list : [];
+    this.add = function (expl) {
+      this.list.push(expl);
+    }
+
+    this.clear = () => searchWords = null;
+
+    function openAddPage(event) {
+      lookupTabs.close();
+      AddInterface.open(searchWords, window.location.href);
+      event.stopPropagation();
+    }
+
+    function forTags(func) {
+      const tags = document.getElementsByClassName('ce-expl-tag');
+      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
+    }
+
+    function selectUpdate() {
+      selected = [];
+      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
+      setExplanation();
+    }
+
+    function regScore(reg, text) {
+      let match = text.match(reg);
+      let score = (value) => match === null ? 0 : value;
+      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
+      return {score, length};
+    }
+
+    function byFilterValue(expl1, expl2) {
+      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
+                        .split(/\s{1,}/);
+      if (wordList.length === 1 && wordList[0] === '') {
+        return expl2.author.percent - expl1.author.percent;
+      }
+      let matchCount1 = 0;
+      let matchCount2 = 0;
+      wordList.forEach((word) => {
+        if (word) {
+          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
+          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
+          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
+
+          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
+          matchCount1 += regScore(tagReg, expl1.content).score(10);
+          matchCount2 += regScore(tagReg, expl2.content).score(10);
+
+          const wordReg = new RegExp(word);
+          matchCount1 += regScore(wordReg, expl1.content).length();
+          matchCount2 += regScore(wordReg, expl2.content).length();
+        }
+      });
+      expl1.score = matchCount1;
+      expl2.score = matchCount2;
+      return matchCount2 - matchCount1;
+    }
+
+
+    function addExpl(e) {
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            hoverExplanations.add(expl);
+            setExplanation();
+        })
+      }
+      const url = EPNTS.siteExplanation.add(explId);
+      const siteUrl = window.location.href;
+      Request.post(url, {siteUrl}, addExplSuccessful);
+    }
+
+    function setTagOnclick() {
+      forTags((elem) => elem.onclick = selectUpdate);
+      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
+      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
+
+      const searchBtn = document.getElementById(SEARCH_BTN_ID);
+      if (searchBtn) {
+        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
+        searchBtn.onclick = () => {
+          let words = searchInput.value;
+          if (words) {
+            words = words.toLowerCase().trim();
+            properties.set('searchWords', words, true);
+            history.push(words);
+            instance.get();
+          }
+        };
+        searchInput.addEventListener('keyup', lookupTabs.updateBody)
+        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+
+        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
+        searchInput.selectionStart = inputIndex;
+        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      }
+    }
+
+    function setExplanation(expls) {
+      if (expls !== undefined) {
+        explanations = expls;
+      }
+      lookupTabs.updateHead();
+      lookupTabs.updateBody();
+      setTagOnclick();
+    }
+
+    function getScope() {
+      const scope = {};
+      const tagObj = {}
+      scope.explanations = explanations.sort(byFilterValue);
+      scope.explanations.forEach(function (expl) {
+        const username = expl.author.username;
+        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
+        expl.canApply = hoverExplanations.canApply(expl);
+        expl.rendered = textToHtml(expl.content);
+        const author = expl.author;
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100) || 0;
+      });
+
+      scope.words = searchWords;
+      scope.loggedIn = User.isLoggedIn();
+      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
+      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
+      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
+      scope.selected = selected;
+      return scope;
+    }
+
+    function html () {
+      return template.render(scope);
+    }
+
+    this.html = () => template.render(getScope());
+    this.header= () => headerTemplate.render(getScope());
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
+    this.afterOpen = setTagOnclick;
+    this.beforeOpen = () => instance.get();
+
+    this.get = function () {
+      const newSearchWords = properties.get('searchWords');
+      if (newSearchWords !== searchWords) {
+        selected = [];
+        searchWords = newSearchWords;
+        const url = EPNTS.explanation.get(searchWords);
+        Request.get(url, setExplanation, () => setExplanation([]));
+      }
+    }
+  }
+}
+
+Explanations = new Explanations();
+lookupTabs.add(Explanations, 0);
 ;
 return {afterLoad};
         }
