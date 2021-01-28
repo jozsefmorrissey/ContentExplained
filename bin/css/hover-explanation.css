@@ -1,0 +1,40 @@
+.ce-hover-expl-tab-control-cnt {
+  display: inline-flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    border: solid;
+    border-width: 0 0 1px 0;
+}
+
+.ce-hover-expl-content-cnt {
+  margin: 3pt;
+}
+
+.ce-hover-switch-list-cnt {
+  border: solid;
+  border-width: 0 1px 0 0;
+}
+
+.ce-hover-expl-tab-control-cnt>li {
+  padding: 10pt;
+  background-color: whitesmoke;
+  border-radius: 20pt 20pt 0 0;
+  font-weight: bolder;
+}
+
+.ce-hover-expl-tab-control-cnt>li.active {
+  color: white;
+  background-color: blue
+}
+
+.ce-question-unclear {
+  background-color: grey;
+  border-color: grey;
+}
+
+.ce-question-answered {
+  background-color: red;
+    border-color: red;
+}

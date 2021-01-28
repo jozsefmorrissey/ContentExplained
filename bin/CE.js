@@ -1,6 +1,10 @@
 let CE = function () {
 const afterLoad = []
 
+CE_CONTAINER = document.createElement('div');
+CE_CONTAINER.id = 'ce-extension-html-container';
+document.body.append(CE_CONTAINER);
+;
 function DebugGuiClient(config, root, debug) {
   config = config || {};
   var instance = this;
@@ -629,11 +633,13 @@ try{
 	exports.CssFile = CssFile;
 } catch (e) {}
 ;// ./src/index/css.js
+new CssFile('hover-explanation', '.ce-hover-expl-tab-control-cnt {   display: inline-flex;     margin: 0;     padding: 0;     list-style: none;     width: 100%;     border: solid;     border-width: 0 0 1px 0; }  .ce-hover-expl-content-cnt {   margin: 3pt; }  .ce-hover-switch-list-cnt {   border: solid;   border-width: 0 1px 0 0; }  .ce-hover-expl-tab-control-cnt>li {   padding: 10pt;   background-color: whitesmoke;   border-radius: 20pt 20pt 0 0;   font-weight: bolder; }  .ce-hover-expl-tab-control-cnt>li.active {   color: white;   background-color: blue }  .ce-question-unclear {   background-color: grey;   border-color: grey; }  .ce-question-answered {   background-color: red;     border-color: red; } ');
+
 new CssFile('hover-resource', 'hover-explanation {   border-radius: 10pt;   background-color: rgba(150, 162, 249, 0.56); }  hover-explanation:hover {   font-weight: bolder; }  .ce-hover-max-min-cnt {   position: fixed; }  .ce-hover-max-min-abs-cnt {   position: absolute;   right: 22px;   z-index: 2; }  .ce-upper-right-btn {   padding: 0 5px;   border-radius: 3px;   margin: 1px;   background-color: transparent;   color: black;   border-color: gray;   border-width: .5px;   background-color: whitesmoke; }  #ce-hover-display-cnt-id {   padding: 0 10pt;   width: 100%; }  #ce-hover-switch-list-id {   margin: 0; }  .ce-hover-list {   padding: 0;   margin: 0;   margin-right: 5pt; }  .ce-hover-list-elem {   list-style: none;   font-size: medium;   color: blue;   font-weight: 600;   padding: 0 10pt; }  .ce-hover-list-elem.active {   background-color: #ada5a5;   border-radius: 10pt; }  .arrow-up {   width: 0;   height: 0;   border-left: 10px solid transparent;   border-right: 10px solid transparent;    border-bottom: 15px solid black; }  .arrow-down {   width: 0;   height: 0;   border-left: 20px solid transparent;   border-right: 20px solid transparent;    border-top: 20px solid #f00; }  .arrow-right {   width: 0;   height: 0;   border-top: 60px solid transparent;   border-bottom: 60px solid transparent;    border-left: 60px solid green; }  .arrow-left {   width: 0;   height: 0;   border-top: 10px solid transparent;   border-bottom: 10px solid transparent;    border-right:10px solid blue; }  #event-catcher-id {   position: fixed;   top: 0;   bottom: 0;   right: 0;   left: 0; }  .pop-out {   border: 1px solid;   border-radius: 5pt;   padding: 10px;   box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey; } ');
 
-new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
+new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0; here   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-auto-overflow {   overflow: auto; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-comment-body-class {   padding: 5pt 1pt 5pt 5pt; }  .ce-comment-header-class {   padding-left: 5pt;   font-weight: bold;   border-style: solid;   border-color: #74767782;   border-width: 0 0 2px 0; } .ce-comment-cnt-class {   border-style: solid;   border-width: 2px;   border-color: #74767782;   background-color: white;   margin: 5pt 0pt 5pt 5pt;   border-radius: 5pt; }  .ce-comment-cnt-class.colored {   background-color: #2716b136; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-comment-control-cnt-class {   list-style: none;   padding: 0;   margin: 0;   display: inline-flex; }  .ce-slim-btn {   padding: 1pt 5pt 1pt 5pt; }  .ce-comment-control-cnt-class>li {   margin-left: 10pt;   list-style: none; }  .ce-comment-control-cnt-class>li>button {   padding: 0 5pt; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
 
-new CssFile('index', '.ce-history-list {   list-style: none;   margin: 0; here   padding: 0; }  .ce-history-list>li {   padding: 0 10pt;   font-weight: bolder; }  .ce-history-list>li.place-current-hist-loc {   border-style: solid;   border-width: .5px; }  .ce-comment-body-class {   padding: 5pt 1pt 5pt 5pt; }  .ce-comment-header-class {   padding-left: 5pt;   font-weight: bold;   border-style: solid;   border-color: #74767782;   border-width: 0 0 2px 0; } .ce-comment-cnt-class {   border-style: solid;   border-width: 2px;   border-color: #74767782;   background-color: white;   margin: 5pt 0pt 5pt 5pt;   border-radius: 5pt; }  .ce-comment-cnt-class.colored {   background-color: #2716b136; }  .ce-history-list>li:hover {   padding: 0 10pt;   background-color: #a9a9a973;   border-radius: 10pt; }  .ce-relative {   position: relative; }  .ce-width-full {   width: 100%; }  .ce-pointer {   cursor: pointer; }  .ce-pointer:hover {   background-color: #8080802e;   border-radius: 40pt; }  .ce-overflow {   overflow: auto; }  .ce-full {   width: 100%;   height: 100%; }  .ce-fixed {   position: fixed; }  .ce-error {   color: red; }  .ce-comment-control-cnt-class {   list-style: none;   padding: 0;   margin: 0;   display: inline-flex; }  .ce-comment-control-cnt-class>li {   margin-left: 10pt;   list-style: none; }  .ce-comment-control-cnt-class>li>button {   padding: 0 5pt; }  .ce-padding {   padding: 5px; }  .ce-center {   text-align: center;   width: 100%; }  .ce-float-right {   float: right; }  .ce-no-bullet {   list-style: none; }  .ce-inline {   display: inline-flex; }  button {   background-color: blue;   color: white;   font-weight: bolder;   font-size: medium;   border-radius: 20pt;   padding: 4pt 10pt;   border-color: #7979ff; }  input {   padding: 1pt 3pt;   border-width: 1px;   border-radius: 5pt; } ');
+new CssFile('lookup', '.ce-tab-ctn {   text-align: center;   display: inline-flex;   width: 100%; }  .ce-lookup-cnt {   width: 100%;   padding: 5pt;   padding-left: 50pt; }  .ce-lookup-expl-list-cnt {   min-height: 100pt;   overflow: auto; }  .ce-tabs-list {   display: block;   list-style-type: none;   width: max-content;   margin: auto;   padding: 0;   margin-right: 5pt; }  .ce-tabs-list-item {   padding: 4pt;   border-style: solid;   border-width: 1px;   border-radius: 10px;   margin: 2pt;   font-weight: bolder;   border-color: gray;   box-shadow: 1px 1px 2px black;   }  .ce-tabs-active {     background-color: gainsboro;     box-shadow: 0 0 0 black;   }  .ce-expl-card {   display: flex;   position: relative;   border: solid;   text-align: left;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-expl-rating-column {   min-height: 70pt;   float: left;   padding: 2pt;   border-right: ridge;   border-color: black;   border-width: 1pt; }  .ce-expl-rating-cnt {   transform: translateY(-50%);   position: absolute;   top: 50%; }  .ce-like-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-bottom: 10px solid #3dd23d;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; } .ce-like-btn:disabled {   border-bottom: 10px solid grey; }  .ce-hover-expl-title-cnt {   display: inline-flex;   width: 100%;   text-align: center; }  .ce-dislike-btn {   width: 0;   height: 0;   border-color: transparent;   border-right: 10px solid transparent;   border-left: 10px solid transparent;   border-top: 10px solid #f74848;   cursor: pointer;   background-color: transparent;   border-radius: 0;   margin: 0;   padding: 0; }  .ce-dislike-btn:disabled {   border-top: 10px solid grey; }  .ce-expl-tag-cnt > span {   display: inline-flex;   margin: 0 5pt; }  .ce-small-text {     color: black;     font-size: x-small; }  .ce-add-editor-cnt {   width: 100%;   display: inline-flex; }  #ce-add-editor-id {   width: 98%;   height: 85%;   margin: 1%; }  #ce-add-editor-add-expl-btn-id {   margin: 0 0 0 10pt;   font-size: x-small;   top: 50%;   transform: translate(0, 25%); }  .ce-expls-cnt {   border: solid;   border-width: 1px;   border-radius: 10px;   margin: 5px 0px;   border-color: grey;   box-shadow: 1px 1px 1px grey;   padding: 5pt; }  .ce-apply-expl-btn-cnt {   position: relative;   width: 5%; }  .ce-expl-apply-btn {   position: relative;   top: 50%;   transform: translate(0, -50%); }  .ce-expl-apply-btn:disabled {     background-color: grey;     border-color: darkgray; }  .ce-expl-apply-cnt {   position: relative;   padding: 5px;   text-align: center;   border-right: black;   border-style: solid;   border-width: 0 1px 0 0; }  .ce-expl-cnt {   float: right;   padding: 0;   width: 100%;   display: inline-flex; }  .ce-expl {   padding: 2pt;   display: inline-flex;   width: inherit;   overflow-wrap: break-word; }  .ce-expl-card > .tags {   font-size: small;   color: grey; }    .ce-wiki-frame {      width: -webkit-fill-available;        height: -webkit-fill-available;   }    #ce-tag-input {       width: 50%;     margin-bottom: 10pt;     padding: 2pt;     border-radius: 10pt;     border-width: 1px;     border-color: gainsboro;   }    .ce-btn {     box-shadow: 1px 1px 1px grey;     border-style: solid;     border-width: 1px;     margin: 10px;     border-radius: 20px;     padding: 5px 15px;     background-color: white; }  #ce-lookup-header-padding-id {   padding-top: 60pt; }  .ce-merriam-header-cnt {   background-color: white;   min-height: 25px;   text-align: center;   width: 100%; }  .ce-lookup-expl-heading-cnt {   background-color: white;   z-index: 1000000000;   width: fit-content; }  .ce-key-cnt {   display: inline-flex; }  .ce-add-btn {     padding: 0 8px;     font-weight: bolder;     font-size: x-large;     color: green;     border-color: green;     box-shadow: 1px 1px 1px green; }  .ce-words-search-input {   font-size: x-large !important; }  .ce-words-search-btn {   padding: 0 8px;   margin: 0 20pt; }  .lookup-img {   width: 30pt; }  .ce-merriam-cnt {   text-align: center;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl-card {   padding: 0 10px;   position: relative;   border: solid;   border-width: 1px;   border-radius: 10px;   margin: auto;   border-color: grey;   box-shadow: 1px 1px 1px grey; }  .ce-merriam-expl {   text-align: left; }  .ce-merriam-expl-cnt {   width: fit-content;   margin: auto; }  .ce-margin {   margin: 3pt; }  .ce-linear-tab {   font-size: 12pt;   padding: 0pt 5pt;   border-style: ridge;   border-radius: 10pt;   margin: 1pt 1pt;   display: inline-block;   white-space: nowrap; }  .ce-inline-flex {   display: inline-flex; }  #merriam-webster-submission-cnt {   margin: 2pt;   text-align: center;   display: flex;   overflow: scroll; } ');
 
 new CssFile('menu', 'menu {   display: grid;   padding: 0;   margin: 0 0 0 10px; }  menuitem:hover {   background-color: #d8d8d8;   cursor: pointer; }  .back-btn:hover {   background-color: #d8d8d8;   cursor: pointer; }  .inline {   display: inline-flex; }  .fit {   width: fit-content; }  .right {   float:right; }  .back-btn {   background-color: transparent;   border-color: transparent;   font-size: x-large;   padding: 0;   margin: 0;   height: 100%; } ');
 
@@ -648,12 +654,68 @@ new CssFile('settings', ' body {   height: 100%;   position: absolute;   margin:
 new CssFile('text-to-html', '#raw-text-input {   min-height: 100vh;   width: 100%;   -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    /* Firefox, other Gecko */   box-sizing: border-box; } ');
 
 ;
+class CustomEvent {
+  constructor(name) {
+    const watchers = [];
+    this.name = name;
+    this.on = function (func) {
+      if ((typeof func) === 'function') {
+        watchers.push(func);
+      } else {
+        return 'on' + name;
+      }
+    }
+
+    this.trigger = function (element) {
+      element = element === undefined ? window : element;
+      if(document.createEvent){
+          element.dispatchEvent(this.event);
+      } else {
+          element.fireEvent("on" + this.event.eventType, this.event);
+      }
+    }
+//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+    this.event;
+    if(document.createEvent){
+        this.event = document.createEvent("HTMLEvents");
+        this.event.initEvent(name, true, true);
+        this.event.eventName = name;
+    } else {
+        this.event = document.createEventObject();
+        this.event.eventName = name;
+        this.event.eventType = name;
+    }
+  }
+}
+;
 
 function isScrollable(elem) {
     const horizontallyScrollable = elem.scrollWidth > elem.clientWidth;
     const verticallyScrollable = elem.scrollHeight > elem.clientHeight;
     return elem.scrollWidth > elem.clientWidth || elem.scrollHeight > elem.clientHeight;
 };
+
+function fadeOut(elem, disapearAt, func) {
+  const origOpacity = elem.style.opacity;
+  let stopFade = false;
+  function reduceOpacity () {
+    if (stopFade) return;
+    elem.style.opacity -= .005;
+    if (elem.style.opacity <= 0) {
+      elem.style.opacity = origOpacity;
+      func(elem);
+    } else {
+      setTimeout(reduceOpacity, disapearAt * 2 / 600 * 1000);
+    }
+  }
+
+  elem.style.opacity = 1;
+  setTimeout(reduceOpacity, disapearAt / 3 * 1000);
+  return () => {
+    stopFade = true;
+    elem.style.opacity = origOpacity;
+  };
+}
 
 function scrollableParents(elem) {
   let scrollable = [];
@@ -664,6 +726,26 @@ function scrollableParents(elem) {
     return scrollableParents(elem.parentNode).concat(scrollable);
   }
   return scrollable;
+}
+
+function getParents(elem, selector) {
+  let matches = [];
+  if (elem instanceof HTMLElement) {
+    if ((typeof selector) === 'string') {
+      if (elem.matches(selector)) {
+        matches.push(elem);
+      }
+    } else if ((typeof selector) === 'function') {
+      if (selector(elem)) {
+        matches.push(elem)
+      }
+    } else {
+      throw new Error('Unrecognized selector type, must be "function" or a "queryString"');
+    }
+
+    return getParents(elem.parentNode, selector).concat(matches);
+  }
+  return matches;
 }
 
 function center(elem) {
@@ -700,16 +782,13 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
       const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
       const yDiff = scrollDist * (elemCenter.y < scrollCenter.y ? -1 : 1);
       scrollElem.scroll(0, scrollElem.scrollTop + yDiff);
-      console.log(scrollElem.scrollPid, '-', elemCenter.y, ':', scrollCenter.y)
-      console.log(`${elemCenter.top} !== ${lastPosition[scrollElem.scrollPid]}`)
-      console.log();
       if (elemCenter.top !== lastPosition[scrollElem.scrollPid]
             && (scrollCenter.y < elemCenter.y - 2 || scrollCenter.y > elemCenter.y + 2)) {
         lastPosition[scrollElem.scrollPid] = elemCenter.top;
         setTimeout(scroll(scrollElem), delay);
       } else if(!highlighted) {
         highlighted = true;
-        temporaryStyle(elem, 2000, {
+        temporaryStyle(elem, 5000, {
           borderStyle: 'solid',
           borderColor: '#07ff07',
           borderWidth: '5px'
@@ -723,24 +802,6 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
     setTimeout(scroll(scrollParent), 10);
   });
 }
-
-// function scrollIntoView(elem, divisor, delay) {
-//   let lastPosition;
-//   function scroll() {
-//     const rect = elem.getBoundingClientRect();
-//     const target = Math.floor((window.innerHeight - rect.height) / 2);
-//     const fullDist = Math.abs(rect.top - target);
-//     const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
-//     const yDiff = scrollDist * (rect.top < target ? -1 : 1);
-//     window.scroll(0, window.scrollY + yDiff);
-//     console.log(elem.id, ':', window.scrollY)
-//     if (window.scrollY !== lastPosition && (rect.top < target - 2 || rect.top > target + 2)) {
-//       lastPosition = window.scrollY;
-//       setTimeout(scroll, delay);
-//     }
-//   }
-//   setTimeout(scroll, 10);
-// }
 
 const selectors = {};
 let matchRunIdCount = 0;
@@ -766,7 +827,6 @@ function runMatch(event) {
       selectors[matchRunTargetId][event.type][selectStr].forEach((func) => func(target));
     }
   })
-  console.log(event);
 }
 
 function matchRun(event, selector, func, target) {
@@ -786,6 +846,97 @@ function matchRun(event, selector, func, target) {
   selectors[matchRunTargetId][event][selector].push(func);
 }
 
+function updateId (id, document, strHtml) {
+  const tempElem = document.createElement('div');
+  tempElem.innerHTML = strHtml;
+  const newHtml = tempElem.getElementById(id).outerHTML;
+  document.getElementById(id).outerHTML = newHtml;
+}
+
+function getSiblings(elem, selector) {
+  const siblings = [];
+  let curr=elem.nextElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.nextElementSibling;
+  }
+  curr=elem.previousElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.previousElementSibling;
+  }
+  return siblings;
+}
+
+const activeReg = /(^| )active( |$)/;
+function tabClass(target) {
+  function switchDisplay(target) {
+    if(target.className.match(activeReg)) return;
+    target.className = target.className + ' active';
+    const tabId = target.getAttribute('ce-tab');
+    document.getElementById(tabId).hidden = false;
+    const siblings = getSiblings(target, '[ce-tab]');
+    siblings.forEach((sibling) => {
+      const sibTargId = sibling.getAttribute('ce-tab');
+      sibling.className = sibling.className.replace(activeReg, '');
+      document.getElementById(sibTargId).hidden = true;
+    });
+  }
+  matchRun('click', '[ce-tab]', switchDisplay, target);
+}
+toggleContainer();
+
+function eachParent(elem, selector, func) {
+  const parents = getParents(elem, selector);
+  parents.forEach((parent) => func(parent));
+}
+
+function toggle(target, hidden) {
+  const toggleId = target.getAttribute('ce-toggle');
+  const targetElem = document.getElementById(toggleId);
+  targetElem.hidden = hidden !== undefined ? hidden : !targetElem.hidden;
+  if (targetElem.hidden) {
+    const newText = target.getAttribute('ce-toggle-hidden-text');
+    if (newText) target.innerText = newText;
+  } else {
+    const newText = target.getAttribute('ce-toggle-visible-text');
+    if (newText) target.innerText = newText;
+  }
+  const siblingId = targetElem.getAttribute('ce-sibling-id');
+  const siblings = document.querySelectorAll(`[ce-sibling-id='${siblingId}']`);
+  siblings.forEach((sibling) => {
+    if (sibling !== targetElem) {
+      document.getElementById(sibTargId).hidden = true;
+    }
+  });
+}
+
+function getAttributes(attribute) {
+  const attributes = {};
+  const elems = document.querySelectorAll(`[${attribute}]`);
+  elems.forEach((elem) => attributes[elem.getAttribute(attribute)] = elem);
+  return attributes;
+}
+
+function toggleParents(elem, hidden) {
+  const togglers = getAttributes('ce-toggle');
+  function shouldToggle (parent) {
+    const toggleElem = togglers[parent.id];
+    if (toggleElem) {
+      toggle(toggleElem, hidden);
+    }
+  }
+  eachParent(elem, shouldToggle, toggleParents);
+}
+
+function toggleContainer(container) {
+  matchRun('click', '[ce-toggle]', toggle, container);
+}
+toggleContainer();
 
 function up(selector, node) {
   if (node instanceof HTMLElement) {
@@ -824,7 +975,6 @@ function closest(selector, node) {
       return found;
     }
     visited.push(currNode);
-    console.log('curr: ' + currNode);
     if (currNode.matches(selector)) {
       return { node: currNode, distance };
     } else {
@@ -936,6 +1086,27 @@ function strToHtml(str) {
   const container = document.createElement('div');
   container.innerHTML = safeInnerHtml(str);
   return container.children[0];
+}
+;
+class Mouse {
+  constructor() {
+    let lastMoveEvent;
+
+    const setLastMouseMove = (e) => lastMoveEvent = e;
+    const getLastMoveEvent = () => JSON.parse(JSON.stringify(lastMoveEvent));
+
+    this.withinElem = (offset) => {
+      const rect = getPopupElems().cnt.getBoundingClientRect();
+      if (lastMoveEvent) {
+        const withinX = lastMoveEvent.clientX < rect.right - offset && rect.left + offset < lastMoveEvent.clientX;
+        const withinY = lastMoveEvent.clientY < rect.bottom - offset && rect.top + offset < lastMoveEvent.clientY;
+        return withinX && withinY;
+      }
+      return false;
+    }
+
+    document.addEventListener('mousemove', setLastMouseMove);
+  }
 }
 ;
 let idCount = 0;
@@ -1250,60 +1421,6 @@ try {
   exports.ExprDef = ExprDef;
 } catch (e) {}
 ;
-class CustomEvent {
-  constructor(name) {
-    const watchers = [];
-    this.name = name;
-    this.on = function (func) {
-      if ((typeof func) === 'function') {
-        watchers.push(func);
-      } else {
-        return 'on' + name;
-      }
-    }
-
-    this.trigger = function (element) {
-      element = element === undefined ? window : element;
-      if(document.createEvent){
-          element.dispatchEvent(this.event);
-      } else {
-          element.fireEvent("on" + this.event.eventType, this.event);
-      }
-    }
-//https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-    this.event;
-    if(document.createEvent){
-        this.event = document.createEvent("HTMLEvents");
-        this.event.initEvent(name, true, true);
-        this.event.eventName = name;
-    } else {
-        this.event = document.createEventObject();
-        this.event.eventName = name;
-        this.event.eventType = name;
-    }
-  }
-}
-;
-
-
-function scrollTo(elem, pixels, delay) {
-  function scroll() {
-    const rect = elem.getBoundingClientRect();
-    const target = Math.floor((window.innerHeight - rect.height) / 2);
-    const fullDist = Math.abs(rect.top - target);
-    const scrollDist = fullDist > pixels ? pixels : fullDist;
-    const yDiff = scrollDist * (rect.top < target ? -1 : 1);
-    window.scroll(0, window.scrollY + yDiff);
-    console.log(elem.id, ':', window.scrollY)
-    if (rect.top !== target) {
-      setTimeout(scroll, delay);
-    }
-  }
-  setTimeout(scroll, 10);
-}
-
-// id="test1"
-;
 class KeyShortCut {
   constructor(keys, func) {
     KeyShortCut.cuts.push(this);
@@ -1348,113 +1465,74 @@ class Page {
     this.hide = function() {return false;}
   }
 }
-;class RegArr {
-  constructor(string, array) {
-    const newLine = 'akdiehtpwksldjfurioeidu';
-    const noNewLines = string.replace(/\n/g, newLine);
-    const stack = [{str: noNewLines, index: 0}];
-    const details = {};
-    let finalStr = '';
-    const obj = {};
-    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+;
+class RelativeFixed {
+  constructor(relitiveElem, targetElem, position) {
 
-    obj.original = function () {return string;};
-    obj.result = function () {return finalStr};
-    obj.details = function () {return details};
 
-    function split(str, array) {
-      const splitted = [];
-      for (let index = 0; array && index < array.length; index += 1) {
-        const elem = array[index];
-        const startIndex = str.indexOf(elem);
-        if (startIndex !== -1) {
-          const length = elem.length;
-          if (startIndex !== 0 ) {
-            splitted.push(str.substring(0, startIndex));
-          }
-          str = str.substring(startIndex + length);
-        }
+    const leftOfView = (style) => style.right !== undefined && style.right < 0;
+    const rightOfView = (style) => style.left !== undefined && style.left > window.innerWidth ;
+    const topOfView = (style) => style.bottom !== undefined && style.bottom < 0;
+    const bottomOfView = (style) => style.top !== undefined && style.top > window.innerHeight;
+
+    function offsetPosition(rect, attr) {
+      const offset = position[attr];
+      if (offset) {
+        return offset + rect[attr];
       }
-      if (str.length > 0) {
-          splitted.push(str);
-      }
-      return splitted;
     }
 
-    function next(str, action, regex) {
-      if (str === null) return;
-      console.log(action, action === null);
-      if (action !== undefined) {
-        if (Number.isInteger(action)) {
-          stack.push({str, index: action})
-        } else if (action !== null) {
-          stack.push({str: str.replace(regex, action), index: array.length - 1});
-        } else {
-          finalStr += str;
-        }
+    function position() {
+      const rect = relitiveElem.getBoundingClientRect();
+      const style = {
+        top: offsetPosition(rect, 'top'),
+        bottom: offsetPosition(rect, 'bottom'),
+        right: offsetPosition(rect, 'right'),
+        left: offsetPosition(rect, 'left')
+      };
+
+      if (leftOfView(style) || rightOfView(style) || topOfView(style) || bottomOfView(style)) {
+        console.log('Out of view')
       } else {
-        stack.push({str, index: array.length - 1});
+        console.log('in view')
       }
     }
 
-    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
-      for (let index = arr1.length - 1; index > -1; index -= 1) {
-        if (arr2 && arr2[index]) {
-          next(arr2[index], arr2Action, regex);
-        }
-        next(arr1[index], arr1Action, regex);
-      }
-    }
-
-    function addDetails(name, attr, array) {
-      if (!array) return;
-      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
-      if (!details[name]) details[name] = {};
-      if (!details[name][attr]) details[name][attr] = [];
-      details[name][attr] = details[name][attr].concat(array);
-    }
-
-    function construct(str, index) {
-      if (str === undefined) return;
-      const elem = array[index];
-      const matches = str.match(elem.regex);
-      const splitted = split(str, matches);
-      addDetails(elem.name, 'matches', matches);
-      addDetails(elem.name, 'splitted', splitted);
-      let finalStr = '';
-      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
-        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
-      } else {
-        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
-      }
-    }
-
-    function process() {
-      while (stack.length > 0) {
-        const curr = stack.pop();
-        construct(curr.str, curr.index);
-      }
-      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
-    }
-    process();
-    return obj;
+    position();
   }
 }
-
-try{
-	exports.RegArr = RegArr;
-} catch (e) {}
 ;
 class Properties {
-  constructor () {
+  constructor (defaults) {
     const properties = {};
     const updateFuncs = {};
+    const instanceId = Properties.freeId++;
     const instance = this;
+    const idKey = () => `properties${instanceId}Id`;
+    const keysKey = () => `properties${instanceId}Keys`;
+    let pendingNotification = false;
 
-    function notify(key) {
+    let notificationList = {};
+
+    function notify() {
+      const funcs = Object.values(notificationList);
+      notificationList = {};
+      pendingNotification = false;
+      for (let index = 0; index < funcs.length; index += 1) {
+        const func = funcs[index];
+        func(instance.get.apply(null, func[keysKey()]));
+      }
+    }
+
+    function stage(key) {
+      if (!pendingNotification) {
+        pendingNotification = true;
+        setTimeout(notify, 100);
+      }
       const funcList = updateFuncs[key];
       for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
+        const func = funcList[index];
+        notificationList[func[idKey()]] = func;
       }
     }
 
@@ -1465,7 +1543,7 @@ class Properties {
           storeObj[key] = value;
           chrome.storage.local.set(storeObj);
         } else {
-          notify(key);
+          stage(key);
         }
     };
 
@@ -1476,8 +1554,14 @@ class Properties {
       const retObj = {};
       for (let index = 0; index < arguments.length; index += 1) {
         key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+        const value = properties[key];
+        if (value && (typeof value) === 'object') {
+          retObj[key] = JSON.parse(JSON.stringify(value));
+        } else {
+          retObj[key] = value;
+        }
       }
+      return retObj;
     };
 
     function storageUpdate (values) {
@@ -1493,6 +1577,14 @@ class Properties {
           instance.set(key, value);
         }
       }
+      const defKeys = Object.keys(defaults);
+      for (let index = 0; index < defKeys.length; index += 1) {
+        const key = defKeys[index];
+        if (values[key] === undefined) {
+          instance.set(key, defaults[key]);
+        }
+      }
+
     }
 
     function keyDefinitionCheck(key) {
@@ -1501,11 +1593,13 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (keys, func, skipInit) {
+    this.onUpdate = function (keys, func) {
       keyDefinitionCheck(keys);
       if (!Array.isArray(keys)) {
         keys = [keys];
       }
+      func[idKey()] = Properties.freeId++;
+      func[keysKey()] = keys;
       if ((typeof func) !== 'function') throw new Error('update function must be defined');
       keys.forEach((key) => {
         if (updateFuncs[key] === undefined) {
@@ -1527,7 +1621,9 @@ class Properties {
   }
 }
 
-const properties = new Properties();
+Properties.freeId = 0;
+
+const properties = new Properties({enabled: true});
 ;// ./src/index/properties.js
 
 const lengthLimit = 64;
@@ -1658,15 +1754,15 @@ Request = {
 Request.errorCodeReg = /Error Code:([a-zA-Z0-9]*)/;
 Request.errorMsgReg = /[a-zA-Z0-9]*?:([a-zA-Z0-9 ]*)/;
 
-properties.onUpdate(['env', 'debug'], () => {
-  const env = properties.get('env');
-  if (properties.get('debug')) EPNTS.setHost(env);
+properties.onUpdate(['env', 'debug'], (props) => {
+  const env = props.env;
+  if (props.debug) EPNTS.setHost(env);
 });
-properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
-  const debug = properties.get('debug');
-  const enabled = properties.get('enabled');
-  const host = properties.get('debugGuiHost') || 'https://localhost:3001/debug-gui';
-  const id = properties.get('debugGuiId');
+properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], (props) => {
+  const debug = props.debug;
+  const enabled = props.enabled;
+  const host = props.debugGuiHost || 'https://localhost:3001/debug-gui';
+  const id = props.debugGuiId;
   if (debug && enabled) {
     const root = 'context-explained-ui';
     const cookieExists = document.cookie.match(/DebugGui=/);
@@ -1675,16 +1771,113 @@ properties.onUpdate(['debug', 'debugGuiHost', 'enabled'], () => {
     dg.updateConfig({debug: false});
   }
 });
+;class RegArr {
+  constructor(string, array) {
+    const newLine = 'akdiehtpwksldjfurioeidu';
+    const noNewLines = string.replace(/\n/g, newLine);
+    const stack = [{str: noNewLines, index: 0}];
+    const details = {};
+    let finalStr = '';
+    const obj = {};
+    array = array.concat({name: 'untouched', regex: /(.*)/g, actionM: null});
+
+    obj.original = function () {return string;};
+    obj.result = function () {return finalStr};
+    obj.details = function () {return details};
+
+    function split(str, array) {
+      const splitted = [];
+      for (let index = 0; array && index < array.length; index += 1) {
+        const elem = array[index];
+        const startIndex = str.indexOf(elem);
+        if (startIndex !== -1) {
+          const length = elem.length;
+          if (startIndex !== 0 ) {
+            splitted.push(str.substring(0, startIndex));
+          }
+          str = str.substring(startIndex + length);
+        }
+      }
+      if (str.length > 0) {
+          splitted.push(str);
+      }
+      return splitted;
+    }
+
+    function next(str, action, regex) {
+      if (str === null) return;
+      console.log(action, action === null);
+      if (action !== undefined) {
+        if (Number.isInteger(action)) {
+          stack.push({str, index: action})
+        } else if (action !== null) {
+          stack.push({str: str.replace(regex, action), index: array.length - 1});
+        } else {
+          finalStr += str;
+        }
+      } else {
+        stack.push({str, index: array.length - 1});
+      }
+    }
+
+    function idk(arr1, arr1Action, arr2, arr2Action, regex) {
+      for (let index = arr1.length - 1; index > -1; index -= 1) {
+        if (arr2 && arr2[index]) {
+          next(arr2[index], arr2Action, regex);
+        }
+        next(arr1[index], arr1Action, regex);
+      }
+    }
+
+    function addDetails(name, attr, array) {
+      if (!array) return;
+      array = array.map(function (value) {return value.replace(new RegExp(newLine, 'g'), '\n')});
+      if (!details[name]) details[name] = {};
+      if (!details[name][attr]) details[name][attr] = [];
+      details[name][attr] = details[name][attr].concat(array);
+    }
+
+    function construct(str, index) {
+      if (str === undefined) return;
+      const elem = array[index];
+      const matches = str.match(elem.regex);
+      const splitted = split(str, matches);
+      addDetails(elem.name, 'matches', matches);
+      addDetails(elem.name, 'splitted', splitted);
+      let finalStr = '';
+      if (matches && matches[0] && str.indexOf(matches[0]) === 0) {
+        idk(matches, elem.actionM, splitted, elem.actionS, elem.regex);
+      } else {
+        idk(splitted, elem.actionS, matches, elem.actionM, elem.regex);
+      }
+    }
+
+    function process() {
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        construct(curr.str, curr.index);
+      }
+      finalStr = finalStr.replace(new RegExp(newLine, 'g'), '\n');
+    }
+    process();
+    return obj;
+  }
+}
+
+try{
+	exports.RegArr = RegArr;
+} catch (e) {}
 ;
 class CatchAll {
   constructor(container) {
     const instance = this;
-    container = container || document.body;
+    container = container || CE_CONTAINER;
     let events = Array.from(arguments).splice(1);
     events = events.length > 0 ? events : CatchAll.allMouseEvents;
 
     // const zIndex = 1000008;
     const backdrop = document.createElement('DIV');
+    this.backdrop = backdrop;
 
     this.hide = () => backdrop.hidden = true;
     this.show = () => {
@@ -1888,7 +2081,7 @@ class Resizer {
 }
 
 Resizer.container = document.createElement('div');
-document.body.append(Resizer.container);
+CE_CONTAINER.append(Resizer.container);
 
 Resizer.lastZindexSearch = new Date().getTime();
 Resizer.zIndex = (zindex) => {
@@ -1989,18 +2182,18 @@ class DragDropResize {
     this.hasMoved = () => hasMoved;
     function onResizeEvent() {
       const rect = popupCnt.getBoundingClientRect();
-      if (!Resizer.isLocked(popupCnt)) instance.setDems({width: rect.width, height: rect.height});
+      if (!Resizer.isLocked(popupCnt)) instance.setDems({width: rect.width + 'px', height: rect.height + 'px'});
     }
 
     const defaultStyle = `
       background-color: white;
       position: ${position};
       overflow: hidden;
-      min-height: ${props.minWidth === undefined ? '20vh' : props.minWidth};
-      min-width: ${props.minHeight === undefined ? '50vw' : props.minHeight};
+      min-height: ${props.minWidth === undefined ? '0vh' : props.minWidth};
+      min-width: ${props.minHeight === undefined ? '0vw' : props.minHeight};
       display: none;
+      ${props.overflow ? 'overflow: ' + props.overflow + ';' : ''}
       border: 1px solid;
-      padding: 3pt;
       border-radius: 5pt;
       box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
 
@@ -2262,10 +2455,9 @@ class DragDropResize {
         props});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
+    CE_CONTAINER.append(tempElem);
 
     const popupContent = document.getElementById(POPUP_CONTENT_ID);
-    popupContent.style.overflow = 'auto';
     const popupCnt = document.getElementById(POPUP_CNT_ID);
     const histCnt = document.createElement('DIV');
     const tabHeader = document.getElementById(POPUP_HEADER_CNT_ID);
@@ -2280,7 +2472,7 @@ class DragDropResize {
     histCnt.style.position = position;
     histCnt.hidden = true;
     histCnt.className = 'place-history-cnt';
-    document.body.append(histCnt);
+    CE_CONTAINER.append(histCnt);
     popupCnt.style = defaultStyle;
     popupCnt.addEventListener(Resizer.events.resize.name, onResizeEvent);
     document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
@@ -2368,6 +2560,10 @@ class DragDropResize {
       getPopupElems().content.addEventListener(eventName, func);
     }
     this.on = on;
+
+    const cancelFade = fadeOut(getPopupElems().cnt, 10, instance.close);
+    getPopupElems().cnt.addEventListener('mouseover', cancelFade);
+
 
     this.container = () => getPopupElems().cnt;
     this.lockSize = () => Resizer.lock(popupCnt);
@@ -2972,17 +3168,11 @@ try{
 } catch (e) {}
 ;// ./src/index/services/$t.js
 
+$t.functions['122441455'] = function (get) {
+	return `<div question-id='` + (get("question").id) + `'> <div class='ce-full ce-center'> <button type="button" class='ce-slim-btn ce-question-answer'>Answer</button> <button type="button" class='ce-slim-btn ce-question-unclear'>Un Clear</button> <button type="button" class='ce-slim-btn ce-question-answered'>Answered</button> <h3>` + (get("question").words) + `</h3> </div> ` + (get("question").elaboration) + ` </div>`
+}
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
-}
-$t.functions['736143977'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['737568395'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").siteUrl) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['771465937'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
 }
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
@@ -2993,8 +3183,8 @@ $t.functions['906579606'] = function (get) {
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
 }
-$t.functions['1204899121'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+$t.functions['1175765711'] = function (get) {
+	return `<div id='ce-hover-expl-` + (get("tab").label) + `-cnt' ` + (get("tab").active === true ? "" : " hidden") + ` ` + (get("tab").hide() ? "hidden" : "") + `> ` + (get("tab").html()) + ` </div>`
 }
 $t.functions['1266551310'] = function (get) {
 	return `<option value='` + (get("words")) + `' ></option>`
@@ -3002,23 +3192,11 @@ $t.functions['1266551310'] = function (get) {
 $t.functions['1496787416'] = function (get) {
 	return `<menuitem > ` + (get("notification")) + ` </menuitem>`
 }
-$t.functions['1511666641'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['1525597977'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
 $t.functions['1663607604'] = function (get) {
 	return `<menuitem > ` + (get("site")) + ` </menuitem>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
-}
-$t.functions['1892901021'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['1925052500'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("note").explanation.words) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 }
 $t.functions['2085205162'] = function (get) {
 	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
@@ -3029,14 +3207,17 @@ $t.functions['history'] = function (get) {
 $t.functions['-2107865266'] = function (get) {
 	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
 }
-$t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-cnt'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class='ce-hover-expl-content-cnt'> <div>` + (get("content")) + `</div> </div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
-}
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class="ce-hover-switch-list-cnt"> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list ce-auto-overflow' style='height: ` + (get("height")) + `'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div id='` + (get("MAIN_CONTENT_CNT_ID")) + `' class='ce-width-full ce-auto-overflow' style='height: ` + (get("height")) + `'> <div class='ce-hover-expl-cnt'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class='ce-hover-expl-content-cnt'> <div>` + (get("content")) + `</div> </div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <ul class='ce-hover-expl-tab-control-cnt'> ` + (new $t('<li  ce-tab=\'ce-hover-expl-{{tab.label}}-cnt\' class=\'{{tab.active === true ? "active" : ""}}\' {{tab.hide() ? "hidden" : ""}}> {{tab.label}} </li>').render(get('scope'), 'tab in tabs', get)) + ` </ul> ` + (new $t('<div  id=\'ce-hover-expl-{{tab.label}}-cnt\' {{tab.active === true ? "" : " hidden"}} {{tab.hide() ? "hidden" : ""}}> {{tab.html()}} </div>').render(get('scope'), 'tab in tabs', get)) + ` </div> </div> </div> `
+}
+$t.functions['-62032811'] = function (get) {
+	return `<li ce-tab='ce-hover-expl-` + (get("tab").label) + `-cnt' class='` + (get("tab").active === true ? "active" : "") + `' ` + (get("tab").hide() ? "hidden" : "") + `> ` + (get("tab").label) + ` </li>`
 }
 $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 	return `<h1>favorite lists</h1> `
@@ -3044,23 +3225,32 @@ $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
-}
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
 }
 $t.functions['icon-menu/links/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
+}
 $t.functions['icon-menu/notifications'] = function (get) {
 	return `<div class='inline'> <div> <button class="back-btn" id="back-button">&#x2190;</button> </div> <div> <div> <b>Notifications</b> <menu class='fit'> ` + (new $t('<menuitem > {{notification}} </menuitem>').render(get('scope'), 'notification in currentAlerts', get)) + ` </menu> </div> <div> <b>Elsewhere</b> <menu class='fit'> ` + (new $t('<menuitem > {{site}} </menuitem>').render(get('scope'), 'site in otherSites', get)) + ` </menu> </div> </div> </div> `
 }
+$t.functions['notifications'] = function (get) {
+	return `<div class=""> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-notification-key="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in currPage', get)) + ` </ul> <h4>Other Page Notifications</h4> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-open="{{note.site.url}}" ce-target="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in otherPage', get)) + ` </ul> </div> `
+}
+$t.functions['-397749582'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-1466040354'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `" ce-target="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
 $t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `'> <div class='place-max-min-fixed-cnt place-full-width' position='fixed'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -3072,7 +3262,7 @@ $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div ce-comment-id='` + (get("comment").id) + `'> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div ce-comment-id='` + (get("comment").id) + `'> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + ` ce-sibling-id='` + (get("siblingId")) + `'> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> </div> </div> <div class='ce-center'> <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='` + (get("COMMENTS_CNT_ID")) + `' ce-toggle-hidden-text='Show Comments' ce-toggle-visible-text='Hide Comments' ` + (get("commentHtml") ? '' : 'hidden disabled') + `> ` + (!get("showComments") ? 'Show Comments' : 'Hide Comments') + ` </button> <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='` + (get("ADD_CNT_ID")) + `' ce-toggle-hidden-text='Add Comment' ce-toggle-visible-text='Close Comment' ` + (get("loggedIn") ? '' : 'hidden disabled') + `> Add Comment </button> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
@@ -3086,11 +3276,11 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -3107,40 +3297,27 @@ $t.functions['popup-cnt/tabs-navigation'] = function (get) {
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 }
+$t.functions['questions'] = function (get) {
+	return `<div class="ce-padding"> ` + (new $t('<div  question-id=\'{{question.id}}\'> <div class=\'ce-full ce-center\'> <button type="button" class=\'ce-slim-btn ce-question-answer\'>Answer</button> <button type="button" class=\'ce-slim-btn ce-question-unclear\'>Un Clear</button> <button type="button" class=\'ce-slim-btn ce-question-answered\'>Answered</button> <h3>{{question.words}}</h3> </div> {{question.elaboration}} </div>').render(get('scope'), 'question in questions', get)) + ` </div> `
+}
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
-}
-$t.functions['notifications'] = function (get) {
-	return `<div class=""> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-notification-key="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.currPage', get)) + ` </ul> <h4>Other Page Notifications</h4> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-open="{{note.site.url}}" ce-target="_blank"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.otherPage', get)) + ` </ul> </div> `
-}
-$t.functions['-1581780113'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").site.url) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-1219294225'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `" ce-target="_blank"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-961465421'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-1571138811'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-397749582'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 };// ./bin/dump/$templates.js
 
 class HoverExplanations {
   constructor (props) {
     props = props || {};
     const template = new $t('hover-explanation');
+    const questionTemplate = new $t('questions');
     const instance = this;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     const  active = {expl: {}};
     const tag = 'hover-explanation';
+    let siteInfoData;
 
     let switches = [];
     let disabled = false;
-    let explRefs = {};
+    let questions = {};
     let left;
     let explIds = [];
     let currIndex, currRef;
@@ -3152,14 +3329,33 @@ class HoverExplanations {
     const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
     const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
     const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
+    const MAIN_CONTENT_CNT_ID = 'ce-hover-expl-main-content-cnt-' + id;
 
     const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
-    const setDems = (dems) => {
-      if (hoverExplanations === instance)
-        properties.set('hoverExplanationsDems', dems, true);
-    };
 
-    props.setDems = props.setDems || setDems;
+    function setDemsFunc (setDems) {
+      let instanceSetDems;
+      if ((typeof setDems) === 'function') {
+        instanceSetDems = setDems;
+      } else {
+        instanceSetDems = (dems) => {
+          if (hoverExplanations === instance) {
+            properties.set('hoverExplanationsDems', dems, true);
+          }
+        }
+      }
+      return function (dems) {
+        document.getElementById(SWITCH_LIST_ID).style.height = dems.height;
+        document.getElementById(MAIN_CONTENT_CNT_ID).style.height = dems.height;
+        instanceSetDems(dems);
+      };
+    }
+
+    function getQuestions(expl) {
+      return questions[expl.words] || [];
+    }
+
+    props.setDems = setDemsFunc(props.setDems);
     props.getDems = props.getDems || getDems;
     props.tabText = () => active.expl.words;
     const hoverResource = new HoverResources(props);
@@ -3191,13 +3387,13 @@ class HoverExplanations {
           active.list = [elemExplORef];
           currRef = undefined;
         } else {
-          active.list = explRefs[currRef];
+          active.list = explList(currRef);
           currIndex = index === undefined ? currIndex || 0 : index;
         }
       } else {
         if (ref !== currRef) currIndex = index || 0;
         currRef = ref;
-        active.list = explRefs[currRef];
+        active.list = explList(currRef);
       }
 
       if (active.expl) active.expl.isActive = false;
@@ -3209,11 +3405,25 @@ class HoverExplanations {
       const loggedIn = User.isLoggedIn();
       const authored = loggedIn && active.expl.author &&
               User.loggedIn().id === active.expl.author.id;
+      const explQuestions = getQuestions(active.expl);
+      const tabs = [];
+      tabs.push({
+        label: 'Comments',
+        hide: () => props.hideComments || (active.expl.comments.length === 0 && !User.isLoggedIn()),
+        active: explQuestions.length === 0,
+        html: Comment.for(hoverResource.container(), active.expl, undefined, true).html
+      });
+      tabs.push({
+        label: 'Questions',
+        active: explQuestions.length > 0,
+        hide: () => explQuestions.length === 0,
+        html: () => questionTemplate.render({questions: explQuestions})
+      });
       const scope = {
         LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
-        active, loggedIn, authored,
-        commentHtml: Comment.for(hoverResource.container(), active.expl, undefined, true).html(),
-        hideComments: props.hideComments,
+        MAIN_CONTENT_CNT_ID,
+        active, loggedIn, authored, tabs,
+        height: getDems().height,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),
@@ -3231,7 +3441,9 @@ class HoverExplanations {
 
     function switchFunc (index) {
       return () => {
+        const scrollTop = document.getElementById(SWITCH_LIST_ID).scrollTop;
         updateContent(undefined, index);
+        document.getElementById(SWITCH_LIST_ID).scroll(0, scrollTop);
       };
     }
 
@@ -3273,6 +3485,8 @@ class HoverExplanations {
       if (active.list.length > 1) {
         switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
+      } else {
+        document.getElementById(SWITCH_LIST_ID).hidden = true;
       }
       document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
       document.getElementById(EDIT_BTN_ID).onclick = () => {
@@ -3304,8 +3518,15 @@ class HoverExplanations {
     }
 
     function findWord(word) {
-        return Array.from(document.body.querySelectorAll('*'))
-          .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
+      let allNodes = [];
+      const bodyChildren = document.querySelectorAll('body>:not(#ce-extension-html-container)')
+      for (let index = 0; index < bodyChildren.length; index += 1) {
+        const decendents = bodyChildren[index].querySelectorAll('*');
+        for (let dIndex = 0; dIndex < decendents.length; dIndex += 1) {
+          allNodes.push(decendents[dIndex]);
+        }
+      }
+      return allNodes.filter(el => topNodeText(el).match(new RegExp(word, 'i')));
     }
 
 
@@ -3364,15 +3585,15 @@ class HoverExplanations {
       return Object.keys(uniq).sort(sortByLength);
     }
 
-    function set(explList, soft) {
-      explRefs = explList;
+    function set(data, soft) {
+      siteInfoData = data;
       if (soft) return;
       removeAll();
       wrapList = [];
-      const wordList = Object.keys(explList).sort(sortByLength);
+      const wordList = Object.keys(siteInfoData.list).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
         const ref = wordList[index];
-        const explanations = explList[ref];
+        const explanations = explList(ref);
         explanations.forEach((expl) => explIds.push(expl.id));
         const uniqWords = uniqueWords(explanations).sort(sortByLength);
         for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
@@ -3385,10 +3606,7 @@ class HoverExplanations {
 
     function update(expl) {
       const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [];
-      }
-      const list = explRefs[ref];
+      const list = explList(ref);
       let index = 0;
       for (; index < list.length; index += 1) {
         if (list[index].id === expl.id) {
@@ -3402,16 +3620,24 @@ class HoverExplanations {
     }
     this.update = update;
 
+    function refObj(ref) {
+      if (siteInfoData.list[ref] === undefined) {
+        siteInfoData.list[ref] = {explanations: [], questions: []};
+      }
+      return siteInfoData.list[ref];
+    }
+
+    function explList(ref) {
+      const obj = refObj(ref);
+      return obj === undefined ? undefined : obj.explanations;
+    }
+
     function add(expl) {
       const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [expl];
-      } else {
-        explRefs[ref].push(expl);
-      }
+      explList(ref).push(expl);
       const elem = document.createElement(tag);
       elem.setAttribute('ref', expl.searchWords);
-      updateContent(elem, explRefs[ref].length - 1);
+      updateContent(elem, explList(ref).length - 1);
       hoverResource.position().elem();
 
       wrapList.push({ word: expl.words, ref });
@@ -3459,15 +3685,310 @@ class HoverExplanations {
           hoverResource.stopHover();
           hoverResource.lockOpen();
           hoverExplanations = new HoverExplanations();
-          hoverExplanations.set(explRefs, true);
+          hoverExplanations.set(siteInfoData, true);
         }
     }
 
+    toggleContainer(hoverResource.container());
     properties.onUpdate('enabled', enableToggled);
   }
 }
 
 let hoverExplanations = new HoverExplanations();
+;
+class Expl {
+  constructor () {
+    let currEnv;
+    let explanations = {};
+    function createHoverResouces (data) {
+      properties.set('siteId', data.siteId);
+      Object.values(data.list).forEach((elem) => elem.explanations.forEach(
+        (expl) => explanations[expl.id] = expl));
+      hoverExplanations.set(data);
+    }
+
+    function getById(id) {
+      return JSON.parse(JSON.stringify(explanations[id]));
+    }
+
+    function addHoverResources (props) {
+      const enabled = props.enabled;
+      const env = props.env || 'local';
+      if (enabled && env !== currEnv) {
+        currEnv = env;
+        const url = EPNTS.siteExplanation.get();
+        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
+      }
+    }
+
+    this.get = function (words, success, fail) {
+      const url = EPNTS.explanation.get(words);
+      Request.get(url, success, fail);
+    };
+
+    this.siteList = function (success, fail) {
+    };
+
+    this.authored = function (authorId, success, fail) {
+      const url = EPNTS.explanation.author(authorId);
+      Request.get(url, succes, fail);
+    };
+
+    this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
+      console.log(commentId);
+      function addCommentSuccess(comment) {
+        explanations[explanationId].comments.push(comment);
+        if ((typeof success) === 'function') success(comment);
+      }
+      function addCommentFailure(error) {
+        if ((typeof failure) === 'function') failure(error);
+      }
+      const body = {value, siteId, explanationId, commentId};
+      Request.post(EPNTS.comment.add(), body, addCommentSuccess, addCommentFailure);
+    }
+
+    this.add = function (words, content, success, fail) {
+      const url = EPNTS.explanation.add();
+      Request.post(url, {words, content}, success, fail);
+    };
+
+
+    this.getById = getById;
+    properties.onUpdate(['enabled', 'env'], addHoverResources);
+  }
+}
+
+Expl = new Expl();
+;
+class History {
+  constructor(len) {
+    len = len || 100;
+    let history = [];
+    let currentPosition = -1;
+    this.push = (elem) => {
+      if (elem !== history[currentPosition]) {
+        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
+        history = history.splice(currentPosition - len || 0, len);
+        currentPosition = history.length;
+        history.push(elem);
+        properties.set('ce-history', history, true);
+      }
+    };
+    this.index = () => currentPosition;
+    this.get = () => {
+      const histObject = {};
+      histObject.currentPosition = currentPosition;
+      histObject.list = [];
+      for (let index = history.length - 1; index > -1; index -= 1) {
+        histObject.list.push({index, elem: history[index]});
+      }
+      return histObject;
+    };
+    this.back = () => history[--currentPosition];
+    this.forward = () => history[++currentPosition];
+    this.goTo = (index) => history[currentPosition = index];
+    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
+    this.hasPast = () => currentPosition > 0;
+
+    const initialized = false;
+    function init(savedHistory) {
+      if (!initialized && Array.isArray(savedHistory)) {
+        history = savedHistory;
+        currentPosition = history.length - 1;
+      }
+    }
+    properties.onUpdate('ce-history', init);
+  }
+}
+
+const history = new History(1000);
+;
+class Form {
+  constructor() {
+    const formFuncs = {};
+
+    function getFormDataObject(formElem) {
+      const data = {};
+      formElem.querySelectorAll('input')
+          .forEach((elem) => {data[elem.name] = elem.value});
+      return data;
+    }
+
+    function directForm (e) {
+      const btnId = e.target.id;
+      if (formFuncs[btnId]) {
+        e.preventDefault(e);
+        const actionAttr = e.srcElement.attributes.action;
+        const url = actionAttr !== undefined ? actionAttr.value : undefined;
+        const success = formFuncs[btnId].success;
+        if (url) {
+          const fail = formFuncs[btnId].fail;
+          let method = e.srcElement.attributes.method.value;
+          const data = getFormDataObject(e.target);
+          method = method === undefined ? 'get' : method.toLowerCase();
+          if (method === 'get') {
+            Request.get(url, success, fail);
+          } else {
+            Request[method](url, data, success, fail);
+          }
+        } else {
+          success();
+        }
+      }
+    }
+
+    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
+
+    document.addEventListener('submit', directForm);
+  }
+}
+
+Form = new Form();
+;
+const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
+const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
+const CE_LOADED = new CustomEvent('user-add-call-failure');
+const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
+;
+class User {
+  constructor() {
+    let user;
+    let status;
+    const instance = this;
+    function dispatch(eventName, values) {
+      return function (err) {
+        const evnt = new Event(eventName);
+        Object.keys(values).map((key) => evnt[key] = values[key])
+        document.dispatchEvent(evnt);
+        if (err) {
+          console.error(err);
+        }
+      }
+    }
+    function dispatchUpdate() {
+      dispatch(instance.updateEvent(), {
+        user: instance.loggedIn(),
+        status
+      })();
+    }
+    function dispatchError(errorMsg) {
+      return dispatch(instance.errorEvent(), {errorMsg});
+    }
+    function setUser(u) {
+      user = u;
+      dispatchUpdate();
+      properties.set('user', u, true);
+      console.log('update user event fired')
+    }
+
+    function updateStatus(s) {
+      status = s;
+      properties.set('user.status', status, true);
+      dispatchUpdate();
+      console.log('update status event fired');
+    }
+
+    this.status = () => status;
+    this.errorEvent = () => 'UserErrorEvent';
+    this.updateEvent = () => 'UserUpdateEvent'
+    this.isLoggedIn = function (defVal) {
+      return status === undefined ? defVal : status === 'active';
+    }
+    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user || {})) : undefined;
+
+    this.get = function (email, success, fail) {
+      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
+        const url = EPNTS.user.get(email);
+        Request.get(url, success, fail);
+      } else {
+        fail('Invalid Email');
+      }
+    }
+
+    function removeCredential() {
+      const cred = properties.get('user.credential');
+      if (cred !== null) {
+        properties.set('user.credential', null, true);
+        properties.set('user', null, true);
+        instance.update();
+      }
+
+      user = undefined;
+      updateStatus('expired');
+    }
+
+    this.logout = function () {
+      const cred = properties.get('user.credential');
+      dispatchUpdate();
+      if(cred !== null) {
+        if (status === 'active') {
+          const deleteCredUrl = EPNTS.credential.delete(cred);
+          Request.delete(deleteCredUrl, removeCredential, instance.update);
+        } else {
+          removeCredential();
+        }
+      }
+    };
+
+    const userCredReg = /^User ([0-9]{1,})-.*$/;
+    this.update = function (credential) {
+      if ((typeof credential) === 'string') {
+        if (credential.match(userCredReg)) {
+          properties.set('user.credential', credential, true);
+        } else {
+          removeCredential();
+          credential = null;
+        }
+      } else {
+        credential = properties.get('user.credential');
+      }
+      if ((typeof credential) === 'string') {
+        let url = EPNTS.credential.status(credential);
+        Request.get(url, updateStatus, () => updateStatus('expired'));
+        const u = properties.get('user');
+        if (u === null || u === undefined || u.id !==
+              Number.parseInt(credential.replace(/User ([0-9]{1,})-.*$/, '$1'))) {
+          url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+          Request.get(url, setUser);
+          console.log('User Requested!')
+        } else {
+          setUser(u);
+          console.log('No User Request!')
+        }
+      } else if (credential === null || credential === undefined) {
+        updateStatus('expired');
+        instance.logout(true);
+      }
+    };
+
+    const addCredErrorMsg = 'Failed to add credential';
+    this.addCredential = function (uId) {
+      if (user !== undefined) {
+        const url = EPNTS.credential.add(user.id);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      } else if (uId !== undefined) {
+        const url = EPNTS.credential.add(uId);
+        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
+      }
+    };
+
+    this.register = function (email, username) {
+      const url = EPNTS.user.add();
+      const body = {email, username};
+      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
+    };
+
+    this.openLogin = () => {
+      const tabId = properties.get("SETTINGS_TAB_ID")
+      const page = properties.get("settingsPage");
+      window.open(`${page}#Login`, tabId);
+    };
+
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status', 'user'], () => this.update()));
+  }
+}
+
+User = new User();
 ;
 class ToggleMenu {
   constructor() {
@@ -3530,7 +4051,8 @@ class ToggleMenu {
 
 
 class Comment {
-  constructor(explanation, comment, color) {
+  constructor(explanation, comment, color, siblingId) {
+    siblingId = siblingId || Comment.siblingId++;
     const template = new $t('popup-cnt/tab-contents/add-comment');
     const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
     const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
@@ -3547,7 +4069,9 @@ class Comment {
     scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
     scope.showComments = comment === undefined;
     scope.showAdd = false;
+    scope.siblingId = siblingId;
     scope.commentHtml = '';
+    scope.loggedIn = User.isLoggedIn();
     scope.color = color;
     scope.value = comment === undefined ? '' : comment.value;
     let found = false;
@@ -3556,7 +4080,7 @@ class Comment {
       if ((comment === undefined && childComment.commentId === null) ||
           (comment !== undefined && comment.id === childComment.commentId)) {
         found = true;
-        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
+        scope.commentHtml += Comment.for(null, explanation, childComment, !color, siblingId).html();
       }
     }
     const toggleComments = new ToggleMenu({
@@ -3633,292 +4157,8 @@ class Comment {
     return cache[uniqId];
   }
 
+  Comment.siblingId = 0;
 }
-;
-class Expl {
-  constructor () {
-    let currEnv;
-    let explanations = {};
-    function createHoverResouces (data) {
-      properties.set('siteId', data.siteId);
-      Object.values(data.list).forEach((elem) => elem.forEach(
-        (expl) => explanations[expl.id] = expl));
-      hoverExplanations.set(data.list);
-      hoverExplanations.scrollTo(data.list[Object.keys(data.list)[0]][0]);
-    }
-
-    function getById(id) {
-      return JSON.parse(JSON.stringify(explanations[id]));
-    }
-
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env') || 'local';
-      if (enabled && env !== currEnv) {
-        currEnv = env;
-        const url = EPNTS.siteExplanation.get();
-        Request.post(url, {siteUrl: window.location.href}, createHoverResouces);
-      }
-    }
-
-    this.get = function (words, success, fail) {
-      const url = EPNTS.explanation.get(words);
-      Request.get(url, success, fail);
-    };
-
-    this.siteList = function (success, fail) {
-    };
-
-    this.authored = function (authorId, success, fail) {
-      const url = EPNTS.explanation.author(authorId);
-      Request.get(url, succes, fail);
-    };
-
-    this.addComment = function (value, siteId, explanationId, commentId, success, failure) {
-      console.log(commentId);
-      function addCommentSuccess(comment) {
-        explanations[explanationId].comments.push(comment);
-        if ((typeof success) === 'function') success(comment);
-      }
-      function addCommentFailure(error) {
-        if ((typeof failure) === 'function') failure(error);
-      }
-      const body = {value, siteId, explanationId, commentId};
-      Request.post(EPNTS.comment.add(), body, addCommentSuccess, addCommentFailure);
-    }
-
-    this.add = function (words, content, success, fail) {
-      const url = EPNTS.explanation.add();
-      Request.post(url, {words, content}, success, fail);
-    };
-
-
-    this.getById = getById;
-    properties.onUpdate(['enabled', 'env'], addHoverResources);
-  }
-}
-
-Expl = new Expl();
-;
-class Form {
-  constructor() {
-    const formFuncs = {};
-
-    function getFormDataObject(formElem) {
-      const data = {};
-      formElem.querySelectorAll('input')
-          .forEach((elem) => {data[elem.name] = elem.value});
-      return data;
-    }
-
-    function directForm (e) {
-      const btnId = e.target.id;
-      if (formFuncs[btnId]) {
-        e.preventDefault(e);
-        const actionAttr = e.srcElement.attributes.action;
-        const url = actionAttr !== undefined ? actionAttr.value : undefined;
-        const success = formFuncs[btnId].success;
-        if (url) {
-          const fail = formFuncs[btnId].fail;
-          let method = e.srcElement.attributes.method.value;
-          const data = getFormDataObject(e.target);
-          method = method === undefined ? 'get' : method.toLowerCase();
-          if (method === 'get') {
-            Request.get(url, success, fail);
-          } else {
-            Request[method](url, data, success, fail);
-          }
-        } else {
-          success();
-        }
-      }
-    }
-
-    this.onSubmit = function (id, success, fail) {formFuncs[id] = {success, fail}};
-
-    document.addEventListener('submit', directForm);
-  }
-}
-
-Form = new Form();
-;
-class History {
-  constructor(len) {
-    len = len || 100;
-    let history = [];
-    let currentPosition = -1;
-    this.push = (elem) => {
-      if (elem !== history[currentPosition]) {
-        if (history.indexOf(elem) > -1) history.splice(history.indexOf(elem), 1);
-        history = history.splice(currentPosition - len || 0, len);
-        currentPosition = history.length;
-        history.push(elem);
-        properties.set('ce-history', history, true);
-      }
-    };
-    this.index = () => currentPosition;
-    this.get = () => {
-      const histObject = {};
-      histObject.currentPosition = currentPosition;
-      histObject.list = [];
-      for (let index = history.length - 1; index > -1; index -= 1) {
-        histObject.list.push({index, elem: history[index]});
-      }
-      return histObject;
-    };
-    this.back = () => history[--currentPosition];
-    this.forward = () => history[++currentPosition];
-    this.goTo = (index) => history[currentPosition = index];
-    this.hasFuture = () => -1 < currentPosition && currentPosition < history.length - 1;
-    this.hasPast = () => currentPosition > 0;
-
-    const initialized = false;
-    function init(savedHistory) {
-      if (!initialized && Array.isArray(savedHistory)) {
-        history = savedHistory;
-        currentPosition = history.length - 1;
-      }
-    }
-    properties.onUpdate('ce-history', init);
-  }
-}
-
-const history = new History(1000);
-;
-class User {
-  constructor() {
-    let user;
-    let status;
-    const instance = this;
-    function dispatch(eventName, values) {
-      return function (err) {
-        const evnt = new Event(eventName);
-        Object.keys(values).map((key) => evnt[key] = values[key])
-        document.dispatchEvent(evnt);
-        if (err) {
-          console.error(err);
-        }
-      }
-    }
-    function dispatchUpdate() {
-      dispatch(instance.updateEvent(), {
-        user: instance.loggedIn(),
-        status
-      })();
-    }
-    function dispatchError(errorMsg) {
-      return dispatch(instance.errorEvent(), {errorMsg});
-    }
-    function setUser(u) {
-      user = u;
-      dispatchUpdate();
-      console.log('update user event fired')
-    }
-
-    function updateStatus(s) {
-      status = s;
-      properties.set('user.status', status, true);
-      dispatchUpdate();
-      console.log('update status event fired');
-    }
-
-    this.status = () => status;
-    this.errorEvent = () => 'UserErrorEvent';
-    this.updateEvent = () => 'UserUpdateEvent'
-    this.isLoggedIn = function (defVal) {
-      return status === undefined ? defVal : status === 'active';
-    }
-    this.loggedIn = () => instance.isLoggedIn() ? JSON.parse(JSON.stringify(user || {})) : undefined;
-
-    this.get = function (email, success, fail) {
-      if (email.match(/^.{1,}@.{1,}\..{1,}$/)) {
-        const url = EPNTS.user.get(email);
-        Request.get(url, success, fail);
-      } else {
-        fail('Invalid Email');
-      }
-    }
-
-    function removeCredential() {
-      const cred = properties.get('user.credential');
-      if (cred !== null) {
-        properties.set('user.credential', null, true);
-        instance.update();
-      }
-
-      user = undefined;
-      updateStatus('expired');
-    }
-
-    this.logout = function () {
-      const cred = properties.get('user.credential');
-      dispatchUpdate();
-      if(cred !== null) {
-        if (status === 'active') {
-          const deleteCredUrl = EPNTS.credential.delete(cred);
-          Request.delete(deleteCredUrl, removeCredential, instance.update);
-        } else {
-          removeCredential();
-        }
-      }
-    };
-
-    const userCredReg = /^User ([0-9]{1,})-.*$/;
-    this.update = function (credential) {
-      if ((typeof credential) === 'string') {
-        if (credential.match(userCredReg)) {
-          properties.set('user.credential', credential, true);
-        } else {
-          removeCredential();
-          credential = null;
-        }
-      } else {
-        credential = properties.get('user.credential');
-      }
-      if ((typeof credential) === 'string') {
-        let url = EPNTS.credential.status(credential);
-        Request.get(url, updateStatus, () => updateStatus('expired'));
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
-      } else if (credential === null || credential === undefined) {
-        updateStatus('expired');
-        instance.logout(true);
-      }
-    };
-
-    const addCredErrorMsg = 'Failed to add credential';
-    this.addCredential = function (uId) {
-      if (user !== undefined) {
-        const url = EPNTS.credential.add(user.id);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      } else if (uId !== undefined) {
-        const url = EPNTS.credential.add(uId);
-        Request.get(url, instance.update, dispatchError(addCredErrorMsg));
-      }
-    };
-
-    this.register = function (email, username) {
-      const url = EPNTS.user.add();
-      const body = {email, username};
-      Request.post(url, body, instance.update, dispatchError('Registration Failed'));
-    };
-
-    this.openLogin = () => {
-      const tabId = properties.get("SETTINGS_TAB_ID")
-      const page = properties.get("settingsPage");
-      window.open(`${page}#Login`, tabId);
-    };
-
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
-  }
-}
-
-User = new User();
-;
-const USER_ADD_CALL_SUCCESS = new CustomEvent('user-add-call-success');
-const USER_ADD_CALL_FAILURE = new CustomEvent('user-add-call-failure');
-const CE_LOADED = new CustomEvent('user-add-call-failure');
-const CE_SERVER_UPDATE = new CustomEvent('ce-server-update');
 ;
 class Opinion {
   constructor() {
@@ -3986,8 +4226,8 @@ class Opinion {
       results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
     }
 
-    function getUserVotes() {
-      siteId = properties.get('siteId');
+    function getUserVotes(props) {
+      siteId = props.siteId;
       if (siteId !== undefined && User.loggedIn() !== undefined) {
         const userId = User.loggedIn().id;
         const url = EPNTS.opinion.bySite(siteId, userId);
@@ -4006,19 +4246,29 @@ class Notifications {
     const COMMENT = 'Comment';
     const QUESTION = 'Question';
     const template = new $t('notifications');
-    const popup = new DragDropResize({position: 'fixed', height: '25vh', width: 'fit-content',
-        minWidth: 0, minHeight: 0});
+    const popup = new DragDropResize({
+      position: 'fixed', height: '25vh', width: 'fit-content',
+      minWidth: 0, minHeight: 0, overflow: 'auto'
+    });
     popup.top().right();
     const instance = this;
     const byKey = {};
-    let notifications = {currPage: [], otherPage: []};
+    let currPage = [];
+    let otherPage = [];
+
+    function cleanUrl(url) {
+      return url.replace(/^http(s):\/\//, 'http://');
+    }
 
     function key(note) {
       return `${note.type}-${note.id}`;
     }
 
-    function gotoNotification(target) {
-      const noteKey = target.getAttribute('ce-notification-key');
+    function notificationChecked() {
+      properties.set('displayNotification', null, true);
+    }
+
+    function gotoNotification(noteKey) {
       const note = byKey[noteKey];
       let getElem;
       if (note.type === 'Comment') {
@@ -4028,19 +4278,36 @@ class Notifications {
       }
       const func = () => scrollIntoView(getElem(), 40, 10)
       hoverExplanations.displayExistingElem(note.explanation, func);
+      toggleParents(getElem(), false);
     }
 
+    function shouldDisplay(displayNotification) {
+      if (displayNotification) {
+        const noteUrl = cleanUrl(displayNotification.url);
+        const currUrl = cleanUrl(window.location.href);
+        if(noteUrl === currUrl) {
+          gotoNotification(displayNotification.noteKey);
+          setTimeout(notificationChecked, 5000);
+        }
+      }
+    }
+
+    let winder;
+    const windowName = `window`;
     function openPage(target) {
       const url = target.getAttribute('ce-open');
-      const name = target.getAttribute('ce-target');
-      window.open(url, name);
+      const noteKey = target.getAttribute('ce-target');
+      properties.set('displayNotification', {url, noteKey}, true)
+      winder = window.open(url, windowName);
     }
 
     matchRun('click', '[ce-open]', openPage, popup.container())
-    matchRun('click', '[ce-notification-key]', gotoNotification, popup.container())
+    matchRun('click', '[ce-notification-key]',
+          (target) => gotoNotification(target.getAttribute('ce-notification-key')),
+          popup.container())
 
 
-    this.hasNotifications = () => notifications.currPage.length > 0 &&
+    this.hasNotifications = () => currPage.length > 0 &&
           notifications.otherPage.length > 0;
 
     this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
@@ -4087,21 +4354,40 @@ class Notifications {
       return `ce-notification ${note.type.toLowerCase()}-notification`;
     }
 
-    this.html = () => template.render({key, notifications, getHeading, getText: shortText, getClass});
+    this.html = () => template.render({key, currPage, otherPage, getHeading, getText: shortText, getClass});
 
-    function setNotifications(notes) {
-      notifications = notes;
-      notes.currPage.forEach((note) => byKey[key(note)] = note)
+    function setNotifications(notes, dontSave) {
+      if (!dontSave) {
+        properties.set('user.notifications', notes, true);
+      }
+      const currSite = cleanUrl(window.location.href);
+      notes.forEach((notification) => {
+        const noteSite = cleanUrl(notification.site.url);
+        if (noteSite === currSite) {
+          byKey[key(notification)] = notification;
+          currPage.push(notification);
+        } else {
+          otherPage.push(notification);
+        }
+      });
       popup.updateContent(instance.html());
+      properties.onUpdate('displayNotification', shouldDisplay);
       popup.show();
     }
 
     function update() {
+      const savedNotifications = properties.get('user.notifications');
       const user = User.loggedIn();
       if (user && user.id) {
-        const userId = user.id;
-        const siteUrl = window.location.href;
-        Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
+        if (savedNotifications === null || savedNotifications === undefined) {
+          const userId = user.id;
+          const siteUrl = window.location.href;
+          Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
+          console.log('requested notifications!')
+        } else {
+          setNotifications(savedNotifications, true)
+          console.log('did not request notifications!')
+        }
       }
     }
 
@@ -4332,78 +4618,178 @@ class Tabs {
 }
 
 const lookupTabs = new Tabs();
-;
-class MerriamWebster extends Page {
-  constructor() {
+;class Explanations extends Page {
+  constructor(list) {
     super();
+    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
+    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
+    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
+    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
+    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
+    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
+    let selected = [];
+    let searchInput;
+    let inputIndex = 0;
     const instance = this;
-    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
-    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
-    const SEARCH_INPUT_ID = 'merriam-suggestion-search-input-id';
-    let suggestions;
-    let definitions;
-    let key;
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
-
-    function openDictionary(event) {
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      const word = searchInput.value.trim();
-      history.push(word);
-      properties.set('searchWords', word);
-      instance.update();
+    let explanations = [];
+    let searchWords;
+    this.list = list ? list : [];
+    this.add = function (expl) {
+      this.list.push(expl);
     }
 
-    this.html = () => meriamTemplate.render({definitions});
-    this.header = () => {
-      console.log('header called');
-      return meriamHeader.render(
-        {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
-          SEARCH_INPUT_ID})};
+    this.clear = () => searchWords = null;
 
-    function afterOpen(suggestionHtml) {
-      const searchInput = document.getElementById(SEARCH_INPUT_ID);
-      searchInput.addEventListener('change', openDictionary);
-      searchInput.focus();
+    function openAddPage(event) {
+      lookupTabs.close();
+      AddInterface.open(searchWords, window.location.href);
+      event.stopPropagation();
     }
 
-    this.afterOpen = afterOpen;
+    function forTags(func) {
+      const tags = document.getElementsByClassName('ce-expl-tag');
+      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
+    }
 
-    function success (data) {
-      const elem = data[0];
-      if (elem && elem.meta && elem.meta.stems) {
-        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
-        definitions = data;
-        suggestions = [];
-      } else {
-        definitions = undefined;
-        suggestions = data;
+    function selectUpdate() {
+      selected = [];
+      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
+      setExplanation();
+    }
+
+    function regScore(reg, text) {
+      let match = text.match(reg);
+      let score = (value) => match === null ? 0 : value;
+      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
+      return {score, length};
+    }
+
+    function byFilterValue(expl1, expl2) {
+      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
+                        .split(/\s{1,}/);
+      if (wordList.length === 1 && wordList[0] === '') {
+        return expl2.author.percent - expl1.author.percent;
       }
-      lookupTabs.updateBody();
+      let matchCount1 = 0;
+      let matchCount2 = 0;
+      wordList.forEach((word) => {
+        if (word) {
+          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
+          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
+          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
+
+          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
+          matchCount1 += regScore(tagReg, expl1.content).score(10);
+          matchCount2 += regScore(tagReg, expl2.content).score(10);
+
+          const wordReg = new RegExp(word);
+          matchCount1 += regScore(wordReg, expl1.content).length();
+          matchCount2 += regScore(wordReg, expl2.content).length();
+        }
+      });
+      expl1.score = matchCount1;
+      expl2.score = matchCount2;
+      return matchCount2 - matchCount1;
+    }
+
+
+    function addExpl(e) {
+      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
+      function addExplSuccessful() {
+        explanations.forEach((expl) => {
+          if(expl.id === explId)
+            hoverExplanations.add(expl);
+            setExplanation();
+        })
+      }
+      const url = EPNTS.siteExplanation.add(explId);
+      const siteUrl = window.location.href;
+      Request.post(url, {siteUrl}, addExplSuccessful);
+    }
+
+    function setTagOnclick() {
+      forTags((elem) => elem.onclick = selectUpdate);
+      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
+      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
+
+      const searchBtn = document.getElementById(SEARCH_BTN_ID);
+      if (searchBtn) {
+        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
+        searchBtn.onclick = () => {
+          let words = searchInput.value;
+          if (words) {
+            words = words.toLowerCase().trim();
+            properties.set('searchWords', words, true);
+            history.push(words);
+            instance.get();
+          }
+        };
+        searchInput.addEventListener('keyup', lookupTabs.updateBody)
+        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
+
+        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
+        searchInput.selectionStart = inputIndex;
+        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
+        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
+      }
+    }
+
+    function setExplanation(expls) {
+      if (expls !== undefined) {
+        explanations = expls;
+      }
       lookupTabs.updateHead();
-      afterOpen();
+      lookupTabs.updateBody();
+      setTagOnclick();
     }
 
-    function failure (error) {
-      console.error('Call to Meriam Webster failed');
+    function getScope() {
+      const scope = {};
+      const tagObj = {}
+      scope.explanations = explanations.sort(byFilterValue);
+      scope.explanations.forEach(function (expl) {
+        const username = expl.author.username;
+        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
+        expl.canApply = hoverExplanations.canApply(expl);
+        expl.rendered = textToHtml(expl.content);
+        const author = expl.author;
+        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100) || 0;
+      });
+
+      scope.words = searchWords;
+      scope.loggedIn = User.isLoggedIn();
+      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
+      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
+      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
+      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
+      scope.selected = selected;
+      return scope;
     }
 
-    this.update = function () {
-      const newKey = properties.get('searchWords');
-      if (newKey && newKey !== key && (typeof newKey) === 'string') {
-        definitions = undefined;
-        suggestions = undefined;
-        key = newKey;
-        const url = EPNTS.merriam.search(key);
-        Request.get(url, success, failure);
+    function html () {
+      return template.render(scope);
+    }
+
+    this.html = () => template.render(getScope());
+    this.header= () => headerTemplate.render(getScope());
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
+    this.afterOpen = setTagOnclick;
+    this.beforeOpen = () => instance.get();
+
+    this.get = function () {
+      const newSearchWords = properties.get('searchWords');
+      if (newSearchWords !== searchWords) {
+        selected = [];
+        searchWords = newSearchWords;
+        const url = EPNTS.explanation.get(searchWords);
+        Request.get(url, setExplanation, () => setExplanation([]));
       }
     }
-
-    this.beforeOpen = this.update;
   }
 }
 
-MerriamWebster = new MerriamWebster();
-lookupTabs.add(MerriamWebster, 1);
+Explanations = new Explanations();
+lookupTabs.add(Explanations, 0);
 ;
 class AddInterface extends Page {
   constructor () {
@@ -4612,178 +4998,78 @@ class AddInterface extends Page {
 AddInterface = new AddInterface();
 // AddInterface.open('poopLuck');
 new KeyShortCut('ca', AddInterface.toggle);
-;class Explanations extends Page {
-  constructor(list) {
+;
+class MerriamWebster extends Page {
+  constructor() {
     super();
-    const template = new $t('popup-cnt/tab-contents/explanation-cnt');
-    const headerTemplate = new $t('popup-cnt/tab-contents/explanation-header');
-    const CREATE_YOUR_OWN_BTN_ID = 'ce-explanations-create-your-own-btn-id';
-    const LOGIN_BTN_ID = 'ce-explanations-login-btn-id';
-    const SEARCH_BTN_ID = 'ce-explanations-search-btn-id';
-    const EXPL_SEARCH_INPUT_ID = 'ce-explanation-search-input-id';
-    let selected = [];
-    let searchInput;
-    let inputIndex = 0;
     const instance = this;
-    let explanations = [];
-    let searchWords;
-    this.list = list ? list : [];
-    this.add = function (expl) {
-      this.list.push(expl);
+    const meriamTemplate = new $t('popup-cnt/tab-contents/webster');
+    const meriamHeader = new $t('popup-cnt/tab-contents/webster-header');
+    const SEARCH_INPUT_ID = 'merriam-suggestion-search-input-id';
+    let suggestions;
+    let definitions;
+    let key;
+    this.label = () => `<img class="lookup-img" src="${EPNTS.images.merriam()}">`;
+
+    function openDictionary(event) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      const word = searchInput.value.trim();
+      history.push(word);
+      properties.set('searchWords', word);
+      instance.update();
     }
 
-    this.clear = () => searchWords = null;
+    this.html = () => meriamTemplate.render({definitions});
+    this.header = () => {
+      console.log('header called');
+      return meriamHeader.render(
+        {key: key.replace(/\s/g, '&nbsp;'), suggestions, MERRIAM_WEB_SUG_CNT_ID,
+          SEARCH_INPUT_ID})};
 
-    function openAddPage(event) {
-      lookupTabs.close();
-      AddInterface.open(searchWords, window.location.href);
-      event.stopPropagation();
+    function afterOpen(suggestionHtml) {
+      const searchInput = document.getElementById(SEARCH_INPUT_ID);
+      searchInput.addEventListener('change', openDictionary);
+      searchInput.focus();
     }
 
-    function forTags(func) {
-      const tags = document.getElementsByClassName('ce-expl-tag');
-      for (let index = 0; index < tags.length; index += 1) {func(tags[index]);}
-    }
+    this.afterOpen = afterOpen;
 
-    function selectUpdate() {
-      selected = [];
-      forTags((elem) => {if (elem.checked) selected.push(elem.value);});
-      setExplanation();
-    }
-
-    function regScore(reg, text) {
-      let match = text.match(reg);
-      let score = (value) => match === null ? 0 : value;
-      let length = (multiplier) => match === null ? 0 : match.length * (multiplier || 1);
-      return {score, length};
-    }
-
-    function byFilterValue(expl1, expl2) {
-      const wordList = searchInput.value.replace(/[^a-z^A-Z^0-9^\s]/g, '')
-                        .split(/\s{1,}/);
-      if (wordList.length === 1 && wordList[0] === '') {
-        return expl2.author.percent - expl1.author.percent;
+    function success (data) {
+      const elem = data[0];
+      if (elem && elem.meta && elem.meta.stems) {
+        data = data.filter(elem => elem.meta.stems.indexOf(key) !== -1);
+        definitions = data;
+        suggestions = [];
+      } else {
+        definitions = undefined;
+        suggestions = data;
       }
-      let matchCount1 = 0;
-      let matchCount2 = 0;
-      wordList.forEach((word) => {
-        if (word) {
-          const exactTagReg = new RegExp(`#${word}(\s|#|$)`);
-          matchCount1 += regScore(exactTagReg, expl1.content).score(100);
-          matchCount2 += regScore(exactTagReg, expl2.content).score(100);
-
-          const tagReg = new RegExp(`#[a-zA-Z0-9]*${word}[a-zA-Z0-9]*`);
-          matchCount1 += regScore(tagReg, expl1.content).score(10);
-          matchCount2 += regScore(tagReg, expl2.content).score(10);
-
-          const wordReg = new RegExp(word);
-          matchCount1 += regScore(wordReg, expl1.content).length();
-          matchCount2 += regScore(wordReg, expl2.content).length();
-        }
-      });
-      expl1.score = matchCount1;
-      expl2.score = matchCount2;
-      return matchCount2 - matchCount1;
-    }
-
-
-    function addExpl(e) {
-      const explId = Number.parseInt(e.target.attributes['expl-id'].value);
-      function addExplSuccessful() {
-        explanations.forEach((expl) => {
-          if(expl.id === explId)
-            hoverExplanations.add(expl);
-            setExplanation();
-        })
-      }
-      const url = EPNTS.siteExplanation.add(explId);
-      const siteUrl = window.location.href;
-      Request.post(url, {siteUrl}, addExplSuccessful);
-    }
-
-    function setTagOnclick() {
-      forTags((elem) => elem.onclick = selectUpdate);
-      const applyBtns = document.getElementsByClassName('ce-expl-apply-btn');
-      Array.from(applyBtns).forEach((btn) => btn.onclick = addExpl);
-
-      const searchBtn = document.getElementById(SEARCH_BTN_ID);
-      if (searchBtn) {
-        searchInput = document.getElementById(EXPL_SEARCH_INPUT_ID);
-        searchBtn.onclick = () => {
-          let words = searchInput.value;
-          if (words) {
-            words = words.toLowerCase().trim();
-            properties.set('searchWords', words, true);
-            history.push(words);
-            instance.get();
-          }
-        };
-        searchInput.addEventListener('keyup', lookupTabs.updateBody)
-        onEnter(EXPL_SEARCH_INPUT_ID, searchBtn.onclick);
-
-        document.getElementById(EXPL_SEARCH_INPUT_ID).focus();
-        searchInput.selectionStart = inputIndex;
-        document.getElementById(CREATE_YOUR_OWN_BTN_ID).onclick = openAddPage;
-        document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
-      }
-    }
-
-    function setExplanation(expls) {
-      if (expls !== undefined) {
-        explanations = expls;
-      }
-      lookupTabs.updateHead();
       lookupTabs.updateBody();
-      setTagOnclick();
+      lookupTabs.updateHead();
+      afterOpen();
     }
 
-    function getScope() {
-      const scope = {};
-      const tagObj = {}
-      scope.explanations = explanations.sort(byFilterValue);
-      scope.explanations.forEach(function (expl) {
-        const username = expl.author.username;
-        expl.shortUsername = username.length > 20 ? `${username.substr(0, 17)}...` : username;
-        expl.canApply = hoverExplanations.canApply(expl);
-        expl.rendered = textToHtml(expl.content);
-        const author = expl.author;
-        expl.author.percent = Math.floor((author.likes / (author.dislikes + author.likes)) * 100) || 0;
-      });
-
-      scope.words = searchWords;
-      scope.loggedIn = User.isLoggedIn();
-      scope.CREATE_YOUR_OWN_BTN_ID = CREATE_YOUR_OWN_BTN_ID;
-      scope.EXPL_SEARCH_INPUT_ID = EXPL_SEARCH_INPUT_ID;
-      scope.SEARCH_BTN_ID = SEARCH_BTN_ID;
-      scope.LOGIN_BTN_ID = LOGIN_BTN_ID;
-      scope.selected = selected;
-      return scope;
+    function failure (error) {
+      console.error('Call to Meriam Webster failed');
     }
 
-    function html () {
-      return template.render(scope);
-    }
-
-    this.html = () => template.render(getScope());
-    this.header= () => headerTemplate.render(getScope());
-    this.label = () => `<img class="lookup-img" src="${EPNTS.images.logo()}">`;
-    this.afterOpen = setTagOnclick;
-    this.beforeOpen = () => instance.get();
-
-    this.get = function () {
-      const newSearchWords = properties.get('searchWords');
-      if (newSearchWords !== searchWords) {
-        selected = [];
-        searchWords = newSearchWords;
-        const url = EPNTS.explanation.get(searchWords);
-        Request.get(url, setExplanation, () => setExplanation([]));
+    this.update = function () {
+      const newKey = properties.get('searchWords');
+      if (newKey && newKey !== key && (typeof newKey) === 'string') {
+        definitions = undefined;
+        suggestions = undefined;
+        key = newKey;
+        const url = EPNTS.merriam.search(key);
+        Request.get(url, success, failure);
       }
     }
+
+    this.beforeOpen = this.update;
   }
 }
 
-Explanations = new Explanations();
-lookupTabs.add(Explanations, 0);
+MerriamWebster = new MerriamWebster();
+lookupTabs.add(MerriamWebster, 1);
 ;
 return {afterLoad};
         }

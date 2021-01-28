@@ -7,7 +7,8 @@
       {{comment ? comment.value : ''}}
     </div>
   </div>
-  <div id='{{COMMENTS_CNT_ID}}'{{showComments || !commentHtml ? '' : ' hidden'}}>
+  <div id='{{COMMENTS_CNT_ID}}'{{showComments || !commentHtml ? '' : ' hidden'}}
+        ce-sibling-id='{{siblingId}}'>
     <div>
       {{commentHtml}}
     </div>
@@ -21,16 +22,20 @@
           Submit
         </button>
       </div>
-      <div class='ce-center'>
-        <div>
-          {{addToggle()}}
-        </div>
-      </div>
     </div>
   </div>
   <div class='ce-center'>
-    <div>
-      {{commentToggle()}}
-    </div>
+    <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='{{COMMENTS_CNT_ID}}'
+          ce-toggle-hidden-text='Show Comments'
+          ce-toggle-visible-text='Hide Comments'
+          {{commentHtml ? '' : 'hidden disabled'}}>
+      {{!showComments ? 'Show Comments' : 'Hide Comments'}}
+    </button>
+    <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='{{ADD_CNT_ID}}'
+          ce-toggle-hidden-text='Add Comment'
+          ce-toggle-visible-text='Close Comment'
+          {{loggedIn ? '' : 'hidden disabled'}}>
+      Add Comment
+    </button>
   </div>
 </div>

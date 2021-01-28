@@ -2,12 +2,13 @@
 class CatchAll {
   constructor(container) {
     const instance = this;
-    container = container || document.body;
+    container = container || CE_CONTAINER;
     let events = Array.from(arguments).splice(1);
     events = events.length > 0 ? events : CatchAll.allMouseEvents;
 
     // const zIndex = 1000008;
     const backdrop = document.createElement('DIV');
+    this.backdrop = backdrop;
 
     this.hide = () => backdrop.hidden = true;
     this.show = () => {

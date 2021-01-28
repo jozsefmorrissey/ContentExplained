@@ -31,18 +31,18 @@ class DragDropResize {
     this.hasMoved = () => hasMoved;
     function onResizeEvent() {
       const rect = popupCnt.getBoundingClientRect();
-      if (!Resizer.isLocked(popupCnt)) instance.setDems({width: rect.width, height: rect.height});
+      if (!Resizer.isLocked(popupCnt)) instance.setDems({width: rect.width + 'px', height: rect.height + 'px'});
     }
 
     const defaultStyle = `
       background-color: white;
       position: ${position};
       overflow: hidden;
-      min-height: ${props.minWidth === undefined ? '20vh' : props.minWidth};
-      min-width: ${props.minHeight === undefined ? '50vw' : props.minHeight};
+      min-height: ${props.minWidth === undefined ? '0vh' : props.minWidth};
+      min-width: ${props.minHeight === undefined ? '0vw' : props.minHeight};
       display: none;
+      ${props.overflow ? 'overflow: ' + props.overflow + ';' : ''}
       border: 1px solid;
-      padding: 3pt;
       border-radius: 5pt;
       box-shadow: 3px 3px 6px black, 3px 3px 6px grey, 3px 3px 6px lightgrey;`;
 
@@ -304,10 +304,9 @@ class DragDropResize {
         props});
     safeInnerHtml(tempHtml, tempElem);
     tempElem.children[0].style = defaultStyle;
-    document.body.append(tempElem);
+    CE_CONTAINER.append(tempElem);
 
     const popupContent = document.getElementById(POPUP_CONTENT_ID);
-    popupContent.style.overflow = 'auto';
     const popupCnt = document.getElementById(POPUP_CNT_ID);
     const histCnt = document.createElement('DIV');
     const tabHeader = document.getElementById(POPUP_HEADER_CNT_ID);
@@ -322,7 +321,7 @@ class DragDropResize {
     histCnt.style.position = position;
     histCnt.hidden = true;
     histCnt.className = 'place-history-cnt';
-    document.body.append(histCnt);
+    CE_CONTAINER.append(histCnt);
     popupCnt.style = defaultStyle;
     popupCnt.addEventListener(Resizer.events.resize.name, onResizeEvent);
     document.getElementById(MAXIMIZE_BTN_ID).onclick = instance.maximize;
@@ -410,6 +409,10 @@ class DragDropResize {
       getPopupElems().content.addEventListener(eventName, func);
     }
     this.on = on;
+
+    const cancelFade = fadeOut(getPopupElems().cnt, 10, instance.close);
+    getPopupElems().cnt.addEventListener('mouseover', cancelFade);
+
 
     this.container = () => getPopupElems().cnt;
     this.lockSize = () => Resizer.lock(popupCnt);

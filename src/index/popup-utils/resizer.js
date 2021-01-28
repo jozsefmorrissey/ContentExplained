@@ -150,7 +150,7 @@ class Resizer {
 }
 
 Resizer.container = document.createElement('div');
-document.body.append(Resizer.container);
+CE_CONTAINER.append(Resizer.container);
 
 Resizer.lastZindexSearch = new Date().getTime();
 Resizer.zIndex = (zindex) => {

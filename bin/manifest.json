@@ -33,6 +33,7 @@
       "js": ["./CE.js"],
       "css": ["./css/index.css",
             "./css/hover-resource.css",
+            "./css/hover-explanation.css",
             "./css/place.css",
             "./css/notification.css",
             "./css/lookup.css"]

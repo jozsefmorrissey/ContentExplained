@@ -1,14 +1,15 @@
 <div>
   <div class="ce-inline ce-width-full">
-    <div class="">
-      <ul id='{{SWITCH_LIST_ID}}' class='ce-hover-list'>
+    <div class="ce-hover-switch-list-cnt">
+      <ul id='{{SWITCH_LIST_ID}}' class='ce-hover-list ce-auto-overflow'
+            style='height: {{height}}'>
         <li:t class='ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}'
               repeat='expl in active.list'>
           {{expl.words}}&nbsp;<b class='ce-small-text'>({{expl.popularity}}%)</b>
         </li:t>
       </ul>
     </div>
-    <div class='ce-width-full'>
+    <div id='{{MAIN_CONTENT_CNT_ID}}' class='ce-width-full ce-auto-overflow' style='height: {{height}}'>
       <div class='ce-hover-expl-cnt'>
         <div class='ce-hover-expl-title-cnt'>
           <div id='{{VOTEUP_BTN_ID}}' class='ce-center{{canLike ? " ce-pointer" : ""}}'>
@@ -36,10 +37,18 @@
           Edit
         </button>
       </div>
-      <div{{hideComments ? ' hidden' : ''}}>
-        <h3>Comments</h3>
-        {{commentHtml}}
-      </div>
+      <ul class='ce-hover-expl-tab-control-cnt'>
+        <li:t repeat='tab in tabs' ce-tab='ce-hover-expl-{{tab.label}}-cnt'
+            class='{{tab.active === true ? "active" : ""}}'
+            {{tab.hide() ? "hidden" : ""}}>
+          {{tab.label}}
+        </li:t>
+      </ul>
+      <div:t repeat='tab in tabs' id='ce-hover-expl-{{tab.label}}-cnt'
+            {{tab.active === true ? "" : " hidden"}}
+            {{tab.hide() ? "hidden" : ""}}>
+        {{tab.html()}}
+      </div:t>
     </div>
   </div>
 </div>

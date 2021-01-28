@@ -26,6 +26,7 @@ class User {
     function setUser(u) {
       user = u;
       dispatchUpdate();
+      properties.set('user', u, true);
       console.log('update user event fired')
     }
 
@@ -57,6 +58,7 @@ class User {
       const cred = properties.get('user.credential');
       if (cred !== null) {
         properties.set('user.credential', null, true);
+        properties.set('user', null, true);
         instance.update();
       }
 
@@ -92,8 +94,16 @@ class User {
       if ((typeof credential) === 'string') {
         let url = EPNTS.credential.status(credential);
         Request.get(url, updateStatus, () => updateStatus('expired'));
-        url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
-        Request.get(url, setUser);
+        const u = properties.get('user');
+        if (u === null || u === undefined || u.id !==
+              Number.parseInt(credential.replace(/User ([0-9]{1,})-.*$/, '$1'))) {
+          url = EPNTS.user.get(credential.replace(userCredReg, '$1'));
+          Request.get(url, setUser);
+          console.log('User Requested!')
+        } else {
+          setUser(u);
+          console.log('No User Request!')
+        }
       } else if (credential === null || credential === undefined) {
         updateStatus('expired');
         instance.logout(true);
@@ -123,7 +133,7 @@ class User {
       window.open(`${page}#Login`, tabId);
     };
 
-    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status'], () => this.update()));
+    afterLoad.push(() => properties.onUpdate(['user.credential', 'user.status', 'user'], () => this.update()));
   }
 }
 

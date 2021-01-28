@@ -4,14 +4,16 @@ class HoverExplanations {
   constructor (props) {
     props = props || {};
     const template = new $t('hover-explanation');
+    const questionTemplate = new $t('questions');
     const instance = this;
     const excludedTags = ['STYLE', 'SCRIPT', 'TITLE'];
     const  active = {expl: {}};
     const tag = 'hover-explanation';
+    let siteInfoData;
 
     let switches = [];
     let disabled = false;
-    let explRefs = {};
+    let questions = {};
     let left;
     let explIds = [];
     let currIndex, currRef;
@@ -23,14 +25,33 @@ class HoverExplanations {
     const SWITCH_LIST_ID = 'ce-hover-expl-switch-list-id-' + id;
     const VOTEUP_BTN_ID = 'ce-hover-expl-voteup-btn-' + id;
     const VOTEDOWN_BTN_ID = 'ce-hover-expl-votedown-btn-' + id;
+    const MAIN_CONTENT_CNT_ID = 'ce-hover-expl-main-content-cnt-' + id;
 
     const getDems = () => properties.get('hoverExplanationsDems') || {width: '40vw', height: '20vh'};
-    const setDems = (dems) => {
-      if (hoverExplanations === instance)
-        properties.set('hoverExplanationsDems', dems, true);
-    };
 
-    props.setDems = props.setDems || setDems;
+    function setDemsFunc (setDems) {
+      let instanceSetDems;
+      if ((typeof setDems) === 'function') {
+        instanceSetDems = setDems;
+      } else {
+        instanceSetDems = (dems) => {
+          if (hoverExplanations === instance) {
+            properties.set('hoverExplanationsDems', dems, true);
+          }
+        }
+      }
+      return function (dems) {
+        document.getElementById(SWITCH_LIST_ID).style.height = dems.height;
+        document.getElementById(MAIN_CONTENT_CNT_ID).style.height = dems.height;
+        instanceSetDems(dems);
+      };
+    }
+
+    function getQuestions(expl) {
+      return questions[expl.words] || [];
+    }
+
+    props.setDems = setDemsFunc(props.setDems);
     props.getDems = props.getDems || getDems;
     props.tabText = () => active.expl.words;
     const hoverResource = new HoverResources(props);
@@ -62,13 +83,13 @@ class HoverExplanations {
           active.list = [elemExplORef];
           currRef = undefined;
         } else {
-          active.list = explRefs[currRef];
+          active.list = explList(currRef);
           currIndex = index === undefined ? currIndex || 0 : index;
         }
       } else {
         if (ref !== currRef) currIndex = index || 0;
         currRef = ref;
-        active.list = explRefs[currRef];
+        active.list = explList(currRef);
       }
 
       if (active.expl) active.expl.isActive = false;
@@ -80,11 +101,25 @@ class HoverExplanations {
       const loggedIn = User.isLoggedIn();
       const authored = loggedIn && active.expl.author &&
               User.loggedIn().id === active.expl.author.id;
+      const explQuestions = getQuestions(active.expl);
+      const tabs = [];
+      tabs.push({
+        label: 'Comments',
+        hide: () => props.hideComments || (active.expl.comments.length === 0 && !User.isLoggedIn()),
+        active: explQuestions.length === 0,
+        html: Comment.for(hoverResource.container(), active.expl, undefined, true).html
+      });
+      tabs.push({
+        label: 'Questions',
+        active: explQuestions.length > 0,
+        hide: () => explQuestions.length === 0,
+        html: () => questionTemplate.render({questions: explQuestions})
+      });
       const scope = {
         LOGIN_BTN_ID, SWITCH_LIST_ID, VOTEUP_BTN_ID, VOTEDOWN_BTN_ID, EDIT_BTN_ID,
-        active, loggedIn, authored,
-        commentHtml: Comment.for(hoverResource.container(), active.expl, undefined, true).html(),
-        hideComments: props.hideComments,
+        MAIN_CONTENT_CNT_ID,
+        active, loggedIn, authored, tabs,
+        height: getDems().height,
         content: textToHtml(active.expl.content),
         likes: Opinion.likes(active.expl),
         dislikes: Opinion.dislikes(active.expl),
@@ -102,7 +137,9 @@ class HoverExplanations {
 
     function switchFunc (index) {
       return () => {
+        const scrollTop = document.getElementById(SWITCH_LIST_ID).scrollTop;
         updateContent(undefined, index);
+        document.getElementById(SWITCH_LIST_ID).scroll(0, scrollTop);
       };
     }
 
@@ -144,6 +181,8 @@ class HoverExplanations {
       if (active.list.length > 1) {
         switches = Array.from(document.getElementById(SWITCH_LIST_ID).children);
         switches.forEach((elem, index) => elem.onclick = switchFunc(index));
+      } else {
+        document.getElementById(SWITCH_LIST_ID).hidden = true;
       }
       document.getElementById(LOGIN_BTN_ID).onclick = User.openLogin;
       document.getElementById(EDIT_BTN_ID).onclick = () => {
@@ -175,8 +214,15 @@ class HoverExplanations {
     }
 
     function findWord(word) {
-        return Array.from(document.body.querySelectorAll('*'))
-          .filter(el => topNodeText(el).match(new RegExp(word, 'i')));
+      let allNodes = [];
+      const bodyChildren = document.querySelectorAll('body>:not(#ce-extension-html-container)')
+      for (let index = 0; index < bodyChildren.length; index += 1) {
+        const decendents = bodyChildren[index].querySelectorAll('*');
+        for (let dIndex = 0; dIndex < decendents.length; dIndex += 1) {
+          allNodes.push(decendents[dIndex]);
+        }
+      }
+      return allNodes.filter(el => topNodeText(el).match(new RegExp(word, 'i')));
     }
 
 
@@ -235,15 +281,15 @@ class HoverExplanations {
       return Object.keys(uniq).sort(sortByLength);
     }
 
-    function set(explList, soft) {
-      explRefs = explList;
+    function set(data, soft) {
+      siteInfoData = data;
       if (soft) return;
       removeAll();
       wrapList = [];
-      const wordList = Object.keys(explList).sort(sortByLength);
+      const wordList = Object.keys(siteInfoData.list).sort(sortByLength);
       for (let index = 0; index < wordList.length; index += 1) {
         const ref = wordList[index];
-        const explanations = explList[ref];
+        const explanations = explList(ref);
         explanations.forEach((expl) => explIds.push(expl.id));
         const uniqWords = uniqueWords(explanations).sort(sortByLength);
         for (let wIndex = 0; wIndex < uniqWords.length; wIndex += 1) {
@@ -256,10 +302,7 @@ class HoverExplanations {
 
     function update(expl) {
       const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [];
-      }
-      const list = explRefs[ref];
+      const list = explList(ref);
       let index = 0;
       for (; index < list.length; index += 1) {
         if (list[index].id === expl.id) {
@@ -273,16 +316,24 @@ class HoverExplanations {
     }
     this.update = update;
 
+    function refObj(ref) {
+      if (siteInfoData.list[ref] === undefined) {
+        siteInfoData.list[ref] = {explanations: [], questions: []};
+      }
+      return siteInfoData.list[ref];
+    }
+
+    function explList(ref) {
+      const obj = refObj(ref);
+      return obj === undefined ? undefined : obj.explanations;
+    }
+
     function add(expl) {
       const ref = expl.searchWords;
-      if (explRefs[ref] === undefined) {
-        explRefs[ref] = [expl];
-      } else {
-        explRefs[ref].push(expl);
-      }
+      explList(ref).push(expl);
       const elem = document.createElement(tag);
       elem.setAttribute('ref', expl.searchWords);
-      updateContent(elem, explRefs[ref].length - 1);
+      updateContent(elem, explList(ref).length - 1);
       hoverResource.position().elem();
 
       wrapList.push({ word: expl.words, ref });
@@ -330,10 +381,11 @@ class HoverExplanations {
           hoverResource.stopHover();
           hoverResource.lockOpen();
           hoverExplanations = new HoverExplanations();
-          hoverExplanations.set(explRefs, true);
+          hoverExplanations.set(siteInfoData, true);
         }
     }
 
+    toggleContainer(hoverResource.container());
     properties.onUpdate('enabled', enableToggled);
   }
 }

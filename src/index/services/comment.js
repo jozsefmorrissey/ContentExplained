@@ -60,7 +60,8 @@ class ToggleMenu {
 
 
 class Comment {
-  constructor(explanation, comment, color) {
+  constructor(explanation, comment, color, siblingId) {
+    siblingId = siblingId || Comment.siblingId++;
     const template = new $t('popup-cnt/tab-contents/add-comment');
     const controlTemplate = new $t('popup-cnt/tab-contents/comment-controls');
     const COMMENT_SUBMIT_BTN_CLASS = 'ce-comment-submit-btn-class';
@@ -77,7 +78,9 @@ class Comment {
     scope.CONTROLS_CNT_ID = 'ce-comment-controls-id-' + uniqId;
     scope.showComments = comment === undefined;
     scope.showAdd = false;
+    scope.siblingId = siblingId;
     scope.commentHtml = '';
+    scope.loggedIn = User.isLoggedIn();
     scope.color = color;
     scope.value = comment === undefined ? '' : comment.value;
     let found = false;
@@ -86,7 +89,7 @@ class Comment {
       if ((comment === undefined && childComment.commentId === null) ||
           (comment !== undefined && comment.id === childComment.commentId)) {
         found = true;
-        scope.commentHtml += Comment.for(null, explanation, childComment, !color).html();
+        scope.commentHtml += Comment.for(null, explanation, childComment, !color, siblingId).html();
       }
     }
     const toggleComments = new ToggleMenu({
@@ -163,4 +166,5 @@ class Comment {
     return cache[uniqId];
   }
 
+  Comment.siblingId = 0;
 }

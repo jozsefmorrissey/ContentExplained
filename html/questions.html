@@ -1,0 +1,11 @@
+<div class="ce-padding">
+  <div:t repeat='question in questions' question-id='{{question.id}}'>
+    <div class='ce-full ce-center'>
+      <button type="button" class='ce-slim-btn ce-question-answer'>Answer</button>
+      <button type="button" class='ce-slim-btn ce-question-unclear'>Un Clear</button>
+      <button type="button" class='ce-slim-btn ce-question-answered'>Answered</button>
+      <h3>{{question.words}}</h3>
+    </div>
+      {{question.elaboration}}
+  </div:t>
+</div>

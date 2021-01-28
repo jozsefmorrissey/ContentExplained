@@ -6,6 +6,28 @@ function isScrollable(elem) {
     return elem.scrollWidth > elem.clientWidth || elem.scrollHeight > elem.clientHeight;
 };
 
+function fadeOut(elem, disapearAt, func) {
+  const origOpacity = elem.style.opacity;
+  let stopFade = false;
+  function reduceOpacity () {
+    if (stopFade) return;
+    elem.style.opacity -= .005;
+    if (elem.style.opacity <= 0) {
+      elem.style.opacity = origOpacity;
+      func(elem);
+    } else {
+      setTimeout(reduceOpacity, disapearAt * 2 / 600 * 1000);
+    }
+  }
+
+  elem.style.opacity = 1;
+  setTimeout(reduceOpacity, disapearAt / 3 * 1000);
+  return () => {
+    stopFade = true;
+    elem.style.opacity = origOpacity;
+  };
+}
+
 function scrollableParents(elem) {
   let scrollable = [];
   if (elem instanceof HTMLElement) {
@@ -15,6 +37,26 @@ function scrollableParents(elem) {
     return scrollableParents(elem.parentNode).concat(scrollable);
   }
   return scrollable;
+}
+
+function getParents(elem, selector) {
+  let matches = [];
+  if (elem instanceof HTMLElement) {
+    if ((typeof selector) === 'string') {
+      if (elem.matches(selector)) {
+        matches.push(elem);
+      }
+    } else if ((typeof selector) === 'function') {
+      if (selector(elem)) {
+        matches.push(elem)
+      }
+    } else {
+      throw new Error('Unrecognized selector type, must be "function" or a "queryString"');
+    }
+
+    return getParents(elem.parentNode, selector).concat(matches);
+  }
+  return matches;
 }
 
 function center(elem) {
@@ -51,16 +93,13 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
       const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
       const yDiff = scrollDist * (elemCenter.y < scrollCenter.y ? -1 : 1);
       scrollElem.scroll(0, scrollElem.scrollTop + yDiff);
-      console.log(scrollElem.scrollPid, '-', elemCenter.y, ':', scrollCenter.y)
-      console.log(`${elemCenter.top} !== ${lastPosition[scrollElem.scrollPid]}`)
-      console.log();
       if (elemCenter.top !== lastPosition[scrollElem.scrollPid]
             && (scrollCenter.y < elemCenter.y - 2 || scrollCenter.y > elemCenter.y + 2)) {
         lastPosition[scrollElem.scrollPid] = elemCenter.top;
         setTimeout(scroll(scrollElem), delay);
       } else if(!highlighted) {
         highlighted = true;
-        temporaryStyle(elem, 2000, {
+        temporaryStyle(elem, 5000, {
           borderStyle: 'solid',
           borderColor: '#07ff07',
           borderWidth: '5px'
@@ -74,24 +113,6 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
     setTimeout(scroll(scrollParent), 10);
   });
 }
-
-// function scrollIntoView(elem, divisor, delay) {
-//   let lastPosition;
-//   function scroll() {
-//     const rect = elem.getBoundingClientRect();
-//     const target = Math.floor((window.innerHeight - rect.height) / 2);
-//     const fullDist = Math.abs(rect.top - target);
-//     const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
-//     const yDiff = scrollDist * (rect.top < target ? -1 : 1);
-//     window.scroll(0, window.scrollY + yDiff);
-//     console.log(elem.id, ':', window.scrollY)
-//     if (window.scrollY !== lastPosition && (rect.top < target - 2 || rect.top > target + 2)) {
-//       lastPosition = window.scrollY;
-//       setTimeout(scroll, delay);
-//     }
-//   }
-//   setTimeout(scroll, 10);
-// }
 
 const selectors = {};
 let matchRunIdCount = 0;
@@ -117,7 +138,6 @@ function runMatch(event) {
       selectors[matchRunTargetId][event.type][selectStr].forEach((func) => func(target));
     }
   })
-  console.log(event);
 }
 
 function matchRun(event, selector, func, target) {
@@ -137,6 +157,97 @@ function matchRun(event, selector, func, target) {
   selectors[matchRunTargetId][event][selector].push(func);
 }
 
+function updateId (id, document, strHtml) {
+  const tempElem = document.createElement('div');
+  tempElem.innerHTML = strHtml;
+  const newHtml = tempElem.getElementById(id).outerHTML;
+  document.getElementById(id).outerHTML = newHtml;
+}
+
+function getSiblings(elem, selector) {
+  const siblings = [];
+  let curr=elem.nextElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.nextElementSibling;
+  }
+  curr=elem.previousElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.previousElementSibling;
+  }
+  return siblings;
+}
+
+const activeReg = /(^| )active( |$)/;
+function tabClass(target) {
+  function switchDisplay(target) {
+    if(target.className.match(activeReg)) return;
+    target.className = target.className + ' active';
+    const tabId = target.getAttribute('ce-tab');
+    document.getElementById(tabId).hidden = false;
+    const siblings = getSiblings(target, '[ce-tab]');
+    siblings.forEach((sibling) => {
+      const sibTargId = sibling.getAttribute('ce-tab');
+      sibling.className = sibling.className.replace(activeReg, '');
+      document.getElementById(sibTargId).hidden = true;
+    });
+  }
+  matchRun('click', '[ce-tab]', switchDisplay, target);
+}
+toggleContainer();
+
+function eachParent(elem, selector, func) {
+  const parents = getParents(elem, selector);
+  parents.forEach((parent) => func(parent));
+}
+
+function toggle(target, hidden) {
+  const toggleId = target.getAttribute('ce-toggle');
+  const targetElem = document.getElementById(toggleId);
+  targetElem.hidden = hidden !== undefined ? hidden : !targetElem.hidden;
+  if (targetElem.hidden) {
+    const newText = target.getAttribute('ce-toggle-hidden-text');
+    if (newText) target.innerText = newText;
+  } else {
+    const newText = target.getAttribute('ce-toggle-visible-text');
+    if (newText) target.innerText = newText;
+  }
+  const siblingId = targetElem.getAttribute('ce-sibling-id');
+  const siblings = document.querySelectorAll(`[ce-sibling-id='${siblingId}']`);
+  siblings.forEach((sibling) => {
+    if (sibling !== targetElem) {
+      document.getElementById(sibTargId).hidden = true;
+    }
+  });
+}
+
+function getAttributes(attribute) {
+  const attributes = {};
+  const elems = document.querySelectorAll(`[${attribute}]`);
+  elems.forEach((elem) => attributes[elem.getAttribute(attribute)] = elem);
+  return attributes;
+}
+
+function toggleParents(elem, hidden) {
+  const togglers = getAttributes('ce-toggle');
+  function shouldToggle (parent) {
+    const toggleElem = togglers[parent.id];
+    if (toggleElem) {
+      toggle(toggleElem, hidden);
+    }
+  }
+  eachParent(elem, shouldToggle, toggleParents);
+}
+
+function toggleContainer(container) {
+  matchRun('click', '[ce-toggle]', toggle, container);
+}
+toggleContainer();
 
 function up(selector, node) {
   if (node instanceof HTMLElement) {
@@ -175,7 +286,6 @@ function closest(selector, node) {
       return found;
     }
     visited.push(currNode);
-    console.log('curr: ' + currNode);
     if (currNode.matches(selector)) {
       return { node: currNode, distance };
     } else {

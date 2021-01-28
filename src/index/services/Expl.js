@@ -5,19 +5,18 @@ class Expl {
     let explanations = {};
     function createHoverResouces (data) {
       properties.set('siteId', data.siteId);
-      Object.values(data.list).forEach((elem) => elem.forEach(
+      Object.values(data.list).forEach((elem) => elem.explanations.forEach(
         (expl) => explanations[expl.id] = expl));
-      hoverExplanations.set(data.list);
-      hoverExplanations.scrollTo(data.list[Object.keys(data.list)[0]][0]);
+      hoverExplanations.set(data);
     }
 
     function getById(id) {
       return JSON.parse(JSON.stringify(explanations[id]));
     }
 
-    function addHoverResources () {
-      const enabled = properties.get('enabled');
-      const env = properties.get('env') || 'local';
+    function addHoverResources (props) {
+      const enabled = props.enabled;
+      const env = props.env || 'local';
       if (enabled && env !== currEnv) {
         currEnv = env;
         const url = EPNTS.siteExplanation.get();

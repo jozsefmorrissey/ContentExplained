@@ -5,19 +5,29 @@ class Notifications {
     const COMMENT = 'Comment';
     const QUESTION = 'Question';
     const template = new $t('notifications');
-    const popup = new DragDropResize({position: 'fixed', height: '25vh', width: 'fit-content',
-        minWidth: 0, minHeight: 0});
+    const popup = new DragDropResize({
+      position: 'fixed', height: '25vh', width: 'fit-content',
+      minWidth: 0, minHeight: 0, overflow: 'auto'
+    });
     popup.top().right();
     const instance = this;
     const byKey = {};
-    let notifications = {currPage: [], otherPage: []};
+    let currPage = [];
+    let otherPage = [];
+
+    function cleanUrl(url) {
+      return url.replace(/^http(s):\/\//, 'http://');
+    }
 
     function key(note) {
       return `${note.type}-${note.id}`;
     }
 
-    function gotoNotification(target) {
-      const noteKey = target.getAttribute('ce-notification-key');
+    function notificationChecked() {
+      properties.set('displayNotification', null, true);
+    }
+
+    function gotoNotification(noteKey) {
       const note = byKey[noteKey];
       let getElem;
       if (note.type === 'Comment') {
@@ -27,19 +37,36 @@ class Notifications {
       }
       const func = () => scrollIntoView(getElem(), 40, 10)
       hoverExplanations.displayExistingElem(note.explanation, func);
+      toggleParents(getElem(), false);
     }
 
+    function shouldDisplay(displayNotification) {
+      if (displayNotification) {
+        const noteUrl = cleanUrl(displayNotification.url);
+        const currUrl = cleanUrl(window.location.href);
+        if(noteUrl === currUrl) {
+          gotoNotification(displayNotification.noteKey);
+          setTimeout(notificationChecked, 5000);
+        }
+      }
+    }
+
+    let winder;
+    const windowName = `window`;
     function openPage(target) {
       const url = target.getAttribute('ce-open');
-      const name = target.getAttribute('ce-target');
-      window.open(url, name);
+      const noteKey = target.getAttribute('ce-target');
+      properties.set('displayNotification', {url, noteKey}, true)
+      winder = window.open(url, windowName);
     }
 
     matchRun('click', '[ce-open]', openPage, popup.container())
-    matchRun('click', '[ce-notification-key]', gotoNotification, popup.container())
+    matchRun('click', '[ce-notification-key]',
+          (target) => gotoNotification(target.getAttribute('ce-notification-key')),
+          popup.container())
 
 
-    this.hasNotifications = () => notifications.currPage.length > 0 &&
+    this.hasNotifications = () => currPage.length > 0 &&
           notifications.otherPage.length > 0;
 
     this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
@@ -86,21 +113,40 @@ class Notifications {
       return `ce-notification ${note.type.toLowerCase()}-notification`;
     }
 
-    this.html = () => template.render({key, notifications, getHeading, getText: shortText, getClass});
+    this.html = () => template.render({key, currPage, otherPage, getHeading, getText: shortText, getClass});
 
-    function setNotifications(notes) {
-      notifications = notes;
-      notes.currPage.forEach((note) => byKey[key(note)] = note)
+    function setNotifications(notes, dontSave) {
+      if (!dontSave) {
+        properties.set('user.notifications', notes, true);
+      }
+      const currSite = cleanUrl(window.location.href);
+      notes.forEach((notification) => {
+        const noteSite = cleanUrl(notification.site.url);
+        if (noteSite === currSite) {
+          byKey[key(notification)] = notification;
+          currPage.push(notification);
+        } else {
+          otherPage.push(notification);
+        }
+      });
       popup.updateContent(instance.html());
+      properties.onUpdate('displayNotification', shouldDisplay);
       popup.show();
     }
 
     function update() {
+      const savedNotifications = properties.get('user.notifications');
       const user = User.loggedIn();
       if (user && user.id) {
-        const userId = user.id;
-        const siteUrl = window.location.href;
-        Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
+        if (savedNotifications === null || savedNotifications === undefined) {
+          const userId = user.id;
+          const siteUrl = window.location.href;
+          Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
+          console.log('requested notifications!')
+        } else {
+          setNotifications(savedNotifications, true)
+          console.log('did not request notifications!')
+        }
       }
     }
 

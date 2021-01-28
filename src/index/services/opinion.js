@@ -65,8 +65,8 @@ class Opinion {
       results.map((expl) => opinions[expl.explanationId] = expl.favorable === 1);
     }
 
-    function getUserVotes() {
-      siteId = properties.get('siteId');
+    function getUserVotes(props) {
+      siteId = props.siteId;
       if (siteId !== undefined && User.loggedIn() !== undefined) {
         const userId = User.loggedIn().id;
         const url = EPNTS.opinion.bySite(siteId, userId);

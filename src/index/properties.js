@@ -1,14 +1,35 @@
 
 class Properties {
-  constructor () {
+  constructor (defaults) {
     const properties = {};
     const updateFuncs = {};
+    const instanceId = Properties.freeId++;
     const instance = this;
+    const idKey = () => `properties${instanceId}Id`;
+    const keysKey = () => `properties${instanceId}Keys`;
+    let pendingNotification = false;
 
-    function notify(key) {
+    let notificationList = {};
+
+    function notify() {
+      const funcs = Object.values(notificationList);
+      notificationList = {};
+      pendingNotification = false;
+      for (let index = 0; index < funcs.length; index += 1) {
+        const func = funcs[index];
+        func(instance.get.apply(null, func[keysKey()]));
+      }
+    }
+
+    function stage(key) {
+      if (!pendingNotification) {
+        pendingNotification = true;
+        setTimeout(notify, 100);
+      }
       const funcList = updateFuncs[key];
       for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
+        const func = funcList[index];
+        notificationList[func[idKey()]] = func;
       }
     }
 
@@ -19,7 +40,7 @@ class Properties {
           storeObj[key] = value;
           chrome.storage.local.set(storeObj);
         } else {
-          notify(key);
+          stage(key);
         }
     };
 
@@ -30,8 +51,14 @@ class Properties {
       const retObj = {};
       for (let index = 0; index < arguments.length; index += 1) {
         key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+        const value = properties[key];
+        if (value && (typeof value) === 'object') {
+          retObj[key] = JSON.parse(JSON.stringify(value));
+        } else {
+          retObj[key] = value;
+        }
       }
+      return retObj;
     };
 
     function storageUpdate (values) {
@@ -47,6 +74,14 @@ class Properties {
           instance.set(key, value);
         }
       }
+      const defKeys = Object.keys(defaults);
+      for (let index = 0; index < defKeys.length; index += 1) {
+        const key = defKeys[index];
+        if (values[key] === undefined) {
+          instance.set(key, defaults[key]);
+        }
+      }
+
     }
 
     function keyDefinitionCheck(key) {
@@ -55,11 +90,13 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (keys, func, skipInit) {
+    this.onUpdate = function (keys, func) {
       keyDefinitionCheck(keys);
       if (!Array.isArray(keys)) {
         keys = [keys];
       }
+      func[idKey()] = Properties.freeId++;
+      func[keysKey()] = keys;
       if ((typeof func) !== 'function') throw new Error('update function must be defined');
       keys.forEach((key) => {
         if (updateFuncs[key] === undefined) {
@@ -81,4 +118,6 @@ class Properties {
   }
 }
 
-const properties = new Properties();
+Properties.freeId = 0;
+
+const properties = new Properties({enabled: true});

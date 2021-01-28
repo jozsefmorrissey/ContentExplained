@@ -1,6 +1,10 @@
 let AppMenu = function () {
 const afterLoad = []
 
+CE_CONTAINER = document.createElement('div');
+CE_CONTAINER.id = 'ce-extension-html-container';
+document.body.append(CE_CONTAINER);
+;
 function DebugGuiClient(config, root, debug) {
   config = config || {};
   var instance = this;
@@ -394,15 +398,36 @@ if (!DebugGuiClient.inBrowser) {
 }
 ;
 class Properties {
-  constructor () {
+  constructor (defaults) {
     const properties = {};
     const updateFuncs = {};
+    const instanceId = Properties.freeId++;
     const instance = this;
+    const idKey = () => `properties${instanceId}Id`;
+    const keysKey = () => `properties${instanceId}Keys`;
+    let pendingNotification = false;
 
-    function notify(key) {
+    let notificationList = {};
+
+    function notify() {
+      const funcs = Object.values(notificationList);
+      notificationList = {};
+      pendingNotification = false;
+      for (let index = 0; index < funcs.length; index += 1) {
+        const func = funcs[index];
+        func(instance.get.apply(null, func[keysKey()]));
+      }
+    }
+
+    function stage(key) {
+      if (!pendingNotification) {
+        pendingNotification = true;
+        setTimeout(notify, 100);
+      }
       const funcList = updateFuncs[key];
       for (let index = 0; funcList && index < funcList.length; index += 1) {
-        funcList[index](properties[key]);
+        const func = funcList[index];
+        notificationList[func[idKey()]] = func;
       }
     }
 
@@ -413,7 +438,7 @@ class Properties {
           storeObj[key] = value;
           chrome.storage.local.set(storeObj);
         } else {
-          notify(key);
+          stage(key);
         }
     };
 
@@ -424,8 +449,14 @@ class Properties {
       const retObj = {};
       for (let index = 0; index < arguments.length; index += 1) {
         key = arguments[index];
-        retObj[key] = JSON.parse(JSON.stringify(properties[key]));
+        const value = properties[key];
+        if (value && (typeof value) === 'object') {
+          retObj[key] = JSON.parse(JSON.stringify(value));
+        } else {
+          retObj[key] = value;
+        }
       }
+      return retObj;
     };
 
     function storageUpdate (values) {
@@ -441,6 +472,14 @@ class Properties {
           instance.set(key, value);
         }
       }
+      const defKeys = Object.keys(defaults);
+      for (let index = 0; index < defKeys.length; index += 1) {
+        const key = defKeys[index];
+        if (values[key] === undefined) {
+          instance.set(key, defaults[key]);
+        }
+      }
+
     }
 
     function keyDefinitionCheck(key) {
@@ -449,11 +488,13 @@ class Properties {
       }
     }
 
-    this.onUpdate = function (keys, func, skipInit) {
+    this.onUpdate = function (keys, func) {
       keyDefinitionCheck(keys);
       if (!Array.isArray(keys)) {
         keys = [keys];
       }
+      func[idKey()] = Properties.freeId++;
+      func[keysKey()] = keys;
       if ((typeof func) !== 'function') throw new Error('update function must be defined');
       keys.forEach((key) => {
         if (updateFuncs[key] === undefined) {
@@ -475,7 +516,9 @@ class Properties {
   }
 }
 
-const properties = new Properties();
+Properties.freeId = 0;
+
+const properties = new Properties({enabled: true});
 ;
 let idCount = 0;
 class ExprDef {
@@ -1219,17 +1262,11 @@ try{
 } catch (e) {}
 ;// ./src/index/services/$t.js
 
+$t.functions['122441455'] = function (get) {
+	return `<div question-id='` + (get("question").id) + `'> <div class='ce-full ce-center'> <button type="button" class='ce-slim-btn ce-question-answer'>Answer</button> <button type="button" class='ce-slim-btn ce-question-unclear'>Un Clear</button> <button type="button" class='ce-slim-btn ce-question-answered'>Answered</button> <h3>` + (get("question").words) + `</h3> </div> ` + (get("question").elaboration) + ` </div>`
+}
 $t.functions['492362584'] = function (get) {
 	return `<div class='ce-full-width' id='` + (get("elem").id()) + `'></div>`
-}
-$t.functions['736143977'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['737568395'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").siteUrl) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['771465937'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
 }
 $t.functions['863427587'] = function (get) {
 	return `<li class='ce-tab-list-item' ` + (get("elem").show() ? '' : 'hidden') + `> <img class="lookup-img" src="` + (get("elem").imageSrc()) + `"> </li>`
@@ -1240,8 +1277,8 @@ $t.functions['906579606'] = function (get) {
 $t.functions['1165578666'] = function (get) {
 	return `<option value='` + (get("sug")) + `' ></option>`
 }
-$t.functions['1204899121'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+$t.functions['1175765711'] = function (get) {
+	return `<div id='ce-hover-expl-` + (get("tab").label) + `-cnt' ` + (get("tab").active === true ? "" : " hidden") + ` ` + (get("tab").hide() ? "hidden" : "") + `> ` + (get("tab").html()) + ` </div>`
 }
 $t.functions['1266551310'] = function (get) {
 	return `<option value='` + (get("words")) + `' ></option>`
@@ -1249,23 +1286,11 @@ $t.functions['1266551310'] = function (get) {
 $t.functions['1496787416'] = function (get) {
 	return `<menuitem > ` + (get("notification")) + ` </menuitem>`
 }
-$t.functions['1511666641'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['1525597977'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
 $t.functions['1663607604'] = function (get) {
 	return `<menuitem > ` + (get("site")) + ` </menuitem>`
 }
 $t.functions['1870015841'] = function (get) {
 	return `<div class='ce-margin'> <div class='ce-merriam-expl-card'> <div class='ce-merriam-expl-cnt'> <h3>` + (get("item").hwi.hw) + `</h3> ` + (new $t('<div class=\'ce-merriam-expl\'> {{def}} <br><br> </div>').render(get('scope'), 'def in item.shortdef', get)) + ` </div> </div> </div>`
-}
-$t.functions['1892901021'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['1925052500'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `'> <h4>` + (get("note").explanation.words) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 }
 $t.functions['2085205162'] = function (get) {
 	return `<li ><button toggle-id='` + (get("toggle").id) + `' ` + (get("toggle").disabled ? ' hidden disabled' : '') + `> ` + (get("toggle").showing ? get("toggle").hide.text : get("toggle").show.text) + ` </button></li>`
@@ -1276,14 +1301,17 @@ $t.functions['history'] = function (get) {
 $t.functions['-2107865266'] = function (get) {
 	return `<li value='` + (get("elem").index) + `' class='` + (!get("filtered") && get("elem").index === get("history").currentPosition ? 'place-current-hist-loc' : '') + `'> ` + (!get("filtered") && get("elem").index === get("history").currentPosition ? '' : get("elem").elem) + ` </li>`
 }
-$t.functions['hover-explanation'] = function (get) {
-	return `<div> <div class="ce-inline ce-width-full"> <div class=""> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div class='ce-width-full'> <div class='ce-hover-expl-cnt'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class='ce-hover-expl-content-cnt'> <div>` + (get("content")) + `</div> </div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <div` + (get("hideComments") ? ' hidden' : '') + `> <h3>Comments</h3> ` + (get("commentHtml")) + ` </div> </div> </div> </div> `
-}
 $t.functions['icon-menu/links/developer'] = function (get) {
 	return `<div> <div> <label>Environment:</label> <select id='` + (get("ENV_SELECT_ID")) + `'> ` + (new $t('<option  value="{{env}}" {{env === currEnv ? \'selected\' : \'\'}}> {{env}} </option>').render(get('scope'), 'env in envs', get)) + ` </select> </div> <div> <label>Debug Gui Host:</label> <input type="text" id="` + (get("DG_HOST_INPUT_ID")) + `" value="` + (get("debugGuiHost")) + `"> </div> <div> <label>Debug Gui Id:</label> <input type="text" id="` + (get("DG_ID_INPUT_ID")) + `" value="` + (get("debugGuiId")) + `"> </div> </div> `
 }
 $t.functions['-67159008'] = function (get) {
 	return `<option value="` + (get("env")) + `" ` + (get("env") === get("currEnv") ? 'selected' : '') + `> ` + (get("env")) + ` </option>`
+}
+$t.functions['hover-explanation'] = function (get) {
+	return `<div> <div class="ce-inline ce-width-full"> <div class="ce-hover-switch-list-cnt"> <ul id='` + (get("SWITCH_LIST_ID")) + `' class='ce-hover-list ce-auto-overflow' style='height: ` + (get("height")) + `'> ` + (new $t('<li class=\'ce-hover-list-elem{{expl.id === active.expl.id ? " active": ""}}\' > {{expl.words}}&nbsp;<b class=\'ce-small-text\'>({{expl.popularity}}%)</b> </li>').render(get('scope'), 'expl in active.list', get)) + ` </ul> </div> <div id='` + (get("MAIN_CONTENT_CNT_ID")) + `' class='ce-width-full ce-auto-overflow' style='height: ` + (get("height")) + `'> <div class='ce-hover-expl-cnt'> <div class='ce-hover-expl-title-cnt'> <div id='` + (get("VOTEUP_BTN_ID")) + `' class='ce-center` + (get("canLike") ? " ce-pointer" : "") + `'> <button class='ce-like-btn'` + (get("canLike") ? '' : ' disabled') + `></button> <br> ` + (get("likes")) + ` </div> <h3>` + (get("active").expl.words) + `</h3> <div id='` + (get("VOTEDOWN_BTN_ID")) + `' class='ce-center` + (get("canDislike") ? " ce-pointer" : "") + `'> ` + (get("dislikes")) + ` <br> <button class='ce-dislike-btn'` + (get("canDislike") ? '' : ' disabled') + `></button> </div> &nbsp;&nbsp;&nbsp;&nbsp; </div> <div class='ce-hover-expl-content-cnt'> <div>` + (get("content")) + `</div> </div> </div> <div class='ce-center'` + (get("hideComments") ? ' hidden' : '') + `> <button ` + (get("loggedIn") ? ' hidden' : '') + ` id='` + (get("LOGIN_BTN_ID")) + `'> Login </button> <button ` + (get("authored") ? '' : ' hidden') + ` id='` + (get("EDIT_BTN_ID")) + `'> Edit </button> </div> <ul class='ce-hover-expl-tab-control-cnt'> ` + (new $t('<li  ce-tab=\'ce-hover-expl-{{tab.label}}-cnt\' class=\'{{tab.active === true ? "active" : ""}}\' {{tab.hide() ? "hidden" : ""}}> {{tab.label}} </li>').render(get('scope'), 'tab in tabs', get)) + ` </ul> ` + (new $t('<div  id=\'ce-hover-expl-{{tab.label}}-cnt\' {{tab.active === true ? "" : " hidden"}} {{tab.hide() ? "hidden" : ""}}> {{tab.html()}} </div>').render(get('scope'), 'tab in tabs', get)) + ` </div> </div> </div> `
+}
+$t.functions['-62032811'] = function (get) {
+	return `<li ce-tab='ce-hover-expl-` + (get("tab").label) + `-cnt' class='` + (get("tab").active === true ? "active" : "") + `' ` + (get("tab").hide() ? "hidden" : "") + `> ` + (get("tab").label) + ` </li>`
 }
 $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 	return `<h1>favorite lists</h1> `
@@ -1291,23 +1319,32 @@ $t.functions['icon-menu/links/favorite-lists'] = function (get) {
 $t.functions['icon-menu/links/login'] = function (get) {
 	return `<div id='ce-login-cnt'> <div id='ce-login-center'> <h3 class='ce-error-msg'>` + (get("errorMsg")) + `</h3> <div ` + (get("state") === get("LOGIN") ? '' : 'hidden') + `> <input type='text' placeholder="Email" id='` + (get("EMAIL_INPUT")) + `' value='` + (get("email")) + `'> <br/><br/> <button type="button" id='` + (get("LOGIN_BTN_ID")) + `'>Submit</button> </div> <div ` + (get("state") === get("REGISTER") ? '' : 'hidden') + `> <input type='text' placeholder="Username" id='` + (get("USERNAME_INPUT")) + `' value='` + (get("username")) + `'> <br/><br/> <button type="button" id='` + (get("REGISTER_BTN_ID")) + `'>Register</button> </div> <div ` + (get("state") === get("CHECK") ? '' : 'hidden') + `> <h4>To proceed check your email confirm your request</h4> <br/><br/> <button type="button" id='` + (get("RESEND_BTN_ID")) + `'>Resend</button> <h2>or<h2/> <button type="button" id='` + (get("LOGOUT_BTN_ID")) + `'>Use Another Email</button> </div> </div> </div> `
 }
-$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
-	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
-}
 $t.functions['icon-menu/links/profile'] = function (get) {
 	return `<div> <div> <button id='` + (get("LOGOUT_BTN_ID")) + `' type="submit">Logout</button> </div> <div id='ce-profile-header-ctn'> <h1>` + (get("username")) + `</h1> &nbsp;&nbsp;&nbsp;&nbsp; </div> <h3>` + (get("importantMessage")) + `</h3> <form id=` + (get("UPDATE_FORM_ID")) + `> <div> <label for="` + (get("USERNAME_INPUT_ID")) + `">New Username:</label> <input class='ce-float-right' id='` + (get("USERNAME_INPUT_ID")) + `' type="text" name="username" value=""> <br><br> <label for="` + (get("NEW_EMAIL_INPUT_ID")) + `">New Email:&nbsp;&nbsp;&nbsp;&nbsp;</label> <input class='ce-float-right' id='` + (get("NEW_EMAIL_INPUT_ID")) + `' type="email" name="email" value=""> </div> <br><br><br> <div> <label for="` + (get("CURRENT_EMAIL_INPUT_ID")) + `">Confirm Current Email:</label> <input required class='ce-float-right' id='` + (get("CURRENT_EMAIL_INPUT_ID")) + `' type="email" name="currentEmail" value=""> </div> <br> <div class="ce-center"> <button id='` + (get("UPDATE_BTN_ID")) + `' type="submit" name="button">Update</button> </div> </form> <div> <label>Likes:</label> <b>` + (get("likes")) + `</b> </div> <br> <div> <label>DisLikes:</label> <b>` + (get("dislikes")) + `</b> </div> </div> `
-}
-$t.functions['icon-menu/menu'] = function (get) {
-	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
 }
 $t.functions['icon-menu/links/raw-text-input'] = function (get) {
 	return `<div class='ce-padding ce-full'> <div class='ce-padding'> <label>TabSpacing</label> <input type="number" id="` + (get("TAB_SPACING_INPUT_ID")) + `" value="` + (get("tabSpacing")) + `"> </div> <textarea id='` + (get("RAW_TEXT_INPUT_ID")) + `' style='height: 90%; width: 95%;'></textarea> </div> `
 }
+$t.functions['icon-menu/links/raw-text-tool'] = function (get) {
+	return `<div id='` + (get("RAW_TEXT_CNT_ID")) + `'> Enter text to update this content. </div> `
+}
+$t.functions['icon-menu/menu'] = function (get) {
+	return ` <menu> <menuitem id='login-btn'> ` + (!get("loggedIn") ? 'Login': 'Logout') + ` </menuitem> <menuitem id='notifications' ` + (get("loggedIn") ? '' : ' hidden') + `> Notifications </menuitem> <menuitem id='hover-btn'> Hover:&nbsp;` + (get("hoverOff") ? 'OFF': 'ON') + ` </menuitem> <menuitem id='enable-btn'> ` + (get("enabled") ? 'Disable': 'Enable') + ` </menuitem> <menuitem id='settings'> Settings </menuitem> </menu> `
+}
 $t.functions['icon-menu/notifications'] = function (get) {
 	return `<div class='inline'> <div> <button class="back-btn" id="back-button">&#x2190;</button> </div> <div> <div> <b>Notifications</b> <menu class='fit'> ` + (new $t('<menuitem > {{notification}} </menuitem>').render(get('scope'), 'notification in currentAlerts', get)) + ` </menu> </div> <div> <b>Elsewhere</b> <menu class='fit'> ` + (new $t('<menuitem > {{site}} </menuitem>').render(get('scope'), 'site in otherSites', get)) + ` </menu> </div> </div> </div> `
 }
+$t.functions['notifications'] = function (get) {
+	return `<div class=""> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-notification-key="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in currPage', get)) + ` </ul> <h4>Other Page Notifications</h4> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-open="{{note.site.url}}" ce-target="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in otherPage', get)) + ` </ul> </div> `
+}
+$t.functions['-397749582'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
+$t.functions['-1466040354'] = function (get) {
+	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `" ce-target="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
+}
 $t.functions['place'] = function (get) {
-	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `' position='absolute'> <div class='place-full-width'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
+	return `<div id='` + (get("POPUP_CNT_ID")) + `'> <div class='ce-full'> <div hidden id='` + (get("POPUP_HEADER_CNT_ID")) + `'> tab </div> <div id='` + (get("POPUP_CONTENT_CNT_ID")) + `' class='ce-full'> <div class='place-max-min-cnt' id='` + (get("MAX_MIN_CNT_ID")) + `'> <div class='place-max-min-fixed-cnt place-full-width' position='fixed'> <div class='place-inline place-right'> <button class='place-btn place-right' id='` + (get("BACK_BTN_ID")) + `'> &pr; </button> <button class='place-btn place-right' id='` + (get("HISTORY_BTN_ID")) + `'> &equiv; </button> <button class='place-btn place-right' id='` + (get("FORWARD_BTN_ID")) + `'> &sc; </button> <button class='place-btn place-right'` + (get("props").hideMove ? ' hidden' : '') + ` id='` + (get("MOVE_BTN_ID")) + `'> &#10021; </button> <button class='place-btn place-right'` + (get("props").hideMin ? ' hidden' : '') + ` id='` + (get("MINIMIZE_BTN_ID")) + `' hidden> &#95; </button> <button class='place-btn place-right'` + (get("props").hideMax ? ' hidden' : '') + ` id='` + (get("MAXIMIZE_BTN_ID")) + `'> &square; </button> <button class='place-btn place-right'` + (get("props").hideClose ? ' hidden' : '') + ` id='` + (get("CLOSE_BTN_ID")) + `'> &times; </button> </div> </div> </div> <div id='` + (get("POPUP_CONTENT_ID")) + `' class='ce-full'> <!-- Hello World im writing giberish for testing purposes --> </div> </div> </div> </div> `
 }
 $t.functions['popup-cnt/explanation'] = function (get) {
 	return `<div class='ce-expl-card'> <span class='ce-expl-cnt'> <div class='ce-expl-apply-cnt'> <button expl-id="` + (get("explanation").id) + `" class='ce-expl-apply-btn' ` + (get("explanation").canApply ? '' : 'disabled') + `> Apply </button> </div> <span class='ce-expl'> <div> <h5> ` + (get("explanation").author.percent) + `% ` + (get("explanation").words) + ` - ` + (get("explanation").shortUsername) + ` </h5> ` + (get("explanation").rendered) + ` </div> </span> </span> </div> `
@@ -1319,7 +1356,7 @@ $t.functions['popup-cnt/lookup'] = function (get) {
 	return `<div> <div class='ce-inline-flex' id='` + (get("HISTORY_CNT_ID")) + `'></div> <div class='ce-inline-flex' id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'></div> <div class='ce-tab-ctn'> <ul class='ce-tab-list'> ` + (new $t('<li  class=\'ce-tab-list-item\' {{elem.show() ? \'\' : \'hidden\'}}> <img class="lookup-img" src="{{elem.imageSrc()}}"> </li>').render(get('scope'), 'elem in list', get)) + ` </ul> <div class='ce-lookup-cnt'> ` + (new $t('<div  class=\'ce-full-width\' id=\'{{elem.id()}}\'></div>').render(get('scope'), 'elem in list', get)) + ` </div> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-comment'] = function (get) {
-	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div ce-comment-id='` + (get("comment").id) + `'> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + `> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> <div class='ce-center'> <div> ` + (get("addToggle")()) + ` </div> </div> </div> </div> <div class='ce-center'> <div> ` + (get("commentToggle")()) + ` </div> </div> </div> `
+	return `<div class='ce-comment-cnt-class` + (get("color") ? ' colored' : '') + `' id='` + (get("ROOT_ELEM_ID")) + `'> <div ce-comment-id='` + (get("comment").id) + `'> <div class='ce-comment-header-class'` + (get("comment").author ? '' : ' hidden') + `> ` + (get("comment") ? get("comment").author.username : '') + ` </div> <div class='ce-comment-body-class'> ` + (get("comment") ? get("comment").value : '') + ` </div> </div> <div id='` + (get("COMMENTS_CNT_ID")) + `'` + (get("showComments") || !get("commentHtml") ? '' : ' hidden') + ` ce-sibling-id='` + (get("siblingId")) + `'> <div> ` + (get("commentHtml")) + ` </div> <div class='ce-center'> <div hidden id='` + (get("ADD_CNT_ID")) + `'> <textarea type='text' id='` + (get("TEXT_AREA_INPUT_ID")) + `' explanation-id='` + (get("explanation").id) + `' comment-id='` + (get("comment").id || '') + `'></textarea> <button class='ce-comment-submit-btn-class' textarea-id='` + (get("TEXT_AREA_INPUT_ID")) + `'> Submit </button> </div> </div> </div> <div class='ce-center'> <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='` + (get("COMMENTS_CNT_ID")) + `' ce-toggle-hidden-text='Show Comments' ce-toggle-visible-text='Hide Comments' ` + (get("commentHtml") ? '' : 'hidden disabled') + `> ` + (!get("showComments") ? 'Show Comments' : 'Hide Comments') + ` </button> <button type="button" class="ce-toggle ce-slim-btn" ce-toggle='` + (get("ADD_CNT_ID")) + `' ce-toggle-hidden-text='Add Comment' ce-toggle-visible-text='Close Comment' ` + (get("loggedIn") ? '' : 'hidden disabled') + `> Add Comment </button> </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/add-explanation'] = function (get) {
 	return `<div class='ce-full'> <div class='ce-full'> <div class="ce-full" id='` + (get("ADD_EDITOR_CNT_ID")) + `'> <div class='ce-center'> <div class='ce-inline'> <input type='text' value='` + (get("words")) + `' list='ce-edited-words' id='` + (get("WORDS_INPUT_ID")) + `' autocomplete="off"> <datalist id='ce-edited-words'> ` + (new $t('<option value=\'{{words}}\' ></option>').render(get('scope'), 'words in editedWords', get)) + ` </datalist> <div> <button id='` + (get("SUBMIT_EXPL_BTN_ID")) + `' ` + (get("id") ? 'hidden' : '') + `> Add&nbsp;To&nbsp;Url </button> <button id='` + (get("UPDATE_EXPL_BTN_ID")) + `' ` + (get("id") ? '' : 'hidden') + `> Update </button> </div> <a href='` + (get("url")) + `'` + (get("url") ? '' : ' hidden') + ` target='_blank'> ` + (get("url").length < 20 ? get("url") : get("url").substr(0, 17) + '...') + ` </a> </div> <div> <p` + (get("writingJs") ? '' : ' hidden') + ` class='ce-error'>Stop tring to write JavaScript!</p> </div> </div> <textarea id='` + (get("ADD_EDITOR_ID")) + `' class='ce-full'></textarea> </div> </div> </div> `
@@ -1333,11 +1370,11 @@ $t.functions['popup-cnt/tab-contents/explanation-cnt'] = function (get) {
 $t.functions['-1132695726'] = function (get) {
 	return `popup-cnt/explanation`
 }
-$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
-	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
-}
 $t.functions['popup-cnt/tab-contents/explanation-header'] = function (get) {
 	return `<div> <div class='ce-lookup-expl-heading-cnt'> <div class='ce-key-cnt'> <input type='text' style='font-size: x-large;margin: 0;' id='` + (get("EXPL_SEARCH_INPUT_ID")) + `' autocomplete="off"> <button class='ce-words-search-btn' id='` + (get("SEARCH_BTN_ID")) + `'>Search</button> &nbsp;&nbsp;&nbsp; <h3>` + (get("words")) + `</h3> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </div> </div> </div> `
+}
+$t.functions['popup-cnt/tab-contents/webster-header'] = function (get) {
+	return `<div class='ce-merriam-header-cnt'> <a href='https://www.merriam-webster.com/dictionary/` + (get("key")) + `' target='merriam-webster'> Merriam&nbsp;Webster&nbsp;'` + (get("key")) + `' </a> <br> <input type="text" name="" value="" list='merriam-suggestions' placeholder="Search" id='` + (get("SEARCH_INPUT_ID")) + `'> <datalist id='merriam-suggestions'> ` + (new $t('<option value=\'{{sug}}\' ></option>').render(get('scope'), 'sug in suggestions', get)) + ` </datalist> <div id='` + (get("MERRIAM_WEB_SUG_CNT_ID")) + `'` + (get("suggestions").length === 0 ? ' hidden': '') + `> No Definition Found </div> </div> `
 }
 $t.functions['popup-cnt/tab-contents/webster'] = function (get) {
 	return `<div class='ce-merriam-cnt'> ` + (new $t('<div  class=\'ce-margin\'> <div class=\'ce-merriam-expl-card\'> <div class=\'ce-merriam-expl-cnt\'> <h3>{{item.hwi.hw}}</h3> {{new $t(\'<div  class=\\\'ce-merriam-expl\\\'> {{def}} <br><br> </div>\').render(get(\'scope\'), \'def in item.shortdef\', get)}} </div> </div> </div>').render(get('scope'), 'item in definitions', get)) + ` </div> `
@@ -1354,190 +1391,40 @@ $t.functions['popup-cnt/tabs-navigation'] = function (get) {
 $t.functions['-888280636'] = function (get) {
 	return `<li ` + (get("page").hide() ? 'hidden' : '') + ` class='` + (get("activePage") === get("page") ? get("ACTIVE_CSS_CLASS") : get("CSS_CLASS")) + `'> ` + (get("page").label()) + ` </li>`
 }
+$t.functions['questions'] = function (get) {
+	return `<div class="ce-padding"> ` + (new $t('<div  question-id=\'{{question.id}}\'> <div class=\'ce-full ce-center\'> <button type="button" class=\'ce-slim-btn ce-question-answer\'>Answer</button> <button type="button" class=\'ce-slim-btn ce-question-unclear\'>Un Clear</button> <button type="button" class=\'ce-slim-btn ce-question-answered\'>Answered</button> <h3>{{question.words}}</h3> </div> {{question.elaboration}} </div>').render(get('scope'), 'question in questions', get)) + ` </div> `
+}
 $t.functions['tabs'] = function (get) {
 	return `<div class='ce-inline ce-full' id='` + (get("TAB_CNT_ID")) + `'> <div> <div position='absolute' id='` + (get("NAV_CNT_ID")) + `'> </div> <div id='` + (get("NAV_SPACER_ID")) + `'></div> </div> <div class='ce-full'> <div position='absolute' id='` + (get("HEADER_CNT_ID")) + `'> </div> <div class='ce-full' id='` + (get("CNT_ID")) + `'> </div> </div> </div> `
-}
-$t.functions['notifications'] = function (get) {
-	return `<div class=""> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-notification-key="{{key(note)}}"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.currPage', get)) + ` </ul> <h4>Other Page Notifications</h4> <ul class='ce-notification-list'> ` + (new $t('<li  class=\'{{getClass(note)}}\' ce-open="{{note.site.url}}" ce-target="_blank"> <h4 class=\'ce-no-margin\'>{{getHeading(note)}}</h4> {{getText(note)}} </li>').render(get('scope'), 'note in notifications.otherPage', get)) + ` </ul> </div> `
-}
-$t.functions['-1581780113'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' onclick="window.open('` + (get("note").site.url) + `', '_blank')"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-1219294225'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-open="` + (get("note").site.url) + `" ce-target="_blank"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-961465421'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("note").id) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("note").id) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-1571138811'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-id="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + ` - ` + (get("key")(get("note"))) + `</h4> ` + (get("note").explanation.words) + ` <br> ` + (get("getText")(get("note"))) + ` </li>`
-}
-$t.functions['-397749582'] = function (get) {
-	return `<li class='` + (get("getClass")(get("note"))) + `' ce-notification-key="` + (get("key")(get("note"))) + `"> <h4 class='ce-no-margin'>` + (get("getHeading")(get("note"))) + `</h4> ` + (get("getText")(get("note"))) + ` </li>`
 };
-class Notifications {
-  constructor (activeTime) {
-    const EXPLANATION = 'Explanation';
-    const COMMENT = 'Comment';
-    const QUESTION = 'Question';
-    const template = new $t('notifications');
-    const popup = new DragDropResize({position: 'fixed', height: '25vh', width: 'fit-content',
-        minWidth: 0, minHeight: 0});
-    popup.top().right();
-    const instance = this;
-    const byKey = {};
-    let notifications = {currPage: [], otherPage: []};
-
-    function key(note) {
-      return `${note.type}-${note.id}`;
-    }
-
-    function gotoNotification(target) {
-      const noteKey = target.getAttribute('ce-notification-key');
-      const note = byKey[noteKey];
-      let getElem;
-      if (note.type === 'Comment') {
-        getElem = () => document.querySelector(`[ce-comment-id="${note.comment.id}"]`);
-      } else {
-        getElem = () => hoverExplanations.getExplCnt();
-      }
-      const func = () => scrollIntoView(getElem(), 40, 10)
-      hoverExplanations.displayExistingElem(note.explanation, func);
-    }
-
-    function openPage(target) {
-      const url = target.getAttribute('ce-open');
-      const name = target.getAttribute('ce-target');
-      window.open(url, name);
-    }
-
-    matchRun('click', '[ce-open]', openPage, popup.container())
-    matchRun('click', '[ce-notification-key]', gotoNotification, popup.container())
-
-
-    this.hasNotifications = () => notifications.currPage.length > 0 &&
-          notifications.otherPage.length > 0;
-
-    this.getNotifications = () => JSON.parse(JSON.stringify(notifications));
-
-    const getHeading = (note) => note.explanation.words;
-
-    function words(data) {
-      return data.explanation.words;
-    }
-
-    function fullText(data) {
-      switch (data.type) {
-        case EXPLANATION:
-          return data.explanation.content;
-        case COMMENT:
-          return data.comment.value;
-        case QUESTION:
-          return data.explanation.content;
-        default:
-          return "Error getting text data";
-
-      }
-    }
-
-    function shortText(data) {
-        return fullText(data).substr(0, 20);
-    }
-
-    function author(data) {
-      switch (data.type) {
-        case EXPLANATION:
-          return data.explanation.author.username;
-        case COMMENT:
-          return data.comment.author.username;
-        case QUESTION:
-        return data.explanation.author.username;
-        default:
-          return "Error getting author data";
-
-      }
-    }
-
-    function getClass(note) {
-      return `ce-notification ${note.type.toLowerCase()}-notification`;
-    }
-
-    this.html = () => template.render({key, notifications, getHeading, getText: shortText, getClass});
-
-    function setNotifications(notes) {
-      notifications = notes;
-      notes.currPage.forEach((note) => byKey[key(note)] = note)
-      popup.updateContent(instance.html());
-      popup.show();
-    }
-
-    function update() {
-      const user = User.loggedIn();
-      if (user && user.id) {
-        const userId = user.id;
-        const siteUrl = window.location.href;
-        Request.post(EPNTS.notification.get(), {userId, siteUrl}, setNotifications);
-      }
-    }
-
-    document.addEventListener(User.updateEvent(), update);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// -------------------------------------- User Present ----------------------//
-    let activationCounter = -1;
-    let isActive = false;
-
-    this.hasPending = () => true;
-
-    function activate() {
-      activationCounter++;
-      if (isActive === false) {
-        isActive = true;
-        console.log('active!');
-      }
-    }
-
-    function deactivate(activationId) {
-      return function () {
-        if (activationId === activationCounter) {
-          console.log('deactivated')
-          isActive = false;
-        }
-      }
-    }
-
-    function activationTimer() {
-      setTimeout(deactivate(activationCounter), activeTime);
-    }
-
-    window.addEventListener('focus', activate);
-    window.addEventListener('blur', activationTimer);
-    activate();
-  }
-}
-
-Notifications = new Notifications(10000);
-;
 
 function isScrollable(elem) {
     const horizontallyScrollable = elem.scrollWidth > elem.clientWidth;
     const verticallyScrollable = elem.scrollHeight > elem.clientHeight;
     return elem.scrollWidth > elem.clientWidth || elem.scrollHeight > elem.clientHeight;
 };
+
+function fadeOut(elem, disapearAt, func) {
+  const origOpacity = elem.style.opacity;
+  let stopFade = false;
+  function reduceOpacity () {
+    if (stopFade) return;
+    elem.style.opacity -= .005;
+    if (elem.style.opacity <= 0) {
+      elem.style.opacity = origOpacity;
+      func(elem);
+    } else {
+      setTimeout(reduceOpacity, disapearAt * 2 / 600 * 1000);
+    }
+  }
+
+  elem.style.opacity = 1;
+  setTimeout(reduceOpacity, disapearAt / 3 * 1000);
+  return () => {
+    stopFade = true;
+    elem.style.opacity = origOpacity;
+  };
+}
 
 function scrollableParents(elem) {
   let scrollable = [];
@@ -1548,6 +1435,26 @@ function scrollableParents(elem) {
     return scrollableParents(elem.parentNode).concat(scrollable);
   }
   return scrollable;
+}
+
+function getParents(elem, selector) {
+  let matches = [];
+  if (elem instanceof HTMLElement) {
+    if ((typeof selector) === 'string') {
+      if (elem.matches(selector)) {
+        matches.push(elem);
+      }
+    } else if ((typeof selector) === 'function') {
+      if (selector(elem)) {
+        matches.push(elem)
+      }
+    } else {
+      throw new Error('Unrecognized selector type, must be "function" or a "queryString"');
+    }
+
+    return getParents(elem.parentNode, selector).concat(matches);
+  }
+  return matches;
 }
 
 function center(elem) {
@@ -1584,16 +1491,13 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
       const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
       const yDiff = scrollDist * (elemCenter.y < scrollCenter.y ? -1 : 1);
       scrollElem.scroll(0, scrollElem.scrollTop + yDiff);
-      console.log(scrollElem.scrollPid, '-', elemCenter.y, ':', scrollCenter.y)
-      console.log(`${elemCenter.top} !== ${lastPosition[scrollElem.scrollPid]}`)
-      console.log();
       if (elemCenter.top !== lastPosition[scrollElem.scrollPid]
             && (scrollCenter.y < elemCenter.y - 2 || scrollCenter.y > elemCenter.y + 2)) {
         lastPosition[scrollElem.scrollPid] = elemCenter.top;
         setTimeout(scroll(scrollElem), delay);
       } else if(!highlighted) {
         highlighted = true;
-        temporaryStyle(elem, 2000, {
+        temporaryStyle(elem, 5000, {
           borderStyle: 'solid',
           borderColor: '#07ff07',
           borderWidth: '5px'
@@ -1607,24 +1511,6 @@ function scrollIntoView(elem, divisor, delay, scrollElem) {
     setTimeout(scroll(scrollParent), 10);
   });
 }
-
-// function scrollIntoView(elem, divisor, delay) {
-//   let lastPosition;
-//   function scroll() {
-//     const rect = elem.getBoundingClientRect();
-//     const target = Math.floor((window.innerHeight - rect.height) / 2);
-//     const fullDist = Math.abs(rect.top - target);
-//     const scrollDist = fullDist > 5 ? fullDist/divisor : fullDist;
-//     const yDiff = scrollDist * (rect.top < target ? -1 : 1);
-//     window.scroll(0, window.scrollY + yDiff);
-//     console.log(elem.id, ':', window.scrollY)
-//     if (window.scrollY !== lastPosition && (rect.top < target - 2 || rect.top > target + 2)) {
-//       lastPosition = window.scrollY;
-//       setTimeout(scroll, delay);
-//     }
-//   }
-//   setTimeout(scroll, 10);
-// }
 
 const selectors = {};
 let matchRunIdCount = 0;
@@ -1650,7 +1536,6 @@ function runMatch(event) {
       selectors[matchRunTargetId][event.type][selectStr].forEach((func) => func(target));
     }
   })
-  console.log(event);
 }
 
 function matchRun(event, selector, func, target) {
@@ -1670,6 +1555,97 @@ function matchRun(event, selector, func, target) {
   selectors[matchRunTargetId][event][selector].push(func);
 }
 
+function updateId (id, document, strHtml) {
+  const tempElem = document.createElement('div');
+  tempElem.innerHTML = strHtml;
+  const newHtml = tempElem.getElementById(id).outerHTML;
+  document.getElementById(id).outerHTML = newHtml;
+}
+
+function getSiblings(elem, selector) {
+  const siblings = [];
+  let curr=elem.nextElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.nextElementSibling;
+  }
+  curr=elem.previousElementSibling;
+  while (curr) {
+    if (selector === undefined || curr.matches(selector)) {
+      siblings.push(curr);
+    }
+    curr = curr.previousElementSibling;
+  }
+  return siblings;
+}
+
+const activeReg = /(^| )active( |$)/;
+function tabClass(target) {
+  function switchDisplay(target) {
+    if(target.className.match(activeReg)) return;
+    target.className = target.className + ' active';
+    const tabId = target.getAttribute('ce-tab');
+    document.getElementById(tabId).hidden = false;
+    const siblings = getSiblings(target, '[ce-tab]');
+    siblings.forEach((sibling) => {
+      const sibTargId = sibling.getAttribute('ce-tab');
+      sibling.className = sibling.className.replace(activeReg, '');
+      document.getElementById(sibTargId).hidden = true;
+    });
+  }
+  matchRun('click', '[ce-tab]', switchDisplay, target);
+}
+toggleContainer();
+
+function eachParent(elem, selector, func) {
+  const parents = getParents(elem, selector);
+  parents.forEach((parent) => func(parent));
+}
+
+function toggle(target, hidden) {
+  const toggleId = target.getAttribute('ce-toggle');
+  const targetElem = document.getElementById(toggleId);
+  targetElem.hidden = hidden !== undefined ? hidden : !targetElem.hidden;
+  if (targetElem.hidden) {
+    const newText = target.getAttribute('ce-toggle-hidden-text');
+    if (newText) target.innerText = newText;
+  } else {
+    const newText = target.getAttribute('ce-toggle-visible-text');
+    if (newText) target.innerText = newText;
+  }
+  const siblingId = targetElem.getAttribute('ce-sibling-id');
+  const siblings = document.querySelectorAll(`[ce-sibling-id='${siblingId}']`);
+  siblings.forEach((sibling) => {
+    if (sibling !== targetElem) {
+      document.getElementById(sibTargId).hidden = true;
+    }
+  });
+}
+
+function getAttributes(attribute) {
+  const attributes = {};
+  const elems = document.querySelectorAll(`[${attribute}]`);
+  elems.forEach((elem) => attributes[elem.getAttribute(attribute)] = elem);
+  return attributes;
+}
+
+function toggleParents(elem, hidden) {
+  const togglers = getAttributes('ce-toggle');
+  function shouldToggle (parent) {
+    const toggleElem = togglers[parent.id];
+    if (toggleElem) {
+      toggle(toggleElem, hidden);
+    }
+  }
+  eachParent(elem, shouldToggle, toggleParents);
+}
+
+function toggleContainer(container) {
+  matchRun('click', '[ce-toggle]', toggle, container);
+}
+toggleContainer();
 
 function up(selector, node) {
   if (node instanceof HTMLElement) {
@@ -1708,7 +1684,6 @@ function closest(selector, node) {
       return found;
     }
     visited.push(currNode);
-    console.log('curr: ' + currNode);
     if (currNode.matches(selector)) {
       return { node: currNode, distance };
     } else {
@@ -1826,7 +1801,6 @@ function stateOnLoad() {
   let eventCount = 0;
   const SETTINGS_TAB_ID = 'ce-settings-tab-id';
   const menuTemplate = new $t('icon-menu/menu');
-  const notificationTemplate = new $t('icon-menu/notifications');
   document.addEventListener('DOMContentLoaded', function () {
     function toggleEnable(onOff) {
       return function () {
@@ -1845,18 +1819,18 @@ function stateOnLoad() {
     }
 
     function displayNotifications () {
-      const scope = {
-        currentAlerts: Notifications.currentAlerts(),
-        otherSites: Notifications.otherSites()
-      }
-      updateDropDown(notificationTemplate.render(scope));
-      document.getElementById('back-button').addEventListener('click', displayMenu);
+      // const scope = {
+      //   currentAlerts: Notifications.currentAlerts(),
+      //   otherSites: Notifications.otherSites()
+      // }
+      // updateDropDown(notificationTemplate.render(scope));
+      // document.getElementById('back-button').addEventListener('click', displayMenu);
     }
 
-    function displayMenu() {
-      const hoverOff = properties.get('hoverOff');
-      const enabled = properties.get('enabled');
-      const loggedIn = properties.get('user.status') === 'active';
+    function displayMenu(props) {
+      const hoverOff = props.hoverOff;
+      const enabled = props.enabled;
+      const loggedIn = props['user.status'] === 'active';
       const logInOutPage = `/html/settings.html#${loggedIn ? 'Profile' : 'Login'}`;
       updateDropDown(menuTemplate.render({ enabled, hoverOff, loggedIn }));
       document.getElementById('login-btn').addEventListener('click', openPage(logInOutPage));

@@ -3,7 +3,6 @@ function stateOnLoad() {
   let eventCount = 0;
   const SETTINGS_TAB_ID = 'ce-settings-tab-id';
   const menuTemplate = new $t('icon-menu/menu');
-  const notificationTemplate = new $t('icon-menu/notifications');
   document.addEventListener('DOMContentLoaded', function () {
     function toggleEnable(onOff) {
       return function () {
@@ -22,18 +21,18 @@ function stateOnLoad() {
     }
 
     function displayNotifications () {
-      const scope = {
-        currentAlerts: Notifications.currentAlerts(),
-        otherSites: Notifications.otherSites()
-      }
-      updateDropDown(notificationTemplate.render(scope));
-      document.getElementById('back-button').addEventListener('click', displayMenu);
+      // const scope = {
+      //   currentAlerts: Notifications.currentAlerts(),
+      //   otherSites: Notifications.otherSites()
+      // }
+      // updateDropDown(notificationTemplate.render(scope));
+      // document.getElementById('back-button').addEventListener('click', displayMenu);
     }
 
-    function displayMenu() {
-      const hoverOff = properties.get('hoverOff');
-      const enabled = properties.get('enabled');
-      const loggedIn = properties.get('user.status') === 'active';
+    function displayMenu(props) {
+      const hoverOff = props.hoverOff;
+      const enabled = props.enabled;
+      const loggedIn = props['user.status'] === 'active';
       const logInOutPage = `/html/settings.html#${loggedIn ? 'Profile' : 'Login'}`;
       updateDropDown(menuTemplate.render({ enabled, hoverOff, loggedIn }));
       document.getElementById('login-btn').addEventListener('click', openPage(logInOutPage));
